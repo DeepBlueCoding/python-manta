@@ -8,8 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.0.1-beta.1] - 2024-11-05
-
 ### Added
 - Multi-platform wheel building for Linux, macOS (Intel & Apple Silicon), and Windows
 - Automated PyPI publishing via GitHub Actions with Trusted Publishing
