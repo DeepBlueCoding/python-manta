@@ -31,7 +31,7 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: PATH=/opt/go/bin:$PATH
           CIBW_BUILD: cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64
           CIBW_TEST_COMMAND_LINUX: python -c "import python_manta; print('import success')"
-          MANTA_REF: main
+          MANTA_REF: master
         run: |
           python -m cibuildwheel --output-dir dist
 
@@ -74,7 +74,7 @@ jobs:
           CIBW_ARCHS_MACOS: ${{ matrix.arch }}
           CIBW_BUILD: cp38-macosx_${{ matrix.arch }} cp39-macosx_${{ matrix.arch }} cp310-macosx_${{ matrix.arch }} cp311-macosx_${{ matrix.arch }} cp312-macosx_${{ matrix.arch }}
           CIBW_TEST_COMMAND_MACOS: python -c "import python_manta; print('import success')"
-          MANTA_REF: main
+          MANTA_REF: master
         run: |
           python -m cibuildwheel --output-dir dist
 
@@ -114,7 +114,7 @@ jobs:
           CIBW_BEFORE_BUILD_WINDOWS: bash tools/before_build_windows.sh
           CIBW_BUILD: cp38-win_amd64 cp39-win_amd64 cp310-win_amd64 cp311-win_amd64 cp312-win_amd64
           CIBW_TEST_COMMAND_WINDOWS: python -c "import python_manta; print('import success')"
-          MANTA_REF: main
+          MANTA_REF: master
         run: |
           python -m cibuildwheel --output-dir dist
 
