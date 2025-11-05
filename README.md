@@ -13,6 +13,8 @@ Python Manta provides a comprehensive, Pythonic interface to parse modern Dota 2
 - 🎮 **Modern Dota 2 Support**: Handles current PBDEMS2 replay format
 - 🚀 **High Performance**: Leverages the optimized Manta Go parser via CGO
 - 🐍 **Pythonic API**: Clean, type-hinted Python interface with Pydantic models
+- 📦 **Zero Dependencies**: Pre-built wheels with embedded binaries - no Go installation required
+- 🔧 **Multi-Platform**: Linux (x86_64), macOS (Intel & Apple Silicon), Windows (AMD64)
 - 💬 **Real-time Chat**: Extract player chat messages and communication
 - 📍 **Location Tracking**: Parse player pings, map lines, and positioning data
 - 🎯 **Game Events**: Complete DOTA user message and network event parsing
@@ -23,8 +25,17 @@ Python Manta provides a comprehensive, Pythonic interface to parse modern Dota 2
 
 ### Installation
 
+**Option 1: Install from PyPI (Recommended - No Go Required!)**
+
 ```bash
-# Clone and build (pip package coming soon)
+# Simple pip install - pre-built wheels for Linux, macOS, and Windows
+pip install python-manta
+```
+
+**Option 2: Build from Source (Requires Go)**
+
+```bash
+# Clone and build
 git clone <repository>
 cd python_manta
 ./build.sh
@@ -151,9 +162,15 @@ analyze_team_communication("my_match.dem")
 
 ## Requirements
 
+**For End Users (pip install):**
 - **Python**: 3.8+
-- **Go**: 1.19+ (for building)
-- **System**: Linux/macOS (Windows support planned)
+- **System**: Linux (x86_64), macOS (Intel/Apple Silicon), or Windows (AMD64)
+- **No Go required!** Pre-built wheels include all necessary binaries
+
+**For Developers (building from source):**
+- **Python**: 3.8+
+- **Go**: 1.19+
+- **System**: Linux, macOS, or Windows with CGO support
 
 ## Building from Source
 
@@ -180,6 +197,8 @@ analyze_team_communication("my_match.dem")
    ```bash
    python3 examples/basic_usage.py path/to/demo.dem
    ```
+
+For detailed information about the wheel building process, CI/CD pipeline, and PyPI publishing, see [BUILDING.md](BUILDING.md).
 
 ## API Reference
 
