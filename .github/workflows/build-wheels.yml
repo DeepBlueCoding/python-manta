@@ -172,7 +172,7 @@ jobs:
         shell: bash
         run: |
           python -m venv wheel_venv
-          wheel_venv/Scripts/pip install --upgrade pip
+          wheel_venv/Scripts/python -m pip install --upgrade pip
           # Install from local wheel, but allow PyPI for dependencies
           wheel_venv/Scripts/pip install --find-links=dist --no-cache-dir python-manta
           wheel_venv/Scripts/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
@@ -181,7 +181,7 @@ jobs:
         shell: bash
         run: |
           python -m venv test_venv
-          test_venv/Scripts/pip install --upgrade pip
+          test_venv/Scripts/python -m pip install --upgrade pip
           # Install from local wheel, but allow PyPI for dependencies
           test_venv/Scripts/pip install --find-links=dist --no-cache-dir python-manta
           test_venv/Scripts/pip install pytest pytest-cov
