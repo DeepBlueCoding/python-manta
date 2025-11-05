@@ -45,14 +45,16 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/bin/pip install --upgrade pip
-          wheel_venv/bin/pip install dist/python_manta-*.whl
+          # Let pip pick the correct wheel for this Python version
+          wheel_venv/bin/pip install --no-index --find-links=dist python-manta
           wheel_venv/bin/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
       - name: Run pytest unit tests
         run: |
           python -m venv test_venv
           test_venv/bin/pip install --upgrade pip
-          test_venv/bin/pip install dist/python_manta-*.whl
+          # Let pip pick the correct wheel for this Python version
+          test_venv/bin/pip install --no-index --find-links=dist python-manta
           test_venv/bin/pip install pytest pytest-cov
           # Copy test files into venv to run tests
           cp -r tests/ test_venv/
@@ -108,7 +110,8 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/bin/pip install --upgrade pip
-          wheel_venv/bin/pip install dist/python_manta-*.whl
+          # Let pip pick the correct wheel for this Python version
+          wheel_venv/bin/pip install --no-index --find-links=dist python-manta
           wheel_venv/bin/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
       - name: Run pytest unit tests
@@ -116,7 +119,8 @@ jobs:
         run: |
           python -m venv test_venv
           test_venv/bin/pip install --upgrade pip
-          test_venv/bin/pip install dist/python_manta-*.whl
+          # Let pip pick the correct wheel for this Python version
+          test_venv/bin/pip install --no-index --find-links=dist python-manta
           test_venv/bin/pip install pytest pytest-cov
           # Copy test files into venv to run tests
           cp -r tests/ test_venv/
@@ -169,7 +173,8 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/Scripts/pip install --upgrade pip
-          wheel_venv/Scripts/pip install dist/python_manta-*.whl
+          # Let pip pick the correct wheel for this Python version
+          wheel_venv/Scripts/pip install --no-index --find-links=dist python-manta
           wheel_venv/Scripts/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
       - name: Run pytest unit tests
@@ -177,7 +182,8 @@ jobs:
         run: |
           python -m venv test_venv
           test_venv/Scripts/pip install --upgrade pip
-          test_venv/Scripts/pip install dist/python_manta-*.whl
+          # Let pip pick the correct wheel for this Python version
+          test_venv/Scripts/pip install --no-index --find-links=dist python-manta
           test_venv/Scripts/pip install pytest pytest-cov
           # Copy test files into venv to run tests
           cp -r tests/ test_venv/
