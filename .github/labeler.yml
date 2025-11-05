@@ -1,0 +1,72 @@
+# Automatic PR labeling based on files changed
+
+# Documentation changes
+documentation:
+  - changed-files:
+    - any-glob-to-any-file: ['*.md', 'docs/**/*']
+
+# Build system changes
+build:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'build.sh'
+      - 'tools/build*.sh'
+      - 'tools/prepare*.sh'
+
+# CI/CD changes
+ci:
+  - changed-files:
+    - any-glob-to-any-file: ['.github/**/*']
+
+# Go wrapper changes
+go:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'go_wrapper/**/*.go'
+      - 'go_wrapper/go.mod'
+      - 'go_wrapper/go.sum'
+
+# Python code changes
+python:
+  - changed-files:
+    - any-glob-to-any-file: ['src/**/*.py', '*.py']
+
+# Test changes
+tests:
+  - changed-files:
+    - any-glob-to-any-file: ['tests/**/*', 'test_*.py']
+
+# Examples
+examples:
+  - changed-files:
+    - any-glob-to-any-file: ['examples/**/*']
+
+# Dependencies
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+      - 'go_wrapper/go.mod'
+
+# Breaking changes (based on branch name)
+breaking:
+  - head-branch: ['^feat!/', '^breaking/']
+
+# Feature branches
+feature:
+  - head-branch: ['^feat/', '^feature/']
+
+# Bug fixes
+bugfix:
+  - head-branch: ['^fix/', '^bugfix/', '^hotfix/']
+
+# Refactoring
+refactor:
+  - head-branch: ['^refactor/']
+
+# Performance improvements
+performance:
+  - head-branch: ['^perf/']
