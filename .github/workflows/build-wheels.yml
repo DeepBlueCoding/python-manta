@@ -117,7 +117,8 @@ jobs:
           echo "Wheel count: $(ls -1 dist/*.whl 2>/dev/null | wc -l)"
 
       - name: Smoke test built wheel
-        if: matrix.arch == 'x86_64' || runner.arch == 'ARM64'
+        # Only test ARM64 wheels on ARM64 runners (x86_64 wheels are cross-compiled and can't be tested here)
+        if: matrix.arch == 'arm64'
         run: |
           echo "=== Pre-install debugging ==="
           pwd
@@ -132,7 +133,8 @@ jobs:
           wheel_venv/bin/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
       - name: Run pytest unit tests
-        if: matrix.arch == 'x86_64' || runner.arch == 'ARM64'
+        # Only test ARM64 wheels on ARM64 runners (x86_64 wheels are cross-compiled and can't be tested here)
+        if: matrix.arch == 'arm64'
         run: |
           python -m venv test_venv
           test_venv/bin/python -m pip install --upgrade pip
