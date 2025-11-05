@@ -45,16 +45,16 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/bin/pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
-          wheel_venv/bin/pip install --find-links=dist --no-cache-dir python-manta
+          # Install from local wheel, but allow PyPI for dependencies (use absolute path)
+          wheel_venv/bin/pip install --find-links="file://$(pwd)/dist" --no-cache-dir python-manta
           wheel_venv/bin/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
       - name: Run pytest unit tests
         run: |
           python -m venv test_venv
           test_venv/bin/pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
-          test_venv/bin/pip install --find-links=dist --no-cache-dir python-manta
+          # Install from local wheel, but allow PyPI for dependencies (use absolute path)
+          test_venv/bin/pip install --find-links="file://$(pwd)/dist" --no-cache-dir python-manta
           test_venv/bin/pip install pytest pytest-cov
           # Copy test files into venv to run tests
           cp -r tests/ test_venv/
@@ -121,8 +121,8 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/bin/python -m pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
-          wheel_venv/bin/pip install --find-links=dist --no-cache-dir python-manta
+          # Install from local wheel, but allow PyPI for dependencies (use absolute path)
+          wheel_venv/bin/pip install --find-links="file://$(pwd)/dist" --no-cache-dir python-manta
           wheel_venv/bin/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
       - name: Run pytest unit tests
@@ -130,8 +130,8 @@ jobs:
         run: |
           python -m venv test_venv
           test_venv/bin/python -m pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
-          test_venv/bin/pip install --find-links=dist --no-cache-dir python-manta
+          # Install from local wheel, but allow PyPI for dependencies (use absolute path)
+          test_venv/bin/pip install --find-links="file://$(pwd)/dist" --no-cache-dir python-manta
           test_venv/bin/pip install pytest pytest-cov
           # Copy test files into venv to run tests
           cp -r tests/ test_venv/
@@ -184,8 +184,8 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/Scripts/python -m pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
-          wheel_venv/Scripts/pip install --find-links=dist --no-cache-dir python-manta
+          # Install from local wheel, but allow PyPI for dependencies (use absolute path)
+          wheel_venv/Scripts/pip install --find-links="file://$(pwd)/dist" --no-cache-dir python-manta
           wheel_venv/Scripts/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
       - name: Run pytest unit tests
@@ -193,8 +193,8 @@ jobs:
         run: |
           python -m venv test_venv
           test_venv/Scripts/python -m pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
-          test_venv/Scripts/pip install --find-links=dist --no-cache-dir python-manta
+          # Install from local wheel, but allow PyPI for dependencies (use absolute path)
+          test_venv/Scripts/pip install --find-links="file://$(pwd)/dist" --no-cache-dir python-manta
           test_venv/Scripts/pip install pytest pytest-cov
           # Copy test files into venv to run tests
           cp -r tests/ test_venv/
