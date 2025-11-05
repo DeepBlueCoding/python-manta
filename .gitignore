@@ -1,0 +1,38 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Build outputs
+build/
+dist/
+htmlcov/
+wheelhouse/
+*.egg-info/
+*.egg
+
+# Virtual environments
+.venv/
+ENV/
+venv/
+wheel_venv/
+
+# Coverage and testing
+.coverage
+.pytest_cache/
+.mypy_cache/
+
+# External dependencies
+manta/
+manta.commit
+go_wrapper/manta/
+go_wrapper/manta.commit
+
+# Test fixtures
+tests/fixtures/replays/*.dem
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
