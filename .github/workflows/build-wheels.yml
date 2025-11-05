@@ -119,10 +119,16 @@ jobs:
       - name: Smoke test built wheel
         if: matrix.arch == 'x86_64' || runner.arch == 'ARM64'
         run: |
+          echo "=== Pre-install debugging ==="
+          pwd
+          ls -la dist/
+          python --version
+          echo ""
           python -m venv wheel_venv
           wheel_venv/bin/python -m pip install --upgrade pip
+          echo "=== Attempting install ==="
           # Install from local wheel, but allow PyPI for dependencies
-          wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
+          wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta --verbose
           wheel_venv/bin/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
       - name: Run pytest unit tests
