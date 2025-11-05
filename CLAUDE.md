@@ -56,10 +56,13 @@ python run_tests.py --all
 
 ### Install in development mode
 ```bash
-# Install the wheel (after building)
-pip install dist/python_manta-0.1.0-py3-none-any.whl
+# Install with dev dependencies (includes pytest, pytest-cov, etc.)
+pip install -e '.[dev]'
 
-# Or for development
+# OR with uv (faster)
+uv pip install -e '.[dev]'
+
+# OR just the package without dev tools
 pip install -e .
 ```
 

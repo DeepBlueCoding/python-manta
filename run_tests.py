@@ -121,6 +121,10 @@ def check_dependencies():
         
     except ImportError as e:
         print(f"❌ Missing dependency: {e}")
+        print("\n💡 To install test dependencies, run:")
+        print("   pip install -e '.[dev]'")
+        print("   OR with uv:")
+        print("   uv pip install -e '.[dev]'")
         return False
 
 

@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 # Ensure the dotabuff/manta dependency is available locally for Go builds.
+#
+# Version Strategy:
+# python-manta version MUST match upstream manta version exactly.
+# If manta is at v3.0.2, python-manta should also be v3.0.2.
+# Set MANTA_REF to the exact git tag (e.g., v3.0.2) or commit hash.
 
 set -euo pipefail
 
@@ -7,7 +12,17 @@ ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 WRAPPER_DIR="${ROOT_DIR}/go_wrapper"
 MANTA_DIR=${MANTA_DIR:-"${WRAPPER_DIR}/manta"}
 MANTA_REPO=${MANTA_REPO:-"https://github.com/dotabuff/manta.git"}
-MANTA_REF=${MANTA_REF:-main}
+
+# Read manta version from .manta-version file if MANTA_REF not set
+if [[ -z "${MANTA_REF:-}" ]]; then
+    if [[ -f "${ROOT_DIR}/.manta-version" ]]; then
+        MANTA_REF=$(grep -v '^#' "${ROOT_DIR}/.manta-version" | grep -v '^[[:space:]]*$' | tail -n1 | tr -d '[:space:]')
+        echo "Using manta version from .manta-version: ${MANTA_REF}" >&2
+    else
+        MANTA_REF="master"
+        echo "Warning: .manta-version not found, defaulting to master" >&2
+    fi
+fi
 
 if [[ -d "${MANTA_DIR}/.git" ]]; then
     echo "Updating manta checkout at ${MANTA_DIR}" >&2
