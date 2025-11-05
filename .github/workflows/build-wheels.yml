@@ -132,12 +132,11 @@ jobs:
           name: wheels-windows
           path: dist/*.whl
 
-  publish:
+  publish-test-pypi:
+    name: Publish to TestPyPI
     needs: [linux-wheels, macos-wheels, windows-wheels]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      id-token: write  # Required for PyPI trusted publishing
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-')
     steps:
       - name: Download all wheel artifacts
         uses: actions/download-artifact@v4
@@ -147,10 +146,47 @@ jobs:
           path: dist
 
       - name: List downloaded artifacts
-        run: ls -lh dist/
+        run: |
+          echo "📦 Built wheels:"
+          ls -lh dist/
+          echo ""
+          echo "Total wheels: $(ls -1 dist/*.whl | wc -l)"
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist/
+          verbose: true
+          skip-existing: true
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [linux-wheels, macos-wheels, windows-wheels]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
+    environment:
+      name: pypi
+      url: https://pypi.org/p/python-manta
+    steps:
+      - name: Download all wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+
+      - name: List downloaded artifacts
+        run: |
+          echo "📦 Built wheels:"
+          ls -lh dist/
+          echo ""
+          echo "Total wheels: $(ls -1 dist/*.whl | wc -l)"
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
           packages-dir: dist/
           verbose: true

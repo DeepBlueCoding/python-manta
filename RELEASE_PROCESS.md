@@ -9,7 +9,7 @@ Before starting a release:
 - [ ] All tests pass
 - [ ] Documentation is up to date
 - [ ] You have write access to the repository
-- [ ] PyPI Trusted Publishing is configured (one-time setup)
+- [ ] PyPI API tokens are configured in GitHub Secrets (one-time setup - see [PYPI_SETUP_GUIDE.md](PYPI_SETUP_GUIDE.md))
 
 ## Release Types
 
@@ -179,6 +179,56 @@ https://github.com/equilibrium-coach/python-manta/compare/v0.1.0...v0.2.0
 - Post in Discord/Slack communities
 - Update any documentation sites
 - Notify users of breaking changes (if any)
+
+## Testing Releases with TestPyPI
+
+Before publishing to production PyPI, you can test releases using TestPyPI:
+
+### When to Use TestPyPI
+
+- ✅ First time releasing (to verify the process works)
+- ✅ Testing pre-release versions (alpha, beta, rc)
+- ✅ Verifying wheel builds work correctly
+- ✅ Testing installation on different platforms
+
+### How to Publish to TestPyPI
+
+Use a version tag with a hyphen (e.g., `-test`, `-alpha`, `-beta`):
+
+```bash
+# 1. Prepare test release
+./tools/prepare_release.sh 0.2.0-test.1
+
+# 2. Push tag (triggers TestPyPI upload)
+git push origin main
+git push origin v0.2.0-test.1
+
+# 3. Wait for GitHub Actions to complete
+
+# 4. Verify on TestPyPI
+# https://test.pypi.org/project/python-manta/
+
+# 5. Test installation
+pip install --index-url https://test.pypi.org/simple/ \
+            --extra-index-url https://pypi.org/simple/ \
+            python-manta==0.2.0-test.1
+
+# 6. If everything works, release to production
+./tools/prepare_release.sh 0.2.0
+git push origin v0.2.0
+```
+
+### TestPyPI vs PyPI
+
+| Feature | TestPyPI | PyPI |
+|---------|----------|------|
+| Trigger | Tags **with** hyphen (`v0.1.0-test.1`) | Tags **without** hyphen (`v0.1.0`) |
+| Purpose | Testing | Production |
+| URL | test.pypi.org | pypi.org |
+| File retention | ~6 months | Permanent |
+| Install command | Requires `--index-url` flag | Normal `pip install` |
+
+For complete TestPyPI setup instructions, see [PYPI_SETUP_GUIDE.md](PYPI_SETUP_GUIDE.md).
 
 ## Emergency Hotfix Process
 

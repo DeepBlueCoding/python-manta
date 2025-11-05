@@ -106,47 +106,62 @@ CIBW_TEST_COMMAND: python -c "import python_manta; print('import success')"
 
 ### PyPI Publishing
 
-When you push a version tag (e.g., `v0.1.0`), the workflow:
+When you push a version tag, the workflow automatically:
 
 1. Builds all wheels (Linux, macOS, Windows)
 2. Downloads all artifacts
-3. Publishes to PyPI using **Trusted Publishing** (no API tokens needed!)
+3. Publishes to appropriate PyPI repository:
+   - Tags **without** hyphen (e.g., `v0.1.0`) → **PyPI** (production)
+   - Tags **with** hyphen (e.g., `v0.1.0-beta.1`) → **TestPyPI** (testing)
 
 ```yaml
-publish:
-  needs: [linux-wheels, macos-wheels, windows-wheels]
-  if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+# Production releases
+publish-pypi:
+  if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
+
+# Test releases
+publish-test-pypi:
+  if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-')
 ```
 
 ## Setting Up PyPI Publishing
 
-### 1. Configure Trusted Publishing on PyPI
+### 1. Create API Tokens
 
-1. Go to https://pypi.org/manage/account/publishing/
-2. Add a new publisher:
-   - **PyPI Project Name**: `python-manta`
-   - **Owner**: `equilibrium-coach` (or your GitHub org/user)
-   - **Repository**: `python-manta`
-   - **Workflow**: `build-wheels.yml`
-   - **Environment**: (leave blank)
+You need API tokens from both PyPI and TestPyPI. See [PYPI_TOKEN_SETUP_SUMMARY.md](PYPI_TOKEN_SETUP_SUMMARY.md) for quick setup, or [PYPI_SETUP_GUIDE.md](PYPI_SETUP_GUIDE.md) for detailed instructions.
 
-This allows GitHub Actions to publish without storing API tokens!
+**Quick Setup:**
+
+1. Create PyPI token: https://pypi.org/manage/account/token/
+2. Create TestPyPI token: https://test.pypi.org/manage/account/token/
+3. Add to GitHub Secrets:
+   - `PYPI_API_TOKEN` - Production PyPI
+   - `TEST_PYPI_API_TOKEN` - Test PyPI
 
 ### 2. Create a Release
 
-```bash
-# Update version in pyproject.toml
-vim pyproject.toml  # Change version = "0.1.0" to "0.2.0"
+**Test with TestPyPI first:**
 
-# Commit and tag
-git add pyproject.toml
-git commit -m "Bump version to 0.2.0"
-git tag v0.2.0
-git push origin main
-git push origin v0.2.0
+```bash
+# Test release (uses TestPyPI)
+./tools/prepare_release.sh 0.1.0-test.1
+git push origin v0.1.0-test.1
+
+# Verify: https://test.pypi.org/project/python-manta/
 ```
 
-GitHub Actions will automatically build and publish to PyPI!
+**Then release to production:**
+
+```bash
+# Production release (uses PyPI)
+./tools/prepare_release.sh 0.2.0
+git push origin main
+git push origin v0.2.0
+
+# Verify: https://pypi.org/project/python-manta/
+```
+
+GitHub Actions will automatically build and publish!
 
 ## Local Testing
 
@@ -243,7 +258,7 @@ On Windows, the shared library is actually a `.dll` but renamed to `.so`. Python
                 ▼
     ┌────────────────────────┐
     │  Publish to PyPI        │
-    │  (Trusted Publishing)   │
+    │  (API Token Auth)       │
     └───────────┬─────────────┘
                 ▼
     ┌────────────────────────┐
@@ -264,7 +279,13 @@ On Windows, the shared library is actually a `.dll` but renamed to `.so`. Python
 
 ## Learn More
 
+### Documentation
+- [PYPI_SETUP_GUIDE.md](PYPI_SETUP_GUIDE.md) - Complete PyPI token setup guide
+- [PYPI_TOKEN_SETUP_SUMMARY.md](PYPI_TOKEN_SETUP_SUMMARY.md) - Quick setup reference
+- [RELEASE_PROCESS.md](RELEASE_PROCESS.md) - How to create releases
+
+### External Resources
 - [cibuildwheel documentation](https://cibuildwheel.readthedocs.io/)
-- [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/)
+- [PyPI API Tokens](https://pypi.org/help/#apitoken)
 - [Go CGO](https://pkg.go.dev/cmd/cgo)
 - [Python ctypes](https://docs.python.org/3/library/ctypes.html)
