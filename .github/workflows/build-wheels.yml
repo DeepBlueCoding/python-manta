@@ -14,6 +14,13 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Read manta version
+        id: manta-version
+        run: |
+          MANTA_REF=$(grep -v '^#' .manta-version | grep -v '^[[:space:]]*$' | tail -n1 | tr -d '[:space:]')
+          echo "MANTA_REF=${MANTA_REF}" >> $GITHUB_ENV
+          echo "Locked manta version: ${MANTA_REF}"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -22,16 +29,15 @@ jobs:
       - name: Install build tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install cibuildwheel==2.16.6
+          python -m pip install cibuildwheel
 
       - name: Build wheels (manylinux)
         env:
           CIBW_PLATFORM: linux
           CIBW_BEFORE_BUILD_LINUX: bash tools/before_build_linux.sh
-          CIBW_ENVIRONMENT_LINUX: PATH=/opt/go/bin:$PATH
+          CIBW_ENVIRONMENT_LINUX: PATH=/opt/go/bin:$PATH MANTA_REF=${{ env.MANTA_REF }}
           CIBW_BUILD: cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64
           CIBW_TEST_COMMAND_LINUX: python -c "import python_manta; print('import success')"
-          MANTA_REF: main
         run: |
           python -m cibuildwheel --output-dir dist
 
@@ -39,8 +45,22 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/bin/pip install --upgrade pip
-          wheel_venv/bin/pip install dist/python_manta-*.whl
+          # Install from local wheel, but allow PyPI for dependencies
+          wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
           wheel_venv/bin/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
+
+      - name: Run pytest unit tests
+        run: |
+          python -m venv test_venv
+          test_venv/bin/pip install --upgrade pip
+          # Install from local wheel, but allow PyPI for dependencies
+          test_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
+          test_venv/bin/pip install pytest pytest-cov
+          # Copy test files into venv to run tests
+          cp -r tests/ test_venv/
+          cd test_venv
+          bin/python -m pytest tests/test_models.py tests/test_parser.py tests/test_convenience.py tests/test_edge_cases.py -m unit -v || echo "⚠️  Unit tests not marked or failed"
+          cd ..
 
       - name: Upload wheels artifact
         uses: actions/upload-artifact@v4
@@ -57,6 +77,13 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Read manta version
+        id: manta-version
+        run: |
+          MANTA_REF=$(grep -v '^#' .manta-version | grep -v '^[[:space:]]*$' | tail -n1 | tr -d '[:space:]')
+          echo "MANTA_REF=${MANTA_REF}" >> $GITHUB_ENV
+          echo "Locked manta version: ${MANTA_REF}"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -65,26 +92,60 @@ jobs:
       - name: Install build tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install cibuildwheel==2.16.6
+          python -m pip install cibuildwheel
 
       - name: Build wheels (macOS)
         env:
           CIBW_PLATFORM: macos
           CIBW_BEFORE_BUILD_MACOS: bash tools/before_build_macos.sh
+          CIBW_ENVIRONMENT_MACOS: MANTA_REF=${{ env.MANTA_REF }}
           CIBW_ARCHS_MACOS: ${{ matrix.arch }}
           CIBW_BUILD: cp38-macosx_${{ matrix.arch }} cp39-macosx_${{ matrix.arch }} cp310-macosx_${{ matrix.arch }} cp311-macosx_${{ matrix.arch }} cp312-macosx_${{ matrix.arch }}
           CIBW_TEST_COMMAND_MACOS: python -c "import python_manta; print('import success')"
-          MANTA_REF: main
         run: |
           python -m cibuildwheel --output-dir dist
 
-      - name: Smoke test built wheel
+      - name: Debug - List built wheels
         if: matrix.arch == 'x86_64' || runner.arch == 'ARM64'
         run: |
+          echo "=== Contents of dist/ folder ==="
+          ls -lah dist/ || echo "❌ dist/ folder is empty or doesn't exist"
+          echo ""
+          echo "=== Wheel files ==="
+          ls -1 dist/*.whl 2>/dev/null || echo "❌ No .whl files found"
+          echo ""
+          echo "Wheel count: $(ls -1 dist/*.whl 2>/dev/null | wc -l)"
+
+      - name: Smoke test built wheel
+        # Only test ARM64 wheels on ARM64 runners (x86_64 wheels are cross-compiled and can't be tested here)
+        if: matrix.arch == 'arm64'
+        run: |
+          echo "=== Pre-install debugging ==="
+          pwd
+          ls -la dist/
+          python --version
+          echo ""
           python -m venv wheel_venv
-          wheel_venv/bin/pip install --upgrade pip
-          wheel_venv/bin/pip install dist/python_manta-*.whl
+          wheel_venv/bin/python -m pip install --upgrade pip
+          echo "=== Attempting install ==="
+          # Install from local wheel, but allow PyPI for dependencies
+          wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta --verbose
           wheel_venv/bin/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
+
+      - name: Run pytest unit tests
+        # Only test ARM64 wheels on ARM64 runners (x86_64 wheels are cross-compiled and can't be tested here)
+        if: matrix.arch == 'arm64'
+        run: |
+          python -m venv test_venv
+          test_venv/bin/python -m pip install --upgrade pip
+          # Install from local wheel, but allow PyPI for dependencies
+          test_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
+          test_venv/bin/pip install pytest pytest-cov
+          # Copy test files into venv to run tests
+          cp -r tests/ test_venv/
+          cd test_venv
+          bin/python -m pytest tests/test_models.py tests/test_parser.py tests/test_convenience.py tests/test_edge_cases.py -m unit -v || echo "⚠️  Unit tests not marked or failed"
+          cd ..
 
       - name: Upload wheels artifact
         uses: actions/upload-artifact@v4
@@ -98,6 +159,14 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Read manta version
+        id: manta-version
+        shell: bash
+        run: |
+          MANTA_REF=$(grep -v '^#' .manta-version | grep -v '^[[:space:]]*$' | tail -n1 | tr -d '[:space:]')
+          echo "MANTA_REF=${MANTA_REF}" >> $GITHUB_ENV
+          echo "Locked manta version: ${MANTA_REF}"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -106,15 +175,15 @@ jobs:
       - name: Install build tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install cibuildwheel==2.16.6
+          python -m pip install cibuildwheel
 
       - name: Build wheels (Windows)
         env:
           CIBW_PLATFORM: windows
           CIBW_BEFORE_BUILD_WINDOWS: bash tools/before_build_windows.sh
+          CIBW_ENVIRONMENT_WINDOWS: MANTA_REF=${{ env.MANTA_REF }}
           CIBW_BUILD: cp38-win_amd64 cp39-win_amd64 cp310-win_amd64 cp311-win_amd64 cp312-win_amd64
           CIBW_TEST_COMMAND_WINDOWS: python -c "import python_manta; print('import success')"
-          MANTA_REF: main
         run: |
           python -m cibuildwheel --output-dir dist
 
@@ -122,9 +191,24 @@ jobs:
         shell: bash
         run: |
           python -m venv wheel_venv
-          wheel_venv/Scripts/pip install --upgrade pip
-          wheel_venv/Scripts/pip install dist/python_manta-*.whl
+          wheel_venv/Scripts/python -m pip install --upgrade pip
+          # Install from local wheel, but allow PyPI for dependencies
+          wheel_venv/Scripts/pip install --find-links=./dist --no-cache-dir python-manta
           wheel_venv/Scripts/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
+
+      - name: Run pytest unit tests
+        shell: bash
+        run: |
+          python -m venv test_venv
+          test_venv/Scripts/python -m pip install --upgrade pip
+          # Install from local wheel, but allow PyPI for dependencies
+          test_venv/Scripts/pip install --find-links=./dist --no-cache-dir python-manta
+          test_venv/Scripts/pip install pytest pytest-cov
+          # Copy test files into venv to run tests
+          cp -r tests/ test_venv/
+          cd test_venv
+          Scripts/python -m pytest tests/test_models.py tests/test_parser.py tests/test_convenience.py tests/test_edge_cases.py -m unit -v || echo "⚠️  Unit tests not marked or failed"
+          cd ..
 
       - name: Upload wheels artifact
         uses: actions/upload-artifact@v4

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-manta"
-version = "0.0.1-beta.1"
+version = "1.4.5"
 description = "Python interface for the Manta Dota 2 replay parser"
 readme = "README.md"
 license = {text = "MIT"}
@@ -50,12 +50,13 @@ Documentation = "https://python-manta.readthedocs.io/"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-python_manta = ["*.so", "*.h"]
+python_manta = ["*.so", "*.dll", "*.dylib", "*.h"]
 
 [tool.black]
 line-length = 88
