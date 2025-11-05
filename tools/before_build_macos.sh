@@ -37,6 +37,37 @@ fi
 
 export CGO_ENABLED=1
 
+# Detect target architecture from cibuildwheel environment
+# _PYTHON_HOST_PLATFORM is set by cibuildwheel with the target platform
+if [[ -n "${_PYTHON_HOST_PLATFORM:-}" ]]; then
+    if [[ "$_PYTHON_HOST_PLATFORM" == *"x86_64"* ]]; then
+        TARGET_ARCH="amd64"
+        echo "Cross-compiling for x86_64 (from $_PYTHON_HOST_PLATFORM)" >&2
+    elif [[ "$_PYTHON_HOST_PLATFORM" == *"arm64"* ]]; then
+        TARGET_ARCH="arm64"
+        echo "Building for arm64 (from $_PYTHON_HOST_PLATFORM)" >&2
+    else
+        echo "Warning: Unknown platform $_PYTHON_HOST_PLATFORM, using host architecture" >&2
+        TARGET_ARCH="$GO_ARCH"
+    fi
+else
+    echo "Using host architecture: $GO_ARCH" >&2
+    TARGET_ARCH="$GO_ARCH"
+fi
+
+# Set Go cross-compilation environment
+export GOOS=darwin
+export GOARCH="$TARGET_ARCH"
+
+# Set CGO flags for cross-compilation
+if [ "$TARGET_ARCH" = "amd64" ]; then
+    export CGO_CFLAGS="-arch x86_64"
+    export CGO_LDFLAGS="-arch x86_64"
+elif [ "$TARGET_ARCH" = "arm64" ]; then
+    export CGO_CFLAGS="-arch arm64"
+    export CGO_LDFLAGS="-arch arm64"
+fi
+
 # Prepare manta dependency
 bash "${ROOT_DIR}/tools/prepare_manta.sh"
 
@@ -46,6 +77,7 @@ pushd "${ROOT_DIR}/go_wrapper" >/dev/null
 go mod tidy
 
 # Build shared library (dylib on macOS)
+echo "Building with GOOS=$GOOS GOARCH=$GOARCH CGO_ENABLED=$CGO_ENABLED" >&2
 go build -buildmode=c-shared -o libmanta_wrapper.so .
 
 popd >/dev/null
