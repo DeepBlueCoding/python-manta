@@ -5,19 +5,19 @@
 #
 # Version Synchronization Strategy:
 # - python-manta version should match upstream manta version
-# - Example: If this file says "v3.0.2", then pyproject.toml should be "3.0.2"
+# - Example: If this file says "v1.4.5", then pyproject.toml should be "1.4.5"
 #
 # Valid values:
 # - master          : Latest development (for dev builds)
-# - v3.0.2          : Specific release tag (for stable releases)
+# - v1.4.5          : Specific release tag (for stable releases)
 # - commit-hash     : Specific commit (for testing)
 #
 # How to upgrade:
 # 1. Check latest manta version: https://github.com/dotabuff/manta/releases
-# 2. Update this file with the new version tag (e.g., v3.0.3)
-# 3. Update pyproject.toml version to match (3.0.3)
+# 2. Update this file with the new version tag (e.g., v1.4.6)
+# 3. Update pyproject.toml version to match (1.4.6)
 # 4. Build and test: ./build.sh
-# 5. Create release tag: git tag v3.0.3
+# 5. Create release tag: git tag v1.4.6
 #
 # Current manta version:
-master
+v1.4.5
