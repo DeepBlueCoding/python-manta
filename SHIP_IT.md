@@ -25,11 +25,11 @@ head -30 CHANGELOG.md  # Check your changes are documented
 
 ```bash
 # Test release (note the hyphen!)
-./tools/prepare_release.sh 0.1.0-test.1
+./tools/prepare_release.sh 0.1.0.dev1
 
 # Push it
 git push origin main
-git push origin v0.1.0-test.1
+git push origin v0.1.0.dev1
 ```
 
 **Goes to TestPyPI** → test.pypi.org
@@ -43,7 +43,7 @@ git push origin v0.1.0-test.1
 # 2. Install from TestPyPI
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 
 # 3. Test it
 python -c "import python_manta; print('✅ Test passed!')"

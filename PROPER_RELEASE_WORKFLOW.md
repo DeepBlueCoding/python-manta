@@ -22,11 +22,11 @@ TestPyPI catches:
 
 ```bash
 # Create a test version (note the hyphen!)
-./tools/prepare_release.sh 0.1.0-test.1
+./tools/prepare_release.sh 0.1.0.dev1
 
 # Push test tag
 git push origin main
-git push origin v0.1.0-test.1
+git push origin v0.1.0.dev1
 ```
 
 **What happens:**
@@ -55,9 +55,9 @@ source test_env/bin/activate  # On Windows: test_env\Scripts\activate
 # Install from TestPyPI
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 
-# Note: TestPyPI normalizes version (0.1.0-test.1 → 0.1.0.test1)
+# Note: TestPyPI normalizes version (0.1.0.dev1 → 0.1.0.dev1)
 ```
 
 **Why the extra-index-url?**
@@ -94,25 +94,25 @@ If you have access to different platforms:
 # Linux
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 python -c "import python_manta; print('✅ Linux works')"
 
 # macOS (Intel)
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 python -c "import python_manta; print('✅ macOS Intel works')"
 
 # macOS (Apple Silicon/ARM64)
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 python -c "import python_manta; print('✅ macOS ARM64 works')"
 
 # Windows
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 python -c "import python_manta; print('✅ Windows works')"
 ```
 
@@ -185,7 +185,7 @@ print(f'Version: {python_manta.__version__}')
 | Tag Format | Destination | Example | Use Case |
 |------------|-------------|---------|----------|
 | `vX.Y.Z` | **PyPI** (production) | `v0.1.0`, `v1.2.3` | Final releases |
-| `vX.Y.Z-*` | **TestPyPI** (testing) | `v0.1.0-test.1`, `v0.2.0-beta.1` | Testing before production |
+| `vX.Y.Z-*` | **TestPyPI** (testing) | `v0.1.0.dev1`, `v0.2.0-beta.1` | Testing before production |
 
 **The hyphen is the magic:** Tags with `-` go to TestPyPI, without go to PyPI.
 
@@ -193,8 +193,8 @@ print(f'Version: {python_manta.__version__}')
 
 ```bash
 # Test releases (all go to TestPyPI)
-v0.1.0-test.1       # First test
-v0.1.0-test.2       # Second test after fixes
+v0.1.0.dev1       # First test
+v0.1.0.dev2       # Second test after fixes
 v0.1.0-rc.1         # Release candidate 1
 v0.1.0-beta.1       # Beta release
 v0.1.0-alpha.1      # Alpha release
@@ -213,9 +213,9 @@ Let's say you're releasing version 0.1.0 for the first time:
 
 ```bash
 # Morning: Create test release
-./tools/prepare_release.sh 0.1.0-test.1
+./tools/prepare_release.sh 0.1.0.dev1
 git push origin main
-git push origin v0.1.0-test.1
+git push origin v0.1.0.dev1
 
 # 30 minutes later: Verify build succeeded
 # https://github.com/YOUR-USERNAME/python-manta/actions
@@ -225,7 +225,7 @@ python -m venv test_env
 source test_env/bin/activate
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 
 python -c "import python_manta; print('Works!')"
 
@@ -259,14 +259,14 @@ If you find problems during TestPyPI testing:
 # 1. Fix the issue in your code
 
 # 2. Increment the test version
-./tools/prepare_release.sh 0.1.0-test.2
+./tools/prepare_release.sh 0.1.0.dev2
 git push origin main
-git push origin v0.1.0-test.2
+git push origin v0.1.0.dev2
 
 # 3. Test again
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test2
+            python-manta==0.1.0.dev2
 
 # 4. Repeat until perfect
 
@@ -285,7 +285,7 @@ pip install --index-url https://test.pypi.org/simple/ \
    - Need different accounts
    - Need different tokens
 
-4. **Version Normalization**: `0.1.0-test.1` becomes `0.1.0.test1`
+4. **Version Normalization**: `0.1.0.dev1` becomes `0.1.0.dev1`
    - PEP 440 normalization
    - Use the normalized version when installing
 
@@ -344,13 +344,13 @@ git push origin v1.0.0
 
 ```bash
 # Test release
-./tools/prepare_release.sh 0.1.0-test.1
-git push origin main && git push origin v0.1.0-test.1
+./tools/prepare_release.sh 0.1.0.dev1
+git push origin main && git push origin v0.1.0.dev1
 
 # Install from TestPyPI
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 
 # Production release (after test passes)
 ./tools/prepare_release.sh 0.1.0

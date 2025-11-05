@@ -5,14 +5,14 @@ The smart way to release: Test → Production
 ## TL;DR
 
 ```bash
-# Test release (note the hyphen!)
-./tools/prepare_release.sh 0.1.0-test.1
-git push origin main && git push origin v0.1.0-test.1
+# Test release (note the hyphen! Use .dev for testing)
+./tools/prepare_release.sh 0.1.0.dev1
+git push origin main && git push origin v0.1.0-dev1
 
 # Wait for builds, then test install
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 
 # If it works, ship to production (no hyphen!)
 ./tools/prepare_release.sh 0.1.0
@@ -23,7 +23,7 @@ git push origin main && git push origin v0.1.0
 
 | You Push | It Goes To | Example |
 |----------|------------|---------|
-| Tag **with** `-` | TestPyPI | `v0.1.0-test.1` → test.pypi.org |
+| Tag **with** `-` | TestPyPI | `v0.1.0-dev1` → test.pypi.org |
 | Tag **without** `-` | PyPI | `v0.1.0` → pypi.org |
 
 **The hyphen controls everything.**
@@ -31,10 +31,10 @@ git push origin main && git push origin v0.1.0
 ## Phase 1: Test (TestPyPI)
 
 ```bash
-# Create test tag
-./tools/prepare_release.sh 0.1.0-test.1
+# Create test tag (use .dev1, .dev2, etc.)
+./tools/prepare_release.sh 0.1.0.dev1
 git push origin main
-git push origin v0.1.0-test.1
+git push origin v0.1.0-dev1
 ```
 
 **Publishes to TestPyPI** → https://test.pypi.org/project/python-manta/
@@ -44,12 +44,12 @@ git push origin v0.1.0-test.1
 ```bash
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 
 python -c "import python_manta; print('✅ Works!')"
 ```
 
-**Note:** Version changes from `0.1.0-test.1` to `0.1.0.test1` (PEP 440 normalization)
+**Note:** Use `.dev1`, `.dev2` for development testing or `rc1`, `rc2` for release candidates (PEP 440 compliant)
 
 ## Phase 2: Production (PyPI)
 
@@ -96,28 +96,30 @@ From tag push to published:
 # Fix your code
 
 # Increment test version
-./tools/prepare_release.sh 0.1.0-test.2
-git push origin main && git push origin v0.1.0-test.2
+./tools/prepare_release.sh 0.1.0.dev2
+git push origin main && git push origin v0.1.0-dev2
 
 # Test again
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test2
+            python-manta==0.1.0.dev2
 
 # Repeat until perfect, then release to production
 ```
 
-## Common Test Tags
+## Common Test Tags (PEP 440 Compliant)
 
 ```bash
-v0.1.0-test.1      # Basic test
-v0.1.0-test.2      # Second attempt
-v0.1.0-rc.1        # Release candidate
-v0.1.0-beta.1      # Beta version
-v0.1.0-alpha.1     # Alpha version
+v0.1.0-dev1        # Development version 1
+v0.1.0-dev2        # Development version 2
+v0.1.0-rc1         # Release candidate 1
+v0.1.0-b1          # Beta 1
+v0.1.0-a1          # Alpha 1
 ```
 
 All go to TestPyPI because they have a hyphen!
+
+**See [TESTPYPI_VERSIONS.md](TESTPYPI_VERSIONS.md) for valid version formats.**
 
 ## Pre-Flight Checklist
 
@@ -150,9 +152,9 @@ python run_tests.py --all
 ./build.sh
 
 # 2. Create test release
-./tools/prepare_release.sh 0.1.0-test.1
+./tools/prepare_release.sh 0.1.0.dev1
 git push origin main
-git push origin v0.1.0-test.1
+git push origin v0.1.0-dev1
 
 # 3. Wait for GitHub Actions (30 min)
 # https://github.com/YOUR-USERNAME/python-manta/actions
@@ -160,7 +162,7 @@ git push origin v0.1.0-test.1
 # 4. Test install
 pip install --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple/ \
-            python-manta==0.1.0.test1
+            python-manta==0.1.0.dev1
 
 python -c "import python_manta; print('Test passed!')"
 ```
