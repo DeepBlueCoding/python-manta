@@ -22,7 +22,7 @@ jobs:
       - name: Install build tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install cibuildwheel==2.16.6
+          python -m pip install cibuildwheel
 
       - name: Build wheels (manylinux)
         env:
@@ -65,7 +65,7 @@ jobs:
       - name: Install build tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install cibuildwheel==2.16.6
+          python -m pip install cibuildwheel
 
       - name: Build wheels (macOS)
         env:
@@ -106,7 +106,7 @@ jobs:
       - name: Install build tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install cibuildwheel==2.16.6
+          python -m pip install cibuildwheel
 
       - name: Build wheels (Windows)
         env:
