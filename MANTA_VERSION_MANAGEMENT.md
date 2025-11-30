@@ -14,7 +14,7 @@ cat .manta-version
 
 ```bash
 # Upgrade to specific release
-./tools/upgrade_manta_version.sh v3.0.3
+./tools/upgrade_manta_version.sh v1.4.6
 
 # Use latest development
 ./tools/upgrade_manta_version.sh master
@@ -30,7 +30,7 @@ cat .manta-version
 ./build.sh
 
 # Or override temporarily
-MANTA_REF=v3.0.2 ./build.sh
+MANTA_REF=v1.4.5 ./build.sh
 ```
 
 ## How It Works
@@ -41,11 +41,11 @@ This file contains the locked manta library version used for all builds:
 
 ```bash
 # .manta-version
-master
+v1.4.5
 ```
 
 **Valid values:**
-- `v3.0.2` - Specific release tag (recommended for stable releases)
+- `v1.4.5` - Specific release tag (recommended for stable releases)
 - `master` - Latest development code
 - `abc123def` - Specific commit hash
 
@@ -77,24 +77,23 @@ All build scripts automatically read from `.manta-version`:
 
 | Scenario | `.manta-version` | `pyproject.toml` version |
 |----------|------------------|--------------------------|
-| Stable release | `v3.0.2` | `"3.0.2"` |
-| Development | `master` | `"0.1.0.dev1"` |
-| Python-specific patch | `v3.0.2` | `"3.0.2.post1"` |
+| Stable release | `v1.4.5` | `"1.4.5"` |
+| Development | `master` | `"1.5.0.dev1"` |
+| Python-specific patch | `v1.4.5` | `"1.4.5.post1"` |
 
 ## Common Workflows
 
-### Releasing python-manta 3.0.3
+### Releasing a New Version
 
 ```bash
 # 1. Check latest upstream manta version
 curl -s https://api.github.com/repos/dotabuff/manta/releases/latest | grep tag_name
-# Output: "tag_name": "v3.0.3"
 
 # 2. Upgrade manta version
-./tools/upgrade_manta_version.sh v3.0.3
+./tools/upgrade_manta_version.sh v1.4.6
 
 # 3. Update python-manta version to match
-sed -i 's/version = ".*"/version = "3.0.3"/' pyproject.toml
+sed -i 's/version = ".*"/version = "1.4.6"/' pyproject.toml
 
 # 4. Test the build
 ./build.sh
@@ -102,10 +101,10 @@ python run_tests.py --unit
 
 # 5. Commit and tag
 git add .manta-version pyproject.toml
-git commit -m "chore: upgrade to manta v3.0.3"
-git tag v3.0.3
+git commit -m "chore: upgrade to manta v1.4.6"
+git tag v1.4.6
 git push origin main
-git push origin v3.0.3
+git push origin v1.4.6
 ```
 
 ### Using Development Version
@@ -115,7 +114,7 @@ git push origin v3.0.3
 ./tools/upgrade_manta_version.sh master
 
 # 2. Use dev version number
-sed -i 's/version = ".*"/version = "3.1.0.dev1"/' pyproject.toml
+sed -i 's/version = ".*"/version = "1.5.0.dev1"/' pyproject.toml
 
 # 3. Test
 ./build.sh
@@ -133,10 +132,10 @@ If you need to fix a bug in python-manta without changing manta version:
 ```bash
 # 1. Keep same manta version
 cat .manta-version
-# Output: v3.0.2
+# Output: v1.4.5
 
 # 2. Use post-release version
-sed -i 's/version = ".*"/version = "3.0.2.post1"/' pyproject.toml
+sed -i 's/version = ".*"/version = "1.4.5.post1"/' pyproject.toml
 
 # 3. Make your Python fixes
 # ... edit Python code ...
@@ -144,7 +143,7 @@ sed -i 's/version = ".*"/version = "3.0.2.post1"/' pyproject.toml
 # 4. Test and release
 ./build.sh
 python run_tests.py --unit
-git tag v3.0.2.post1
+git tag v1.4.5.post1
 ```
 
 ## CI/CD Integration
@@ -158,8 +157,8 @@ GitHub Actions automatically uses `.manta-version`:
 ```
 
 **Tag-based releases:**
-- `git tag v3.0.3` → Builds with manta `v3.0.3` (from `.manta-version`)
-- Publishes to PyPI as `python-manta==3.0.3`
+- `git tag v1.4.5` → Builds with manta `v1.4.5` (from `.manta-version`)
+- Publishes to PyPI as `python-manta==1.4.5`
 
 ## Override for Testing
 
@@ -167,7 +166,7 @@ You can temporarily override the locked version:
 
 ```bash
 # Override for single build
-MANTA_REF=v3.0.4-rc1 ./build.sh
+MANTA_REF=v1.4.6-rc1 ./build.sh
 
 # Override for CI (set as environment variable)
 # In GitHub Actions workflow_dispatch, set MANTA_REF input
@@ -175,12 +174,12 @@ MANTA_REF=v3.0.4-rc1 ./build.sh
 
 ## Benefits
 
-✅ **Single Source of Truth** - Version defined in one place (`.manta-version`)
-✅ **Consistent Builds** - All platforms use the same manta version
-✅ **Easy Upgrades** - Simple script to upgrade versions
-✅ **Version Tracking** - Git tracks version changes
-✅ **CI/CD Ready** - GitHub Actions automatically uses locked version
-✅ **Override Support** - Can still override for testing
+- **Single Source of Truth** - Version defined in one place (`.manta-version`)
+- **Consistent Builds** - All platforms use the same manta version
+- **Easy Upgrades** - Simple script to upgrade versions
+- **Version Tracking** - Git tracks version changes
+- **CI/CD Ready** - GitHub Actions automatically uses locked version
+- **Override Support** - Can still override for testing
 
 ## Troubleshooting
 
@@ -193,7 +192,7 @@ The version in `.manta-version` doesn't exist:
 git ls-remote --tags https://github.com/dotabuff/manta.git
 
 # Update to valid version
-./tools/upgrade_manta_version.sh v3.0.2
+./tools/upgrade_manta_version.sh v1.4.5
 ```
 
 ### CI uses wrong manta version
@@ -218,7 +217,6 @@ MANTA_REF=abc123def ./build.sh
 
 ## See Also
 
-- `VERSION_SYNC_STRATEGY.md` - Version synchronization philosophy
 - `RELEASE_PROCESS.md` - Complete release workflow
-- `tools/upgrade_manta_version.sh` - Version upgrade script
-- `tools/prepare_manta.sh` - Manta clone/update script
+- `tools/upgrade_manta_version.sh` - Manta version upgrade script
+- `tools/prepare_manta.sh` - Manta clone/update script (used by build)

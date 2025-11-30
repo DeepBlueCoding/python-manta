@@ -36,8 +36,8 @@ pip install python-manta
 
 ```bash
 # Clone and build
-git clone <repository>
-cd python_manta
+git clone https://github.com/equilibrium-coach/python-manta.git
+cd python-manta
 ./build.sh
 ```
 
@@ -288,7 +288,7 @@ python_manta/
 │   └── go.sum             # Go dependency checksums
 ├── examples/              # Usage examples
 │   └── basic_usage.py     # Basic parsing example
-├── tests/                 # Test suite (planned)
+├── tests/                 # Test suite
 ├── build.sh              # Build script
 ├── pyproject.toml        # Python package configuration
 └── README.md             # This file
