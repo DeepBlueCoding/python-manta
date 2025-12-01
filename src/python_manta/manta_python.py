@@ -57,6 +57,251 @@ class UniversalParseResult(BaseModel):
     count: int = 0
 
 
+class PlayerState(BaseModel):
+    """Player state at a specific tick."""
+    player_id: int
+    hero_id: int = 0
+    team: int = 0
+    last_hits: int = 0
+    denies: int = 0
+    gold: int = 0
+    net_worth: int = 0
+    xp: int = 0
+    level: int = 0
+    kills: int = 0
+    deaths: int = 0
+    assists: int = 0
+    position_x: float = 0.0
+    position_y: float = 0.0
+    health: int = 0
+    max_health: int = 0
+    mana: float = 0.0
+    max_mana: float = 0.0
+
+
+class TeamState(BaseModel):
+    """Team state at a specific tick."""
+    team_id: int
+    score: int = 0
+    tower_kills: int = 0
+
+
+class EntitySnapshot(BaseModel):
+    """Entity state snapshot at a specific tick."""
+    tick: int
+    game_time: float
+    players: List[PlayerState] = []
+    teams: List[TeamState] = []
+    raw_entities: Optional[Dict[str, Any]] = None
+
+
+class EntityParseConfig(BaseModel):
+    """Configuration for entity parsing."""
+    interval_ticks: int = 1800  # ~1 minute at 30 ticks/sec
+    max_snapshots: int = 0      # 0 = unlimited
+    entity_classes: List[str] = []  # Empty = default set
+    include_raw: bool = False
+
+
+class EntityParseResult(BaseModel):
+    """Result from entity state parsing."""
+    snapshots: List[EntitySnapshot] = []
+    success: bool = True
+    error: Optional[str] = None
+    total_ticks: int = 0
+    snapshot_count: int = 0
+
+
+# ============================================================================
+# GAME EVENTS MODELS
+# ============================================================================
+
+class GameEventData(BaseModel):
+    """Parsed game event with typed fields."""
+    name: str
+    tick: int
+    net_tick: int
+    fields: Dict[str, Any] = {}
+
+
+class GameEventsConfig(BaseModel):
+    """Configuration for game event parsing."""
+    event_filter: str = ""           # Filter by event name (substring)
+    event_names: List[str] = []      # Specific events to capture
+    max_events: int = 0              # Max events (0 = unlimited)
+    capture_types: bool = True       # Capture event type definitions
+
+
+class GameEventsResult(BaseModel):
+    """Result from game events parsing."""
+    events: List[GameEventData] = []
+    event_types: List[str] = []
+    success: bool = True
+    error: Optional[str] = None
+    total_events: int = 0
+
+
+# ============================================================================
+# MODIFIER/BUFF MODELS
+# ============================================================================
+
+class ModifierEntry(BaseModel):
+    """Buff/debuff modifier entry."""
+    tick: int
+    net_tick: int
+    parent: int           # Entity handle of unit with modifier
+    caster: int           # Entity handle of caster
+    ability: int          # Ability that created modifier
+    modifier_class: int   # Modifier class ID
+    serial_num: int       # Serial number
+    index: int            # Modifier index
+    creation_time: float  # When created
+    duration: float       # Duration (-1 = permanent)
+    stack_count: int      # Number of stacks
+    is_aura: bool         # Is an aura
+    is_debuff: bool       # Is a debuff
+
+
+class ModifiersConfig(BaseModel):
+    """Configuration for modifier parsing."""
+    max_modifiers: int = 0    # Max modifiers (0 = unlimited)
+    debuffs_only: bool = False
+    auras_only: bool = False
+
+
+class ModifiersResult(BaseModel):
+    """Result from modifier parsing."""
+    modifiers: List[ModifierEntry] = []
+    success: bool = True
+    error: Optional[str] = None
+    total_modifiers: int = 0
+
+
+# ============================================================================
+# ENTITY QUERY MODELS
+# ============================================================================
+
+class EntityData(BaseModel):
+    """Full entity state data."""
+    index: int
+    serial: int
+    class_name: str
+    properties: Dict[str, Any] = {}
+
+
+class EntitiesConfig(BaseModel):
+    """Configuration for entity querying."""
+    class_filter: str = ""          # Filter by class name (substring)
+    class_names: List[str] = []     # Specific classes to capture
+    property_filter: List[str] = [] # Only include these properties
+    at_tick: int = 0                # Capture at tick (0 = end)
+    max_entities: int = 0           # Max entities (0 = unlimited)
+
+
+class EntitiesResult(BaseModel):
+    """Result from entity querying."""
+    entities: List[EntityData] = []
+    success: bool = True
+    error: Optional[str] = None
+    total_entities: int = 0
+    tick: int = 0
+    net_tick: int = 0
+
+
+# ============================================================================
+# STRING TABLE MODELS
+# ============================================================================
+
+class StringTableData(BaseModel):
+    """String table entry."""
+    table_name: str
+    index: int
+    key: str
+    value: Optional[str] = None
+
+
+class StringTablesConfig(BaseModel):
+    """Configuration for string table extraction."""
+    table_names: List[str] = []     # Tables to extract (empty = all)
+    include_values: bool = False    # Include value data
+    max_entries: int = 100          # Max entries per table
+
+
+class StringTablesResult(BaseModel):
+    """Result from string table extraction."""
+    tables: Dict[str, List[StringTableData]] = {}
+    table_names: List[str] = []
+    success: bool = True
+    error: Optional[str] = None
+    total_entries: int = 0
+
+
+# ============================================================================
+# COMBAT LOG MODELS
+# ============================================================================
+
+class CombatLogEntry(BaseModel):
+    """Structured combat log entry."""
+    tick: int
+    net_tick: int
+    type: int
+    type_name: str
+    target_name: str = ""
+    target_source_name: str = ""
+    attacker_name: str = ""
+    damage_source_name: str = ""
+    inflictor_name: str = ""
+    is_attacker_illusion: bool = False
+    is_attacker_hero: bool = False
+    is_target_illusion: bool = False
+    is_target_hero: bool = False
+    is_visible_radiant: bool = False
+    is_visible_dire: bool = False
+    value: int = 0
+    health: int = 0
+    timestamp: float = 0.0
+    stun_duration: float = 0.0
+    slow_duration: float = 0.0
+    is_ability_toggle_on: bool = False
+    is_ability_toggle_off: bool = False
+    ability_level: int = 0
+    xp: int = 0
+    gold: int = 0
+    last_hits: int = 0
+    attacker_team: int = 0
+    target_team: int = 0
+
+
+class CombatLogConfig(BaseModel):
+    """Configuration for combat log parsing."""
+    types: List[int] = []       # Filter by type (empty = all)
+    max_entries: int = 0        # Max entries (0 = unlimited)
+    heroes_only: bool = False   # Only hero-related
+
+
+class CombatLogResult(BaseModel):
+    """Result from combat log parsing."""
+    entries: List[CombatLogEntry] = []
+    success: bool = True
+    error: Optional[str] = None
+    total_entries: int = 0
+
+
+# ============================================================================
+# PARSER INFO MODEL
+# ============================================================================
+
+class ParserInfo(BaseModel):
+    """Parser state information."""
+    game_build: int = 0
+    tick: int = 0
+    net_tick: int = 0
+    string_tables: List[str] = []
+    entity_count: int = 0
+    success: bool = True
+    error: Optional[str] = None
+
+
 class MantaParser:
     """Python wrapper for Manta Dota 2 replay parser."""
     
@@ -80,15 +325,43 @@ class MantaParser:
         # ParseHeader function: takes char* filename, returns char* JSON
         self.lib.ParseHeader.argtypes = [ctypes.c_char_p]
         self.lib.ParseHeader.restype = ctypes.c_char_p
-        
+
         # ParseDraft function: takes char* filename, returns char* JSON
         self.lib.ParseDraft.argtypes = [ctypes.c_char_p]
         self.lib.ParseDraft.restype = ctypes.c_char_p
-        
+
         # ParseUniversal function: takes char* filename, char* filter, int maxMessages, returns char* JSON
         self.lib.ParseUniversal.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
         self.lib.ParseUniversal.restype = ctypes.c_char_p
-        
+
+        # ParseEntities function: takes char* filename, char* configJSON, returns char* JSON
+        self.lib.ParseEntities.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self.lib.ParseEntities.restype = ctypes.c_char_p
+
+        # ParseGameEvents function: takes char* filename, char* configJSON, returns char* JSON
+        self.lib.ParseGameEvents.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self.lib.ParseGameEvents.restype = ctypes.c_char_p
+
+        # ParseModifiers function: takes char* filename, char* configJSON, returns char* JSON
+        self.lib.ParseModifiers.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self.lib.ParseModifiers.restype = ctypes.c_char_p
+
+        # QueryEntities function: takes char* filename, char* configJSON, returns char* JSON
+        self.lib.QueryEntities.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self.lib.QueryEntities.restype = ctypes.c_char_p
+
+        # GetStringTables function: takes char* filename, char* configJSON, returns char* JSON
+        self.lib.GetStringTables.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self.lib.GetStringTables.restype = ctypes.c_char_p
+
+        # ParseCombatLog function: takes char* filename, char* configJSON, returns char* JSON
+        self.lib.ParseCombatLog.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self.lib.ParseCombatLog.restype = ctypes.c_char_p
+
+        # GetParserInfo function: takes char* filename, returns char* JSON
+        self.lib.GetParserInfo.argtypes = [ctypes.c_char_p]
+        self.lib.GetParserInfo.restype = ctypes.c_char_p
+
         # FreeString function: takes char* to free
         self.lib.FreeString.argtypes = [ctypes.c_char_p]
         self.lib.FreeString.restype = None
@@ -235,6 +508,380 @@ class MantaParser:
             # TODO: Fix memory management properly
             pass
 
+    def parse_entities(
+        self,
+        demo_file_path: str,
+        interval_ticks: int = 1800,
+        max_snapshots: int = 0,
+        entity_classes: Optional[List[str]] = None,
+        include_raw: bool = False
+    ) -> EntityParseResult:
+        """
+        Parse entity state snapshots from a Dota 2 demo file.
+
+        This extracts player stats (last hits, denies, gold, etc.) at regular
+        intervals throughout the game by tracking entity state changes.
+
+        Unlike combat log parsing, this captures data from the very start of
+        the game, making it suitable for extracting per-minute statistics
+        like lh_t and dn_t arrays.
+
+        Args:
+            demo_file_path: Path to the .dem file
+            interval_ticks: Capture snapshot every N ticks (default 1800 = ~1 min at 30 ticks/sec)
+            max_snapshots: Maximum snapshots to capture (0 = unlimited)
+            entity_classes: List of entity class names to include raw data for
+            include_raw: Whether to include raw entity data in snapshots
+
+        Returns:
+            EntityParseResult containing player/team state snapshots over time
+
+        Raises:
+            FileNotFoundError: If demo file doesn't exist
+            ValueError: If parsing fails
+        """
+        if not os.path.exists(demo_file_path):
+            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
+
+        # Build config
+        config = EntityParseConfig(
+            interval_ticks=interval_ticks,
+            max_snapshots=max_snapshots,
+            entity_classes=entity_classes or [],
+            include_raw=include_raw
+        )
+
+        # Convert parameters to bytes for C function
+        path_bytes = demo_file_path.encode('utf-8')
+        config_json = config.model_dump_json().encode('utf-8')
+
+        # Call the Go function
+        result_ptr = self.lib.ParseEntities(path_bytes, config_json)
+
+        if not result_ptr:
+            raise ValueError("ParseEntities returned null pointer")
+
+        try:
+            # Convert C string result to Python string
+            result_json = ctypes.string_at(result_ptr).decode('utf-8')
+
+            # Parse JSON response
+            result_dict = json.loads(result_json)
+
+            # Convert to Pydantic model
+            entity_result = EntityParseResult(**result_dict)
+
+            if not entity_result.success:
+                raise ValueError(f"Entity parsing failed: {entity_result.error}")
+
+            return entity_result
+
+        finally:
+            # Note: Skipping FreeString call to avoid memory issues
+            # TODO: Fix memory management properly
+            pass
+
+    def parse_game_events(
+        self,
+        demo_file_path: str,
+        event_filter: str = "",
+        event_names: Optional[List[str]] = None,
+        max_events: int = 0,
+        capture_types: bool = True
+    ) -> GameEventsResult:
+        """
+        Parse game events from a Dota 2 demo file.
+
+        Game events are named events like "dota_combatlog", "player_death",
+        "dota_tower_kill", etc. There are 364+ event types available.
+
+        Args:
+            demo_file_path: Path to the .dem file
+            event_filter: Filter events by name (substring match)
+            event_names: List of specific event names to capture
+            max_events: Max events to capture (0 = unlimited)
+            capture_types: Whether to capture event type definitions
+
+        Returns:
+            GameEventsResult containing parsed game events
+        """
+        if not os.path.exists(demo_file_path):
+            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
+
+        config = GameEventsConfig(
+            event_filter=event_filter,
+            event_names=event_names or [],
+            max_events=max_events,
+            capture_types=capture_types
+        )
+
+        path_bytes = demo_file_path.encode('utf-8')
+        config_json = config.model_dump_json().encode('utf-8')
+
+        result_ptr = self.lib.ParseGameEvents(path_bytes, config_json)
+
+        if not result_ptr:
+            raise ValueError("ParseGameEvents returned null pointer")
+
+        try:
+            result_json = ctypes.string_at(result_ptr).decode('utf-8')
+            result_dict = json.loads(result_json)
+            result = GameEventsResult(**result_dict)
+
+            if not result.success:
+                raise ValueError(f"Game events parsing failed: {result.error}")
+
+            return result
+        finally:
+            pass
+
+    def parse_modifiers(
+        self,
+        demo_file_path: str,
+        max_modifiers: int = 0,
+        debuffs_only: bool = False,
+        auras_only: bool = False
+    ) -> ModifiersResult:
+        """
+        Parse modifier/buff entries from a Dota 2 demo file.
+
+        Modifiers are buffs and debuffs applied to units. This tracks
+        modifier creation, duration, stack counts, and more.
+
+        Args:
+            demo_file_path: Path to the .dem file
+            max_modifiers: Max modifiers to capture (0 = unlimited)
+            debuffs_only: Only capture debuffs
+            auras_only: Only capture auras
+
+        Returns:
+            ModifiersResult containing modifier entries
+        """
+        if not os.path.exists(demo_file_path):
+            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
+
+        config = ModifiersConfig(
+            max_modifiers=max_modifiers,
+            debuffs_only=debuffs_only,
+            auras_only=auras_only
+        )
+
+        path_bytes = demo_file_path.encode('utf-8')
+        config_json = config.model_dump_json().encode('utf-8')
+
+        result_ptr = self.lib.ParseModifiers(path_bytes, config_json)
+
+        if not result_ptr:
+            raise ValueError("ParseModifiers returned null pointer")
+
+        try:
+            result_json = ctypes.string_at(result_ptr).decode('utf-8')
+            result_dict = json.loads(result_json)
+            result = ModifiersResult(**result_dict)
+
+            if not result.success:
+                raise ValueError(f"Modifier parsing failed: {result.error}")
+
+            return result
+        finally:
+            pass
+
+    def query_entities(
+        self,
+        demo_file_path: str,
+        class_filter: str = "",
+        class_names: Optional[List[str]] = None,
+        property_filter: Optional[List[str]] = None,
+        at_tick: int = 0,
+        max_entities: int = 0
+    ) -> EntitiesResult:
+        """
+        Query entity states from a Dota 2 demo file.
+
+        This provides full access to any entity in the game: heroes, buildings,
+        wards, couriers, creeps, neutrals, etc.
+
+        Args:
+            demo_file_path: Path to the .dem file
+            class_filter: Filter by class name (substring match)
+            class_names: List of specific class names to capture
+            property_filter: Only include these properties (empty = all)
+            at_tick: Capture entities at this tick (0 = end of file)
+            max_entities: Max entities to return (0 = unlimited)
+
+        Returns:
+            EntitiesResult containing entity data
+        """
+        if not os.path.exists(demo_file_path):
+            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
+
+        config = EntitiesConfig(
+            class_filter=class_filter,
+            class_names=class_names or [],
+            property_filter=property_filter or [],
+            at_tick=at_tick,
+            max_entities=max_entities
+        )
+
+        path_bytes = demo_file_path.encode('utf-8')
+        config_json = config.model_dump_json().encode('utf-8')
+
+        result_ptr = self.lib.QueryEntities(path_bytes, config_json)
+
+        if not result_ptr:
+            raise ValueError("QueryEntities returned null pointer")
+
+        try:
+            result_json = ctypes.string_at(result_ptr).decode('utf-8')
+            result_dict = json.loads(result_json)
+            result = EntitiesResult(**result_dict)
+
+            if not result.success:
+                raise ValueError(f"Entity querying failed: {result.error}")
+
+            return result
+        finally:
+            pass
+
+    def get_string_tables(
+        self,
+        demo_file_path: str,
+        table_names: Optional[List[str]] = None,
+        include_values: bool = False,
+        max_entries: int = 100
+    ) -> StringTablesResult:
+        """
+        Extract string table data from a Dota 2 demo file.
+
+        String tables contain mappings for hero names, ability names,
+        item names, and other game data.
+
+        Args:
+            demo_file_path: Path to the .dem file
+            table_names: Tables to extract (empty = all)
+            include_values: Include value data (can be large)
+            max_entries: Max entries per table
+
+        Returns:
+            StringTablesResult containing string table data
+        """
+        if not os.path.exists(demo_file_path):
+            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
+
+        config = StringTablesConfig(
+            table_names=table_names or [],
+            include_values=include_values,
+            max_entries=max_entries
+        )
+
+        path_bytes = demo_file_path.encode('utf-8')
+        config_json = config.model_dump_json().encode('utf-8')
+
+        result_ptr = self.lib.GetStringTables(path_bytes, config_json)
+
+        if not result_ptr:
+            raise ValueError("GetStringTables returned null pointer")
+
+        try:
+            result_json = ctypes.string_at(result_ptr).decode('utf-8')
+            result_dict = json.loads(result_json)
+            result = StringTablesResult(**result_dict)
+
+            if not result.success:
+                raise ValueError(f"String table extraction failed: {result.error}")
+
+            return result
+        finally:
+            pass
+
+    def parse_combat_log(
+        self,
+        demo_file_path: str,
+        types: Optional[List[int]] = None,
+        max_entries: int = 0,
+        heroes_only: bool = False
+    ) -> CombatLogResult:
+        """
+        Parse structured combat log entries from a Dota 2 demo file.
+
+        Combat log contains damage, healing, kills, ability usage, item
+        purchases, and more. Note: Combat log data may be missing for the
+        first ~12 minutes of SourceTV replays - use parse_entities() for
+        early game stats.
+
+        Args:
+            demo_file_path: Path to the .dem file
+            types: Filter by combat log type (empty = all)
+            max_entries: Max entries (0 = unlimited)
+            heroes_only: Only hero-related entries
+
+        Returns:
+            CombatLogResult containing structured combat log entries
+        """
+        if not os.path.exists(demo_file_path):
+            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
+
+        config = CombatLogConfig(
+            types=types or [],
+            max_entries=max_entries,
+            heroes_only=heroes_only
+        )
+
+        path_bytes = demo_file_path.encode('utf-8')
+        config_json = config.model_dump_json().encode('utf-8')
+
+        result_ptr = self.lib.ParseCombatLog(path_bytes, config_json)
+
+        if not result_ptr:
+            raise ValueError("ParseCombatLog returned null pointer")
+
+        try:
+            result_json = ctypes.string_at(result_ptr).decode('utf-8')
+            result_dict = json.loads(result_json)
+            result = CombatLogResult(**result_dict)
+
+            if not result.success:
+                raise ValueError(f"Combat log parsing failed: {result.error}")
+
+            return result
+        finally:
+            pass
+
+    def get_parser_info(self, demo_file_path: str) -> ParserInfo:
+        """
+        Get parser state information from a Dota 2 demo file.
+
+        This includes game build, tick counts, available string tables,
+        and entity counts.
+
+        Args:
+            demo_file_path: Path to the .dem file
+
+        Returns:
+            ParserInfo containing parser state information
+        """
+        if not os.path.exists(demo_file_path):
+            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
+
+        path_bytes = demo_file_path.encode('utf-8')
+
+        result_ptr = self.lib.GetParserInfo(path_bytes)
+
+        if not result_ptr:
+            raise ValueError("GetParserInfo returned null pointer")
+
+        try:
+            result_json = ctypes.string_at(result_ptr).decode('utf-8')
+            result_dict = json.loads(result_json)
+            result = ParserInfo(**result_dict)
+
+            if not result.success:
+                raise ValueError(f"Parser info extraction failed: {result.error}")
+
+            return result
+        finally:
+            pass
+
 
 # Convenience functions for quick parsing
 def parse_demo_header(demo_file_path: str) -> HeaderInfo:
@@ -268,17 +915,51 @@ def parse_demo_draft(demo_file_path: str) -> CDotaGameInfo:
 def parse_demo_universal(demo_file_path: str, message_filter: str = "", max_messages: int = 0) -> UniversalParseResult:
     """
     Quick function to universally parse ALL Manta message types from demo file.
-    
+
     Args:
         demo_file_path: Path to the .dem file
         message_filter: Optional filter for specific message type (e.g., "CDOTAUserMsg_ChatEvent")
         max_messages: Maximum number of messages to return (0 = no limit)
-        
+
     Returns:
         UniversalParseResult containing all captured messages
     """
     parser = MantaParser()
     return parser.parse_universal(demo_file_path, message_filter, max_messages)
+
+
+def parse_demo_entities(
+    demo_file_path: str,
+    interval_ticks: int = 1800,
+    max_snapshots: int = 0,
+    entity_classes: Optional[List[str]] = None,
+    include_raw: bool = False
+) -> EntityParseResult:
+    """
+    Quick function to parse entity state snapshots from demo file.
+
+    This extracts player stats (last hits, denies, gold, etc.) at regular
+    intervals throughout the game. Unlike combat log, this captures data
+    from the very start of the game.
+
+    Args:
+        demo_file_path: Path to the .dem file
+        interval_ticks: Capture snapshot every N ticks (default 1800 = ~1 min)
+        max_snapshots: Maximum snapshots to capture (0 = unlimited)
+        entity_classes: List of entity class names to include raw data for
+        include_raw: Whether to include raw entity data in snapshots
+
+    Returns:
+        EntityParseResult containing player/team state snapshots over time
+    """
+    parser = MantaParser()
+    return parser.parse_entities(
+        demo_file_path,
+        interval_ticks=interval_ticks,
+        max_snapshots=max_snapshots,
+        entity_classes=entity_classes,
+        include_raw=include_raw
+    )
 
 
 def _run_cli(argv=None):
