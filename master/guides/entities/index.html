@@ -1017,6 +1017,34 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#querying-at-specific-ticks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Querying at Specific Ticks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Querying at Specific Ticks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#item-charges-at-specific-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Item Charges at Specific Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#important-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1687,6 +1715,34 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#querying-at-specific-ticks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Querying at Specific Ticks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Querying at Specific Ticks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#item-charges-at-specific-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Item Charges at Specific Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#important-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1748,7 +1804,7 @@
 <h1 id="entity-queries-guide">Entity Queries Guide<a class="headerlink" href="#entity-queries-guide" title="Permanent link">&para;</a></h1>
 <details class="info">
 <summary>AI Summary</summary>
-<p>Query game entities using <code>query_entities()</code>. Filter by class name (substring or exact match) and select specific properties. Common classes: <code>Hero</code> (player heroes), <code>Tower</code>, <code>Courier</code>, <code>Creep</code>. Hero properties include <code>m_iHealth</code>, <code>m_iMaxHealth</code>, <code>m_flMana</code>, <code>m_vecOrigin</code> (position), <code>m_iCurrentLevel</code>, <code>m_iTotalEarnedGold</code>, <code>m_iKills</code>, <code>m_iDeaths</code>, <code>m_iAssists</code>. Results are from end-of-replay state. Use property_filter for performance.</p>
+<p>Query game entities using <code>query_entities()</code>. Filter by class name (substring or exact match) and select specific properties. Use <code>at_tick</code> to query at a specific game tick (default: end of game). Common classes: <code>Hero</code> (player heroes), <code>Tower</code>, <code>Courier</code>, <code>Creep</code>, <code>CDOTA_Item_MagicStick</code>, <code>CDOTA_Item_MagicWand</code>. Hero properties include <code>m_iHealth</code>, <code>m_iMaxHealth</code>, <code>m_flMana</code>, <code>m_vecOrigin</code> (position). Item properties include <code>m_iCurrentCharges</code>, <code>m_iPlayerOwnerID</code>. Use property_filter for performance.</p>
 </details>
 <hr />
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
@@ -2188,18 +2244,73 @@
 <a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="p">)</span>
 </code></pre></div>
 <hr />
+<h2 id="querying-at-specific-ticks">Querying at Specific Ticks<a class="headerlink" href="#querying-at-specific-ticks" title="Permanent link">&para;</a></h2>
+<p>Use the <code>at_tick</code> parameter to query entity state at a specific game tick instead of end of game:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Query heroes at tick 50000</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="s2">&quot;match.dem&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Hero&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">property_filter</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;m_iHealth&quot;</span><span class="p">,</span> <span class="s2">&quot;m_iMaxHealth&quot;</span><span class="p">],</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">at_tick</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">max_entities</span><span class="o">=</span><span class="mi">10</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="p">)</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hero health at tick </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span><span class="p">:</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>    <span class="n">health</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;m_iHealth&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="n">max_hp</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;m_iMaxHealth&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">class_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">health</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">max_hp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="item-charges-at-specific-time">Item Charges at Specific Time<a class="headerlink" href="#item-charges-at-specific-time" title="Permanent link">&para;</a></h3>
+<p>Get Magic Stick/Wand charges for all players at a specific tick:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_magic_stick_charges</span><span class="p">(</span><span class="n">demo_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">at_tick</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="sd">    Get magic stick/wand charges for all players at a specific game tick.</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="sd">    Args:</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="sd">        demo_path: Path to the .dem file</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="sd">        at_tick: Game tick to query (0 = end of game)</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="sd">        Dict mapping player_id -&gt; charges</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>        <span class="n">demo_path</span><span class="p">,</span>
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>        <span class="n">class_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CDOTA_Item_MagicStick&#39;</span><span class="p">,</span> <span class="s1">&#39;CDOTA_Item_MagicWand&#39;</span><span class="p">],</span>
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>        <span class="n">property_filter</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;m_iCurrentCharges&#39;</span><span class="p">,</span> <span class="s1">&#39;m_iPlayerOwnerID&#39;</span><span class="p">],</span>
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>        <span class="n">at_tick</span><span class="o">=</span><span class="n">at_tick</span>
+<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>    <span class="p">)</span>
+<a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a>
+<a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a>    <span class="n">player_charges</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a>    <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span><span class="p">:</span>
+<a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a>        <span class="n">owner</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iPlayerOwnerID&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a>        <span class="n">charges</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iCurrentCharges&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a>        <span class="k">if</span> <span class="n">owner</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-13-28" name="__codelineno-13-28" href="#__codelineno-13-28"></a>            <span class="n">player_charges</span><span class="p">[</span><span class="n">owner</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">player_charges</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">charges</span><span class="p">)</span>
+<a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a>
+<a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a>    <span class="k">return</span> <span class="n">player_charges</span>
+<a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a>
+<a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a><span class="c1"># Get charges at tick 50000</span>
+<a id="__codelineno-13-33" name="__codelineno-13-33" href="#__codelineno-13-33"></a><span class="n">charges</span> <span class="o">=</span> <span class="n">get_magic_stick_charges</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">at_tick</span><span class="o">=</span><span class="mi">50000</span><span class="p">)</span>
+<a id="__codelineno-13-34" name="__codelineno-13-34" href="#__codelineno-13-34"></a><span class="c1"># {0: 6, 2: 18, 4: 7, 6: 6, 8: 1, 10: 15, 12: 4, 14: 20, 16: 0, 18: 5}</span>
+</code></pre></div>
+<hr />
 <h2 id="important-notes">Important Notes<a class="headerlink" href="#important-notes" title="Permanent link">&para;</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Entity queries return the state at the <strong>end of the replay</strong>. For tracking entity state throughout the match, you would need to use game events or combat log entries which include timing information.</p>
+<p>By default (<code>at_tick=0</code>), entity queries return the state at the <strong>end of the replay</strong>. Use <code>at_tick</code> to query state at a specific game tick.</p>
 </div>
 <h3 id="entity-handles">Entity Handles<a class="headerlink" href="#entity-handles" title="Permanent link">&para;</a></h3>
 <p>Some properties reference other entities via handles:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Item handles reference item entities</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">item_handle</span> <span class="o">=</span> <span class="n">hero</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;m_hItems.0000&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># These are internal entity references, not item IDs</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1"># Use string tables or item events for item identification</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Item handles reference item entities</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">item_handle</span> <span class="o">=</span> <span class="n">hero</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;m_hItems.0000&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># These are internal entity references, not item IDs</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="c1"># Use string tables or item events for item identification</span>
 </code></pre></div>
 <h3 id="team-numbers">Team Numbers<a class="headerlink" href="#team-numbers" title="Permanent link">&para;</a></h3>
 <table>
