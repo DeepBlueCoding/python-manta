@@ -29,6 +29,7 @@ If you're working in Go, use [Manta](https://github.com/dotabuff/manta) directly
 ## Table of Contents
 
 - [Documentation](https://deepbluecoding.github.io/python-manta/) ← **Full docs with examples**
+- [Versioning](#versioning)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [API Reference](#api-reference)
@@ -47,6 +48,29 @@ If you're working in Go, use [Manta](https://github.com/dotabuff/manta) directly
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
+
+---
+
+## Versioning
+
+Python Manta follows a **4-part versioning scheme** that tracks the upstream [dotabuff/manta](https://github.com/dotabuff/manta) version:
+
+```
+v{manta_major}.{manta_minor}.{manta_patch}.{python_manta_release}
+```
+
+| Version Part | Meaning |
+|--------------|---------|
+| `1.4.5` | Base dotabuff/manta version this release is built on |
+| `.1`, `.2`, etc. | Python Manta release number for that manta version |
+
+**Examples:**
+- `v1.4.5` - Initial release based on manta v1.4.5
+- `v1.4.5.1` - First update/bugfix release, still using manta v1.4.5
+- `v1.4.5.2` - Second update, still using manta v1.4.5
+- `v1.4.6` - New release when manta updates to v1.4.6
+
+This scheme allows us to release updates (new features, bugfixes, documentation) without waiting for upstream manta releases (which happen ~twice per year).
 
 ---
 
