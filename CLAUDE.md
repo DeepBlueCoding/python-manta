@@ -39,6 +39,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `src/python_manta/__init__.py` | Public exports |
 | `go_wrapper/manta_wrapper.go` | CGO exports (ParseHeader, ParseDraft) |
 | `go_wrapper/universal_parser.go` | Universal parsing with callback filtering |
+| `go_wrapper/data_parser.go` | Game events, modifiers, entities, combat log, string tables |
+| `go_wrapper/entity_parser.go` | Entity state snapshot tracking |
 | `go_wrapper/callbacks_*.go` | All 272 callback implementations |
 | `build.sh` | Build script for CGO shared library |
 | `pyproject.toml` | Python package configuration |
@@ -98,47 +100,64 @@ from python_manta import (
     CDotaGameInfo,         # Draft information
     MessageEvent,          # Universal message wrapper
     UniversalParseResult,  # Parse result container
+    GameEventsResult,      # Game events result
+    ModifiersResult,       # Modifiers result
+    EntitiesResult,        # Entity query result
+    StringTablesResult,    # String tables result
+    CombatLogResult,       # Combat log result
+    ParserInfo,            # Parser state info
     parse_demo_header,     # Quick header parsing
     parse_demo_draft,      # Quick draft parsing
     parse_demo_universal,  # Quick universal parsing
 )
 ```
 
-### Basic Usage Pattern
+### Basic Usage
 
 ```python
 from python_manta import MantaParser
 
-parser = MantaParser()  # Uses bundled library
+parser = MantaParser()
 
-# Parse header
+# Header and draft
 header = parser.parse_header("match.dem")
-print(f"Map: {header.map_name}, Build: {header.build_num}")
-
-# Parse draft
 draft = parser.parse_draft("match.dem")
-for pb in draft.picks_bans:
-    print(f"{'PICK' if pb.is_pick else 'BAN'}: Hero {pb.hero_id}")
 
-# Parse any message type
+# Universal message parsing
 result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 100)
-for msg in result.messages:
-    print(f"[{msg.tick}] {msg.data}")
+
+# Game events (364 event types)
+events = parser.parse_game_events("match.dem", event_filter="dota_combatlog", max_events=100)
+
+# Modifiers/buffs
+modifiers = parser.parse_modifiers("match.dem", max_modifiers=100, auras_only=True)
+
+# Entity queries
+entities = parser.query_entities("match.dem", class_filter="Hero", max_entities=10)
+
+# String tables
+tables = parser.get_string_tables("match.dem", table_names=["userinfo"])
+
+# Combat log (structured)
+combat = parser.parse_combat_log("match.dem", types=[0], heroes_only=True, max_entries=100)
+
+# Parser info
+info = parser.get_parser_info("match.dem")
 ```
 
-### Common Callback Names
+### Which API to Use
 
-| Use Case | Callback Name |
-|----------|---------------|
-| Chat messages | `CDOTAUserMsg_ChatMessage` |
-| Map pings | `CDOTAUserMsg_LocationPing` |
-| Item purchases | `CDOTAUserMsg_ItemPurchased` |
-| Combat log | `CMsgDOTACombatLogEntry` |
-| Game state | `CDOTAUserMsg_GamerulesStateChanged` |
-| Unit events | `CDOTAUserMsg_UnitEvent` |
-| Overhead events | `CDOTAUserMsg_OverheadEvent` |
-| Demo header | `CDemoFileHeader` |
-| Demo info | `CDemoFileInfo` |
+| Task | Method |
+|------|--------|
+| Match metadata | `parse_header()` |
+| Draft picks/bans | `parse_draft()` |
+| Chat messages | `parse_universal("CDOTAUserMsg_ChatMessage")` |
+| Item purchases | `parse_universal("CDOTAUserMsg_ItemPurchased")` |
+| Combat damage | `parse_combat_log(types=[0])` |
+| Buff tracking | `parse_modifiers()` |
+| Hero state | `query_entities(class_filter="Hero")` |
+| Game events | `parse_game_events()` |
+| Player info | `get_string_tables(table_names=["userinfo"])` |
 
 See README.md for complete list of all 272 callbacks.
 
