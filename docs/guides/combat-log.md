@@ -2,7 +2,7 @@
 # Combat Log Guide
 
 ??? info "AI Summary"
-    Parse structured combat log entries with `parse_combat_log()`. Filter by 45 log types including DAMAGE (0), HEAL (1), MODIFIER_ADD (2), DEATH (4), ABILITY (5), ITEM (6), FIRST_BLOOD (18). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use `heroes_only=True` for hero-related entries. Ideal for fight reconstruction and damage analysis. Note: Combat log starts ~12-17 min due to HLTV delay.
+    Parse structured combat log entries with `parse_combat_log()`. Filter by 45 log types including DAMAGE (0), HEAL (1), MODIFIER_ADD (2), DEATH (4), ABILITY (5), ITEM (6), FIRST_BLOOD (18). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use `heroes_only=True` for hero-related entries. Ideal for fight reconstruction and damage analysis. Note: `timestamp` is replay time (includes draft), not game clock - convert using `m_pGameRules.m_flPreGameStartTime`.
 
 ---
 
@@ -401,20 +401,44 @@ for unit, total in sorted(healing_received.items(), key=lambda x: -x[1])[:10]:
 
 ## Important Notes
 
+### Timestamp is Replay Time, Not Game Time
+
 !!! warning
 
-    Combat log entries only start appearing after approximately **12-17 minutes** into a match due to HLTV broadcast delay. For early game data, use entity queries instead.
+    The `timestamp` field in combat log entries is **replay time** (from recording start), NOT game clock time. Replay time includes draft and pre-game phases, so early game events may appear to have timestamps of 10-15+ minutes.
 
-### Timing Considerations
+To convert to actual game time:
 
 ```python
-result = parser.parse_combat_log("match.dem", max_entries=10)
+from python_manta import MantaParser
+
+parser = MantaParser()
+
+# Get pre-game start time from game rules
+rules = parser.query_entities("match.dem", class_filter="GamerulesProxy", at_tick=30000)
+pre_game_start = rules.entities[0].properties.get("m_pGameRules.m_flPreGameStartTime", 0)
+
+# Convert replay timestamp to game time
+# Pre-game phase is 90 seconds before 0:00 (creep spawn)
+def replay_to_game_time(replay_timestamp: float) -> float:
+    return replay_timestamp - pre_game_start - 90
+
+# Example: First blood at replay timestamp 1011.6s
+# With pre_game_start = 910.77s
+# Game time = 1011.6 - 910.77 - 90 = 10.83s (0:10)
+```
+
+### Quick Timing Check
+
+```python
+result = parser.parse_combat_log("match.dem", types=[18], max_entries=1)  # First blood
 
 if result.entries:
-    first_entry = result.entries[0]
-    print(f"First combat log entry at: {first_entry.timestamp:.1f}s ({first_entry.timestamp/60:.1f} minutes)")
-else:
-    print("No combat log entries found - match may be too short")
+    entry = result.entries[0]
+    game_time = replay_to_game_time(entry.timestamp)
+    mins = int(game_time // 60)
+    secs = int(game_time % 60)
+    print(f"First blood at game time: {mins}:{secs:02d}")
 ```
 
 ### Illusion Filtering
@@ -439,10 +463,10 @@ print(f"Real damage entries (no illusions): {len(real_damage)}")
 | Aspect | Combat Log | Game Events |
 |--------|------------|-------------|
 | API | `parse_combat_log()` | `parse_game_events()` |
-| Structure | Fixed schema with 25+ fields | Variable fields per event type |
-| Types | 12 log types | 364 event types |
+| Structure | Fixed schema with 80+ fields | Variable fields per event type |
+| Types | 45 log types | 364 event types |
 | Best for | Detailed damage/heal analysis | Discrete game occurrences |
-| Timing | Starts ~12-17 min | Throughout match |
+| Timing | Full match (timestamp is replay time) | Full match |
 | Filtering | By type ID, heroes_only | By event name |
 
 Use combat log for continuous combat data (DPS, healing totals) and game events for discrete occurrences (tower kills, rune pickups).
