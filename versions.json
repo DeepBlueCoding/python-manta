@@ -7,13 +7,13 @@
   {
     "version": "1.4.5.1-dev1",
     "title": "1.4.5.1-dev1",
-    "aliases": [
-      "latest"
-    ]
+    "aliases": []
   },
   {
     "version": "1.4.5",
     "title": "1.4.5",
-    "aliases": []
+    "aliases": [
+      "latest"
+    ]
   }
 ]
