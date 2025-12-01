@@ -308,11 +308,14 @@ jobs:
       - name: Re-version wheels
         run: |
           FULL_VERSION="${{ needs.check-version.outputs.full_version }}"
-          echo "🔄 Re-versioning wheels to ${FULL_VERSION}..."
+          # Normalize version for PEP 440: replace hyphen with dot for pre-release
+          # e.g., 1.4.5.1-dev3 -> 1.4.5.1.dev3
+          WHEEL_VERSION=$(echo "$FULL_VERSION" | sed 's/-\(dev\|alpha\|beta\|rc\)/.\1/')
+          echo "🔄 Re-versioning wheels to ${WHEEL_VERSION} (from tag version ${FULL_VERSION})..."
           mkdir -p dist
           for whl in base_wheels/*.whl; do
             echo "Processing: $whl"
-            python tools/reversion_wheel.py "$whl" "$FULL_VERSION" --output-dir dist
+            python tools/reversion_wheel.py "$whl" "$WHEEL_VERSION" --output-dir dist
           done
           echo ""
           echo "📦 Re-versioned wheels:"
