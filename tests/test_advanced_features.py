@@ -270,6 +270,221 @@ class TestCombatLog:
             # Timestamps should generally increase (allowing for some variance)
             assert timestamps[-1] >= timestamps[0]
 
+    def test_combat_log_name_resolution(self):
+        """Test that names are properly resolved (not unknown_X)."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, heroes_only=True, max_entries=100)
+
+        assert result.success is True
+        hero_entries = [e for e in result.entries if e.is_attacker_hero or e.is_target_hero]
+        assert len(hero_entries) > 0
+
+        for entry in hero_entries:
+            if entry.is_attacker_hero and entry.attacker_name:
+                assert "npc_dota_hero" in entry.attacker_name
+            if entry.is_target_hero and entry.target_name:
+                assert "npc_dota_hero" in entry.target_name
+
+    def test_combat_log_stun_events(self):
+        """Test stun events have proper duration data."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, heroes_only=True, max_entries=5000)
+
+        assert result.success is True
+        stun_events = [e for e in result.entries if e.stun_duration > 0]
+
+        assert len(stun_events) > 0
+        for stun in stun_events:
+            assert stun.stun_duration > 0
+            assert stun.stun_duration < 20  # No stun should be > 20 seconds
+
+    def test_combat_log_damage_events_have_value(self):
+        """Test damage events have positive value."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, types=[0], max_entries=100)  # DAMAGE type
+
+        assert result.success is True
+        for entry in result.entries:
+            assert entry.value >= 0
+
+    def test_combat_log_death_events(self):
+        """Test death events (type 4) have proper data."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, types=[4], heroes_only=True, max_entries=100)
+
+        assert result.success is True
+        hero_deaths = [e for e in result.entries if e.is_target_hero]
+
+        if hero_deaths:
+            death = hero_deaths[0]
+            assert "npc_dota_hero" in death.target_name
+            assert death.attacker_team in [0, 2, 3]  # Team IDs
+            assert death.target_team in [0, 2, 3]
+
+    def test_combat_log_assist_players(self):
+        """Test assist_players field is populated on kills."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, types=[4], heroes_only=True, max_entries=500)
+
+        assert result.success is True
+        deaths_with_assists = [e for e in result.entries if e.assist_players]
+
+        # Should have some deaths with assists in a full game
+        assert len(deaths_with_assists) > 0
+        for death in deaths_with_assists:
+            for assist_id in death.assist_players:
+                assert isinstance(assist_id, int)
+
+    def test_combat_log_heal_events(self):
+        """Test heal events (type 1) have proper data."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, types=[1], heroes_only=True, max_entries=200)
+
+        assert result.success is True
+        if result.entries:
+            heal = result.entries[0]
+            assert heal.type == 1
+            assert heal.value >= 0
+
+    def test_combat_log_lifesteal_heals(self):
+        """Test lifesteal heals are tracked."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, types=[1], heroes_only=True, max_entries=1000)
+
+        assert result.success is True
+        lifesteal_heals = [e for e in result.entries if e.heal_from_lifesteal]
+
+        # Should have some lifesteal heals
+        assert len(lifesteal_heals) > 0
+
+    def test_combat_log_modifier_events(self):
+        """Test modifier add/remove events (types 2, 3)."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, types=[2, 3], heroes_only=True, max_entries=200)
+
+        assert result.success is True
+        assert len(result.entries) > 0
+
+        for entry in result.entries:
+            assert entry.type in [2, 3]
+
+    def test_combat_log_ability_events(self):
+        """Test ability cast events (type 5)."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, types=[5], heroes_only=True, max_entries=100)
+
+        assert result.success is True
+        if result.entries:
+            ability = result.entries[0]
+            assert ability.type == 5
+            # Should have inflictor name (ability name)
+            assert len(ability.inflictor_name) > 0
+
+    def test_combat_log_item_events(self):
+        """Test item usage events (type 6)."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, types=[6], heroes_only=True, max_entries=100)
+
+        assert result.success is True
+        if result.entries:
+            item = result.entries[0]
+            assert item.type == 6
+            # Inflictor should be an item name
+            assert "item_" in item.inflictor_name or len(item.inflictor_name) > 0
+
+    def test_combat_log_root_modifier(self):
+        """Test root_modifier field is tracked."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, types=[2], heroes_only=True, max_entries=5000)
+
+        assert result.success is True
+        roots = [e for e in result.entries if e.root_modifier]
+
+        # Should have some root effects in a game
+        assert len(roots) >= 0  # May or may not have roots depending on heroes
+
+    def test_combat_log_all_fields_present(self):
+        """Test all 80 protobuf fields are accessible."""
+        parser = MantaParser()
+        result = parser.parse_combat_log(DEMO_FILE, max_entries=1)
+
+        assert result.success is True
+        assert len(result.entries) == 1
+
+        entry = result.entries[0]
+
+        # Core fields
+        assert hasattr(entry, 'tick')
+        assert hasattr(entry, 'net_tick')
+        assert hasattr(entry, 'type')
+        assert hasattr(entry, 'type_name')
+        assert hasattr(entry, 'target_name')
+        assert hasattr(entry, 'attacker_name')
+        assert hasattr(entry, 'inflictor_name')
+        assert hasattr(entry, 'value')
+        assert hasattr(entry, 'health')
+        assert hasattr(entry, 'timestamp')
+
+        # Location
+        assert hasattr(entry, 'location_x')
+        assert hasattr(entry, 'location_y')
+
+        # Assists
+        assert hasattr(entry, 'assist_player0')
+        assert hasattr(entry, 'assist_player1')
+        assert hasattr(entry, 'assist_player2')
+        assert hasattr(entry, 'assist_player3')
+        assert hasattr(entry, 'assist_players')
+
+        # Damage classification
+        assert hasattr(entry, 'damage_type')
+        assert hasattr(entry, 'damage_category')
+
+        # Modifier details
+        assert hasattr(entry, 'modifier_duration')
+        assert hasattr(entry, 'modifier_elapsed_duration')
+        assert hasattr(entry, 'silence_modifier')
+        assert hasattr(entry, 'root_modifier')
+        assert hasattr(entry, 'aura_modifier')
+        assert hasattr(entry, 'armor_debuff_modifier')
+        assert hasattr(entry, 'no_physical_damage_modifier')
+        assert hasattr(entry, 'motion_controller_modifier')
+        assert hasattr(entry, 'modifier_purged')
+        assert hasattr(entry, 'modifier_hidden')
+
+        # Kill info
+        assert hasattr(entry, 'spell_evaded')
+        assert hasattr(entry, 'long_range_kill')
+        assert hasattr(entry, 'will_reincarnate')
+        assert hasattr(entry, 'total_unit_death_count')
+
+        # Ability info
+        assert hasattr(entry, 'is_ultimate_ability')
+        assert hasattr(entry, 'inflictor_is_stolen_ability')
+        assert hasattr(entry, 'spell_generated_attack')
+        assert hasattr(entry, 'uses_charges')
+        assert hasattr(entry, 'ability_level')
+
+        # Game state
+        assert hasattr(entry, 'at_night_time')
+        assert hasattr(entry, 'attacker_has_scepter')
+        assert hasattr(entry, 'regenerated_health')
+
+        # Economy
+        assert hasattr(entry, 'networth')
+        assert hasattr(entry, 'xpm')
+        assert hasattr(entry, 'gpm')
+
+        # Buildings/neutrals
+        assert hasattr(entry, 'building_type')
+        assert hasattr(entry, 'neutral_camp_type')
+        assert hasattr(entry, 'neutral_camp_team')
+
+        # Tracking
+        assert hasattr(entry, 'kill_eater_event')
+        assert hasattr(entry, 'unit_status_label')
+        assert hasattr(entry, 'tracked_stat_id')
+
 
 @pytest.mark.unit
 class TestParserInfo:

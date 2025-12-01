@@ -2,7 +2,7 @@
 # Entity Queries Guide
 
 ??? info "AI Summary"
-    Query game entities using `query_entities()`. Filter by class name (substring or exact match) and select specific properties. Common classes: `Hero` (player heroes), `Tower`, `Courier`, `Creep`. Hero properties include `m_iHealth`, `m_iMaxHealth`, `m_flMana`, `m_vecOrigin` (position), `m_iCurrentLevel`, `m_iTotalEarnedGold`, `m_iKills`, `m_iDeaths`, `m_iAssists`. Results are from end-of-replay state. Use property_filter for performance.
+    Query game entities using `query_entities()`. Filter by class name (substring or exact match) and select specific properties. Use `at_tick` to query at a specific game tick (default: end of game). Common classes: `Hero` (player heroes), `Tower`, `Courier`, `Creep`, `CDOTA_Item_MagicStick`, `CDOTA_Item_MagicWand`. Hero properties include `m_iHealth`, `m_iMaxHealth`, `m_flMana`, `m_vecOrigin` (position). Item properties include `m_iCurrentCharges`, `m_iPlayerOwnerID`. Use property_filter for performance.
 
 ---
 
@@ -331,11 +331,75 @@ result = parser.query_entities(
 
 ---
 
+## Querying at Specific Ticks
+
+Use the `at_tick` parameter to query entity state at a specific game tick instead of end of game:
+
+```python
+# Query heroes at tick 50000
+result = parser.query_entities(
+    "match.dem",
+    class_filter="Hero",
+    property_filter=["m_iHealth", "m_iMaxHealth"],
+    at_tick=50000,
+    max_entities=10
+)
+
+print(f"Hero health at tick {result.tick}:")
+for entity in result.entities:
+    health = entity.properties.get("m_iHealth", 0)
+    max_hp = entity.properties.get("m_iMaxHealth", 0)
+    print(f"  {entity.class_name}: {health}/{max_hp}")
+```
+
+### Item Charges at Specific Time
+
+Get Magic Stick/Wand charges for all players at a specific tick:
+
+```python
+from python_manta import MantaParser
+
+parser = MantaParser()
+
+def get_magic_stick_charges(demo_path: str, at_tick: int = 0) -> dict:
+    """
+    Get magic stick/wand charges for all players at a specific game tick.
+
+    Args:
+        demo_path: Path to the .dem file
+        at_tick: Game tick to query (0 = end of game)
+
+    Returns:
+        Dict mapping player_id -> charges
+    """
+    result = parser.query_entities(
+        demo_path,
+        class_names=['CDOTA_Item_MagicStick', 'CDOTA_Item_MagicWand'],
+        property_filter=['m_iCurrentCharges', 'm_iPlayerOwnerID'],
+        at_tick=at_tick
+    )
+
+    player_charges = {}
+    for entity in result.entities:
+        owner = entity.properties.get('m_iPlayerOwnerID', -1)
+        charges = entity.properties.get('m_iCurrentCharges', 0)
+        if owner >= 0:
+            player_charges[owner] = max(player_charges.get(owner, 0), charges)
+
+    return player_charges
+
+# Get charges at tick 50000
+charges = get_magic_stick_charges("match.dem", at_tick=50000)
+# {0: 6, 2: 18, 4: 7, 6: 6, 8: 1, 10: 15, 12: 4, 14: 20, 16: 0, 18: 5}
+```
+
+---
+
 ## Important Notes
 
 !!! note
 
-    Entity queries return the state at the **end of the replay**. For tracking entity state throughout the match, you would need to use game events or combat log entries which include timing information.
+    By default (`at_tick=0`), entity queries return the state at the **end of the replay**. Use `at_tick` to query state at a specific game tick.
 
 ### Entity Handles
 

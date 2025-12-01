@@ -851,10 +851,15 @@ class CombatLogEntry(BaseModel):
     type_name: str                # Human-readable type name
     attacker_name: str            # Attacker name
     target_name: str              # Target name
+    inflictor_name: str           # Ability/item name
     value: int                    # Damage/heal value
+    health: int                   # Target HP after event
     timestamp: float              # Game time in seconds
     is_attacker_hero: bool        # Whether attacker is a hero
     is_target_hero: bool          # Whether target is a hero
+    stun_duration: float          # Stun duration applied
+    assist_players: List[int]     # Assist player IDs (for kills)
+    # ... 80+ fields total - see documentation for complete list
 ```
 
 ### ParserInfo

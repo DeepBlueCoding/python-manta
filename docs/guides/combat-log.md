@@ -2,7 +2,7 @@
 # Combat Log Guide
 
 ??? info "AI Summary"
-    Parse structured combat log entries with `parse_combat_log()`. Filter by 12 log types: DAMAGE (0), HEAL (1), MODIFIER_ADD (2), MODIFIER_REMOVE (3), DEATH (4), ABILITY (5), ITEM (6), GOLD (7), GAME_STATE (8), XP (9), PURCHASE (10), BUYBACK (11). Use `heroes_only=True` to filter hero-related entries. Entries include attacker/target names, damage values, timestamps, ability info. Note: Combat log starts appearing ~12-17 minutes into match due to HLTV delay.
+    Parse structured combat log entries with `parse_combat_log()`. Filter by 45 log types including DAMAGE (0), HEAL (1), MODIFIER_ADD (2), DEATH (4), ABILITY (5), ITEM (6), FIRST_BLOOD (18). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use `heroes_only=True` for hero-related entries. Ideal for fight reconstruction and damage analysis. Note: Combat log starts ~12-17 min due to HLTV delay.
 
 ---
 
@@ -26,18 +26,51 @@ for entry in result.entries:
 
 | ID | Type Name | Description |
 |----|-----------|-------------|
-| 0 | DAMAGE | Damage dealt to units |
-| 1 | HEAL | Healing received |
-| 2 | MODIFIER_ADD | Buff/debuff applied |
-| 3 | MODIFIER_REMOVE | Buff/debuff removed |
-| 4 | DEATH | Unit death |
-| 5 | ABILITY | Ability used |
-| 6 | ITEM | Item used |
-| 7 | GOLD | Gold gained/lost |
-| 8 | GAME_STATE | Game state change |
-| 9 | XP | Experience gained |
-| 10 | PURCHASE | Item purchased |
-| 11 | BUYBACK | Buyback used |
+| 0 | DOTA_COMBATLOG_DAMAGE | Damage dealt to units |
+| 1 | DOTA_COMBATLOG_HEAL | Healing received |
+| 2 | DOTA_COMBATLOG_MODIFIER_ADD | Buff/debuff applied |
+| 3 | DOTA_COMBATLOG_MODIFIER_REMOVE | Buff/debuff removed |
+| 4 | DOTA_COMBATLOG_DEATH | Unit death |
+| 5 | DOTA_COMBATLOG_ABILITY | Ability cast |
+| 6 | DOTA_COMBATLOG_ITEM | Item used |
+| 7 | DOTA_COMBATLOG_LOCATION | Location event |
+| 8 | DOTA_COMBATLOG_GOLD | Gold gained |
+| 9 | DOTA_COMBATLOG_GAME_STATE | Game state change |
+| 10 | DOTA_COMBATLOG_XP | Experience gained |
+| 11 | DOTA_COMBATLOG_PURCHASE | Item purchased |
+| 12 | DOTA_COMBATLOG_BUYBACK | Buyback used |
+| 13 | DOTA_COMBATLOG_ABILITY_TRIGGER | Ability triggered |
+| 14 | DOTA_COMBATLOG_PLAYERSTATS | Player statistics |
+| 15 | DOTA_COMBATLOG_MULTIKILL | Multi-kill event |
+| 16 | DOTA_COMBATLOG_KILLSTREAK | Kill streak |
+| 17 | DOTA_COMBATLOG_TEAM_BUILDING_KILL | Building destroyed |
+| 18 | DOTA_COMBATLOG_FIRST_BLOOD | First blood |
+| 19 | DOTA_COMBATLOG_MODIFIER_REFRESH | Modifier refreshed |
+| 20 | DOTA_COMBATLOG_NEUTRAL_CAMP_STACK | Camp stacked |
+| 21 | DOTA_COMBATLOG_PICKUP_RUNE | Rune picked up |
+| 22 | DOTA_COMBATLOG_REVEALED_INVISIBLE | Invisibility revealed |
+| 23 | DOTA_COMBATLOG_HERO_SAVED | Hero saved from death |
+| 24 | DOTA_COMBATLOG_MANA_RESTORED | Mana restored |
+| 25 | DOTA_COMBATLOG_HERO_LEVELUP | Hero level up |
+| 26 | DOTA_COMBATLOG_BOTTLE_HEAL_ALLY | Bottle heal ally |
+| 27 | DOTA_COMBATLOG_ENDGAME_STATS | End game statistics |
+| 28 | DOTA_COMBATLOG_INTERRUPT_CHANNEL | Channel interrupted |
+| 29 | DOTA_COMBATLOG_ALLIED_GOLD | Allied gold |
+| 30 | DOTA_COMBATLOG_AEGIS_TAKEN | Aegis taken |
+| 31 | DOTA_COMBATLOG_MANA_DAMAGE | Mana burned |
+| 32 | DOTA_COMBATLOG_PHYSICAL_DAMAGE_PREVENTED | Physical damage blocked |
+| 33 | DOTA_COMBATLOG_UNIT_SUMMONED | Unit summoned |
+| 34 | DOTA_COMBATLOG_ATTACK_EVADE | Attack evaded |
+| 35 | DOTA_COMBATLOG_TREE_CUT | Tree cut |
+| 36 | DOTA_COMBATLOG_SUCCESSFUL_SCAN | Successful scan |
+| 37 | DOTA_COMBATLOG_END_KILLSTREAK | Kill streak ended |
+| 38 | DOTA_COMBATLOG_BLOODSTONE_CHARGE | Bloodstone charge |
+| 39 | DOTA_COMBATLOG_CRITICAL_DAMAGE | Critical damage |
+| 40 | DOTA_COMBATLOG_SPELL_ABSORB | Spell absorbed |
+| 41 | DOTA_COMBATLOG_UNIT_TELEPORTED | Unit teleported |
+| 42 | DOTA_COMBATLOG_KILL_EATER_EVENT | Kill eater (gem) event |
+| 43 | DOTA_COMBATLOG_NEUTRAL_ITEM_EARNED | Neutral item earned |
+| 44 | DOTA_COMBATLOG_TELEPORT_INTERRUPTED | Teleport interrupted |
 
 ---
 
@@ -120,31 +153,32 @@ result = parser.parse_combat_log(
 
 ---
 
-## Entry Fields
+## Entry Fields (80+ Total)
 
-Each `CombatLogEntry` contains:
+Each `CombatLogEntry` contains comprehensive data for fight analysis:
 
-### Identity Fields
+### Core Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `tick` | int | Game tick |
 | `net_tick` | int | Network tick |
-| `type` | int | Combat log type ID |
+| `type` | int | Combat log type ID (0-44) |
 | `type_name` | str | Human-readable type name |
 | `timestamp` | float | Game time in seconds |
+| `timestamp_raw` | float | Raw timestamp value |
 
-### Unit Fields
+### Participant Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `target_name` | str | Target unit name |
+| `target_name` | str | Target unit name (e.g., "npc_dota_hero_pudge") |
 | `target_source_name` | str | Target's source name |
 | `attacker_name` | str | Attacker unit name |
 | `damage_source_name` | str | Damage source name |
 | `inflictor_name` | str | Ability/item that caused this |
 
-### Boolean Flags
+### Participant Flags
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -152,28 +186,122 @@ Each `CombatLogEntry` contains:
 | `is_attacker_hero` | bool | Attacker is a hero |
 | `is_target_illusion` | bool | Target is an illusion |
 | `is_target_hero` | bool | Target is a hero |
+| `is_target_building` | bool | Target is a building |
+
+### Combat Values
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `value` | int | Damage/heal amount |
+| `health` | int | Target HP **after** this event |
+| `damage_type` | int | Damage type (physical/magical/pure) |
+| `damage_category` | int | Damage category |
+
+### CC Durations
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `stun_duration` | float | Stun duration in seconds |
+| `slow_duration` | float | Slow duration in seconds |
+| `modifier_duration` | float | Total modifier duration |
+| `modifier_elapsed_duration` | float | How long modifier has been active |
+
+### Location
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `location_x` | float | X coordinate on map |
+| `location_y` | float | Y coordinate on map |
+
+### Assist Tracking
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `assist_player0` | int | First assist player ID |
+| `assist_player1` | int | Second assist player ID |
+| `assist_player2` | int | Third assist player ID |
+| `assist_player3` | int | Fourth assist player ID |
+| `assist_players` | List[int] | All assist player IDs |
+
+### Modifier Flags
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `root_modifier` | bool | Is a root effect |
+| `silence_modifier` | bool | Is a silence effect |
+| `aura_modifier` | bool | Is an aura |
+| `armor_debuff_modifier` | bool | Is armor reduction |
+| `motion_controller_modifier` | bool | Is motion control (knockback) |
+| `invisibility_modifier` | bool | Grants invisibility |
+| `hidden_modifier` | bool | Is hidden modifier |
+| `modifier_hidden` | bool | Modifier is hidden from UI |
+| `modifier_purged` | bool | Modifier was purged |
+| `no_physical_damage_modifier` | bool | Blocks physical damage |
+
+### Ability Info
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ability_level` | int | Ability level (1-4+) |
+| `is_ability_toggle_on` | bool | Ability toggled on |
+| `is_ability_toggle_off` | bool | Ability toggled off |
+| `is_ultimate_ability` | bool | Is an ultimate ability |
+| `inflictor_is_stolen_ability` | bool | Ability was stolen (Rubick) |
+| `spell_generated_attack` | bool | Attack from spell |
+| `uses_charges` | bool | Ability uses charges |
+
+### Kill/Death Info
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `spell_evaded` | bool | Spell was evaded |
+| `long_range_kill` | bool | Long range kill |
+| `will_reincarnate` | bool | Target will reincarnate (Aegis/WK) |
+| `total_unit_death_count` | int | Total deaths of this unit type |
+| `heal_from_lifesteal` | bool | Heal is from lifesteal |
+| `is_heal_save` | bool | Heal prevented death |
+
+### Hero State
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `attacker_hero_level` | int | Attacker's hero level |
+| `target_hero_level` | int | Target's hero level |
+| `attacker_has_scepter` | bool | Attacker has Aghanim's Scepter |
+| `attacker_team` | int | Attacker team (2=Radiant, 3=Dire) |
+| `target_team` | int | Target team |
+
+### Visibility
+
+| Field | Type | Description |
+|-------|------|-------------|
 | `is_visible_radiant` | bool | Visible to Radiant team |
 | `is_visible_dire` | bool | Visible to Dire team |
+| `at_night_time` | bool | Event occurred at night |
 
-### Value Fields
+### Economy
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `value` | int | Damage/heal value |
-| `health` | int | Target health after |
-| `stun_duration` | float | Stun duration if applicable |
-| `slow_duration` | float | Slow duration if applicable |
-| `ability_level` | int | Ability level |
-| `xp` | int | XP amount |
-| `gold` | int | Gold amount |
+| `xp` | int | XP gained/reason |
+| `gold` | int | Gold gained/reason |
 | `last_hits` | int | Last hits at time |
+| `networth` | int | Player networth |
+| `xpm` | int | XP per minute |
+| `gpm` | int | Gold per minute |
 
-### Team Fields
+### Additional
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `attacker_team` | int | Attacker team ID |
-| `target_team` | int | Target team ID |
+| `stack_count` | int | Modifier stack count |
+| `building_type` | int | Building type ID |
+| `neutral_camp_type` | int | Neutral camp type |
+| `neutral_camp_team` | int | Neutral camp team |
+| `rune_type` | int | Rune type |
+| `obs_wards_placed` | int | Observer wards placed |
+| `regenerated_health` | float | Health regenerated |
+| `target_is_self` | bool | Target is self |
 
 ---
 
@@ -318,3 +446,87 @@ print(f"Real damage entries (no illusions): {len(real_damage)}")
 | Filtering | By type ID, heroes_only | By event name |
 
 Use combat log for continuous combat data (DPS, healing totals) and game events for discrete occurrences (tower kills, rune pickups).
+
+---
+
+## Available Data Fields
+
+The combat log exposes raw data that can be used by other tools for analysis or narrative generation.
+
+### Data Available Per Event
+
+| Data Point | Field | Notes |
+|------------|-------|-------|
+| HP after event | `health` | Target's HP after this event |
+| Damage/heal amount | `value` | Raw numeric value |
+| Ability/item name | `inflictor_name` | Internal name (e.g., "pugna_nether_blast") |
+| Ability level | `ability_level` | 1-4+ |
+| Assist player IDs | `assist_players` | List of player IDs |
+| Stun duration | `stun_duration` | Seconds |
+| Slow duration | `slow_duration` | Seconds |
+| Root applied | `root_modifier` | Boolean |
+| Lifesteal heal | `heal_from_lifesteal` | Boolean |
+| Will reincarnate | `will_reincarnate` | Boolean (Aegis/WK) |
+| Night time | `at_night_time` | Boolean |
+| Has Aghanim's | `attacker_has_scepter` | Boolean |
+| Hero levels | `attacker_hero_level`, `target_hero_level` | Integer |
+| Position | `location_x`, `location_y` | Map coordinates |
+| Timestamp | `timestamp` | Game time in seconds |
+
+### Data NOT Available in Combat Log
+
+| Data Point | Notes |
+|------------|-------|
+| `stack_count` | Always 0 - Valve doesn't populate this field |
+| `uses_charges` | Always false - Valve doesn't populate this field |
+| Cooldowns | Not in combat log |
+| Mana costs | Not in combat log |
+| Exact max HP | Only current HP after event |
+
+!!! tip "Getting Item Charges"
+
+    The combat log `stack_count` field is NOT populated by Valve. To get actual item charges (e.g., Magic Stick/Wand), use entity queries instead:
+
+    ```python
+    from python_manta import MantaParser
+
+    parser = MantaParser()
+
+    def get_magic_stick_charges(demo_path: str, at_tick: int = 0) -> dict:
+        """
+        Get magic stick/wand charges for all players at a specific game tick.
+
+        Args:
+            demo_path: Path to the .dem file
+            at_tick: Game tick to query (0 = end of game)
+
+        Returns:
+            Dict mapping player_id -> charges
+        """
+        result = parser.query_entities(
+            demo_path,
+            class_names=['CDOTA_Item_MagicStick', 'CDOTA_Item_MagicWand'],
+            property_filter=['m_iCurrentCharges', 'm_iPlayerOwnerID'],
+            at_tick=at_tick
+        )
+
+        player_charges = {}
+        for entity in result.entities:
+            owner = entity.properties.get('m_iPlayerOwnerID', -1)
+            charges = entity.properties.get('m_iCurrentCharges', 0)
+            if owner >= 0:
+                player_charges[owner] = max(player_charges.get(owner, 0), charges)
+
+        return player_charges
+
+    # Get charges at a specific tick
+    charges = get_magic_stick_charges("match.dem", at_tick=50000)
+    # {0: 6, 2: 18, 4: 7, 6: 6, 8: 1, 10: 15, 12: 4, 14: 20, 16: 0, 18: 5}
+    ```
+
+    **Alternative**: Calculate charges from HEAL event value (Magic Stick/Wand heal 15 HP per charge):
+
+    ```python
+    # From a combat log HEAL entry with inflictor_name containing "magic_stick" or "magic_wand"
+    charges_used = entry.value // 15  # e.g., 150 HP healed = 10 charges
+    ```

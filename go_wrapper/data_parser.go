@@ -708,36 +708,104 @@ func marshalStringTablesResult(result *StringTablesResult) *C.char {
 // COMBAT LOG PARSING (Structured)
 // ============================================================================
 
-// CombatLogEntry represents a structured combat log entry
+// CombatLogEntry represents a structured combat log entry with ALL available fields
 type CombatLogEntry struct {
-	Tick           uint32  `json:"tick"`
-	NetTick        uint32  `json:"net_tick"`
-	Type           int32   `json:"type"`
-	TypeName       string  `json:"type_name"`
-	TargetName     string  `json:"target_name"`
-	TargetSourceName string `json:"target_source_name"`
-	AttackerName   string  `json:"attacker_name"`
-	DamageSourceName string `json:"damage_source_name"`
-	InflictorName  string  `json:"inflictor_name"`
-	IsAttackerIllusion bool `json:"is_attacker_illusion"`
-	IsAttackerHero bool    `json:"is_attacker_hero"`
-	IsTargetIllusion bool  `json:"is_target_illusion"`
-	IsTargetHero   bool    `json:"is_target_hero"`
-	IsVisibleRadiant bool  `json:"is_visible_radiant"`
-	IsVisibleDire  bool    `json:"is_visible_dire"`
-	Value          int32   `json:"value"`
-	Health         int32   `json:"health"`
-	Timestamp      float32 `json:"timestamp"`
-	StunDuration   float32 `json:"stun_duration"`
-	SlowDuration   float32 `json:"slow_duration"`
-	IsAbilityToggleOn bool `json:"is_ability_toggle_on"`
-	IsAbilityToggleOff bool `json:"is_ability_toggle_off"`
-	AbilityLevel   int32   `json:"ability_level"`
-	XP             int32   `json:"xp"`
-	Gold           int32   `json:"gold"`
-	LastHits       int32   `json:"last_hits"`
-	AttackerTeam   int32   `json:"attacker_team"`
-	TargetTeam     int32   `json:"target_team"`
+	Tick               uint32  `json:"tick"`
+	NetTick            uint32  `json:"net_tick"`
+	Type               int32   `json:"type"`
+	TypeName           string  `json:"type_name"`
+	TargetName         string  `json:"target_name"`
+	TargetSourceName   string  `json:"target_source_name"`
+	AttackerName       string  `json:"attacker_name"`
+	DamageSourceName   string  `json:"damage_source_name"`
+	InflictorName      string  `json:"inflictor_name"`
+	IsAttackerIllusion bool    `json:"is_attacker_illusion"`
+	IsAttackerHero     bool    `json:"is_attacker_hero"`
+	IsTargetIllusion   bool    `json:"is_target_illusion"`
+	IsTargetHero       bool    `json:"is_target_hero"`
+	IsVisibleRadiant   bool    `json:"is_visible_radiant"`
+	IsVisibleDire      bool    `json:"is_visible_dire"`
+	Value              int32   `json:"value"`
+	Health             int32   `json:"health"`
+	Timestamp          float32 `json:"timestamp"`
+	TimestampRaw       float32 `json:"timestamp_raw"`
+	StunDuration       float32 `json:"stun_duration"`
+	SlowDuration       float32 `json:"slow_duration"`
+	IsAbilityToggleOn  bool    `json:"is_ability_toggle_on"`
+	IsAbilityToggleOff bool    `json:"is_ability_toggle_off"`
+	AbilityLevel       int32   `json:"ability_level"`
+	XP                 int32   `json:"xp"`
+	Gold               int32   `json:"gold"`
+	LastHits           int32   `json:"last_hits"`
+	AttackerTeam       int32   `json:"attacker_team"`
+	TargetTeam         int32   `json:"target_team"`
+	// Location data
+	LocationX float32 `json:"location_x"`
+	LocationY float32 `json:"location_y"`
+	// Assist tracking
+	AssistPlayer0  int32   `json:"assist_player0"`
+	AssistPlayer1  int32   `json:"assist_player1"`
+	AssistPlayer2  int32   `json:"assist_player2"`
+	AssistPlayer3  int32   `json:"assist_player3"`
+	AssistPlayers  []int32 `json:"assist_players"`
+	// Damage classification
+	DamageType     int32 `json:"damage_type"`
+	DamageCategory int32 `json:"damage_category"`
+	// Additional combat info
+	IsTargetBuilding     bool    `json:"is_target_building"`
+	IsUltimateAbility    bool    `json:"is_ultimate_ability"`
+	IsHealSave           bool    `json:"is_heal_save"`
+	TargetIsSelf         bool    `json:"target_is_self"`
+	ModifierDuration     float32 `json:"modifier_duration"`
+	StackCount           int32   `json:"stack_count"`
+	HiddenModifier       bool    `json:"hidden_modifier"`
+	InvisibilityModifier bool    `json:"invisibility_modifier"`
+	// Hero levels
+	AttackerHeroLevel int32 `json:"attacker_hero_level"`
+	TargetHeroLevel   int32 `json:"target_hero_level"`
+	// Economy stats
+	XPM           int32 `json:"xpm"`
+	GPM           int32 `json:"gpm"`
+	EventLocation int32 `json:"event_location"`
+	Networth      int32 `json:"networth"`
+	// Ward/rune/camp info
+	ObsWardsPlaced  int32 `json:"obs_wards_placed"`
+	NeutralCampType int32 `json:"neutral_camp_type"`
+	NeutralCampTeam int32 `json:"neutral_camp_team"`
+	RuneType        int32 `json:"rune_type"`
+	// Building info
+	BuildingType int32 `json:"building_type"`
+	// Modifier details
+	ModifierElapsedDuration float32 `json:"modifier_elapsed_duration"`
+	SilenceModifier         bool    `json:"silence_modifier"`
+	HealFromLifesteal       bool    `json:"heal_from_lifesteal"`
+	ModifierPurged          bool    `json:"modifier_purged"`
+	ModifierPurgeAbility    int32   `json:"modifier_purge_ability"`
+	ModifierPurgeNpc        int32   `json:"modifier_purge_npc"`
+	RootModifier            bool    `json:"root_modifier"`
+	AuraModifier            bool    `json:"aura_modifier"`
+	ArmorDebuffModifier     bool    `json:"armor_debuff_modifier"`
+	NoPhysicalDamageModifier bool   `json:"no_physical_damage_modifier"`
+	ModifierAbility         int32   `json:"modifier_ability"`
+	ModifierHidden          bool    `json:"modifier_hidden"`
+	MotionControllerModifier bool   `json:"motion_controller_modifier"`
+	// Kill/death info
+	SpellEvaded         bool  `json:"spell_evaded"`
+	LongRangeKill       bool  `json:"long_range_kill"`
+	TotalUnitDeathCount int32 `json:"total_unit_death_count"`
+	WillReincarnate     bool  `json:"will_reincarnate"`
+	// Ability info
+	InflictorIsStolenAbility bool  `json:"inflictor_is_stolen_ability"`
+	SpellGeneratedAttack     bool  `json:"spell_generated_attack"`
+	UsesCharges              bool  `json:"uses_charges"`
+	// Game state
+	AtNightTime        bool    `json:"at_night_time"`
+	AttackerHasScepter bool    `json:"attacker_has_scepter"`
+	RegeneratedHealth  float32 `json:"regenerated_health"`
+	// Tracking/events
+	KillEaterEvent  int32 `json:"kill_eater_event"`
+	UnitStatusLabel int32 `json:"unit_status_label"`
+	TrackedStatId   int32 `json:"tracked_stat_id"`
 }
 
 // CombatLogResult holds combat log parsing results
@@ -797,23 +865,17 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 		return nil, fmt.Errorf("error creating parser: %w", err)
 	}
 
-	// Build name lookup from string tables
-	stringLookup := make(map[int32]string)
+	// Store raw combat log entries with indices for later name resolution
+	type rawEntry struct {
+		tick               uint32
+		netTick            uint32
+		msg                *dota.CMsgDOTACombatLogEntry
+	}
+	rawEntries := make([]rawEntry, 0)
 
-	parser.Callbacks.OnCDemoStringTables(func(m *dota.CDemoStringTables) error {
-		for _, table := range m.GetTables() {
-			if table.GetTableName() == "CombatLogNames" {
-				for i, item := range table.GetItems() {
-					stringLookup[int32(i)] = item.GetStr()
-				}
-			}
-		}
-		return nil
-	})
-
-	// Parse combat log entries
+	// Parse combat log entries - store raw data
 	parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
-		if config.MaxEntries > 0 && len(result.Entries) >= config.MaxEntries {
+		if config.MaxEntries > 0 && len(rawEntries) >= config.MaxEntries {
 			return nil
 		}
 
@@ -840,51 +902,140 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 			}
 		}
 
-		// Look up names
-		getName := func(idx uint32) string {
-			if name, ok := stringLookup[int32(idx)]; ok {
-				return name
-			}
-			return fmt.Sprintf("unknown_%d", idx)
-		}
+		// Store raw entry for later processing
+		rawEntries = append(rawEntries, rawEntry{
+			tick:    parser.Tick,
+			netTick: parser.NetTick,
+			msg:     m,
+		})
 
-		entry := CombatLogEntry{
-			Tick:              parser.Tick,
-			NetTick:          parser.NetTick,
-			Type:             int32(entryType),
-			TypeName:         dota.DOTA_COMBATLOG_TYPES_name[int32(entryType)],
-			TargetName:       getName(m.GetTargetName()),
-			TargetSourceName: getName(m.GetTargetSourceName()),
-			AttackerName:     getName(m.GetAttackerName()),
-			DamageSourceName: getName(m.GetDamageSourceName()),
-			InflictorName:    getName(m.GetInflictorName()),
-			IsAttackerIllusion: m.GetIsAttackerIllusion(),
-			IsAttackerHero:   m.GetIsAttackerHero(),
-			IsTargetIllusion: m.GetIsTargetIllusion(),
-			IsTargetHero:     m.GetIsTargetHero(),
-			IsVisibleRadiant: m.GetIsVisibleRadiant(),
-			IsVisibleDire:    m.GetIsVisibleDire(),
-			Value:            int32(m.GetValue()),
-			Health:           m.GetHealth(),
-			Timestamp:        m.GetTimestamp(),
-			StunDuration:     m.GetStunDuration(),
-			SlowDuration:     m.GetSlowDuration(),
-			IsAbilityToggleOn: m.GetIsAbilityToggleOn(),
-			IsAbilityToggleOff: m.GetIsAbilityToggleOff(),
-			AbilityLevel:     int32(m.GetAbilityLevel()),
-			XP:               int32(m.GetXpReason()),       // XP reason available
-			Gold:             int32(m.GetGoldReason()),     // Gold reason available
-			LastHits:         int32(m.GetLastHits()),
-			AttackerTeam:     int32(m.GetAttackerTeam()),
-			TargetTeam:       int32(m.GetTargetTeam()),
-		}
-
-		result.Entries = append(result.Entries, entry)
 		return nil
 	})
 
+	// Parse the file first to populate string tables
 	if err := parser.Start(); err != nil {
 		return nil, fmt.Errorf("error parsing file: %w", err)
+	}
+
+	// Now resolve names using fully populated string tables
+	getName := func(idx uint32) string {
+		if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(idx)); ok {
+			return name
+		}
+		return fmt.Sprintf("unknown_%d", idx)
+	}
+
+	// Convert raw entries to final entries with resolved names
+	for _, raw := range rawEntries {
+		m := raw.msg
+		entryType := m.GetType()
+
+		// Convert assist_players slice
+		assistPlayers := make([]int32, len(m.GetAssistPlayers()))
+		for i, ap := range m.GetAssistPlayers() {
+			assistPlayers[i] = ap
+		}
+
+		entry := CombatLogEntry{
+			Tick:               raw.tick,
+			NetTick:            raw.netTick,
+			Type:               int32(entryType),
+			TypeName:           dota.DOTA_COMBATLOG_TYPES_name[int32(entryType)],
+			TargetName:         getName(m.GetTargetName()),
+			TargetSourceName:   getName(m.GetTargetSourceName()),
+			AttackerName:       getName(m.GetAttackerName()),
+			DamageSourceName:   getName(m.GetDamageSourceName()),
+			InflictorName:      getName(m.GetInflictorName()),
+			IsAttackerIllusion: m.GetIsAttackerIllusion(),
+			IsAttackerHero:     m.GetIsAttackerHero(),
+			IsTargetIllusion:   m.GetIsTargetIllusion(),
+			IsTargetHero:       m.GetIsTargetHero(),
+			IsVisibleRadiant:   m.GetIsVisibleRadiant(),
+			IsVisibleDire:      m.GetIsVisibleDire(),
+			Value:              int32(m.GetValue()),
+			Health:             m.GetHealth(),
+			Timestamp:          m.GetTimestamp(),
+			TimestampRaw:       m.GetTimestampRaw(),
+			StunDuration:       m.GetStunDuration(),
+			SlowDuration:       m.GetSlowDuration(),
+			IsAbilityToggleOn:  m.GetIsAbilityToggleOn(),
+			IsAbilityToggleOff: m.GetIsAbilityToggleOff(),
+			AbilityLevel:       int32(m.GetAbilityLevel()),
+			XP:                 int32(m.GetXpReason()),
+			Gold:               int32(m.GetGoldReason()),
+			LastHits:           int32(m.GetLastHits()),
+			AttackerTeam:       int32(m.GetAttackerTeam()),
+			TargetTeam:         int32(m.GetTargetTeam()),
+			// Location data
+			LocationX: m.GetLocationX(),
+			LocationY: m.GetLocationY(),
+			// Assist tracking
+			AssistPlayer0: int32(m.GetAssistPlayer0()),
+			AssistPlayer1: int32(m.GetAssistPlayer1()),
+			AssistPlayer2: int32(m.GetAssistPlayer2()),
+			AssistPlayer3: int32(m.GetAssistPlayer3()),
+			AssistPlayers: assistPlayers,
+			// Damage classification
+			DamageType:     int32(m.GetDamageType()),
+			DamageCategory: int32(m.GetDamageCategory()),
+			// Additional combat info
+			IsTargetBuilding:     m.GetIsTargetBuilding(),
+			IsUltimateAbility:    m.GetIsUltimateAbility(),
+			IsHealSave:           m.GetIsHealSave(),
+			TargetIsSelf:         m.GetTargetIsSelf(),
+			ModifierDuration:     m.GetModifierDuration(),
+			StackCount:           int32(m.GetStackCount()),
+			HiddenModifier:       m.GetHiddenModifier(),
+			InvisibilityModifier: m.GetInvisibilityModifier(),
+			// Hero levels
+			AttackerHeroLevel: int32(m.GetAttackerHeroLevel()),
+			TargetHeroLevel:   int32(m.GetTargetHeroLevel()),
+			// Economy stats
+			XPM:           int32(m.GetXpm()),
+			GPM:           int32(m.GetGpm()),
+			EventLocation: int32(m.GetEventLocation()),
+			Networth:      int32(m.GetNetworth()),
+			// Ward/rune/camp info
+			ObsWardsPlaced:  int32(m.GetObsWardsPlaced()),
+			NeutralCampType: int32(m.GetNeutralCampType()),
+			NeutralCampTeam: int32(m.GetNeutralCampTeam()),
+			RuneType:        int32(m.GetRuneType()),
+			// Building info
+			BuildingType: int32(m.GetBuildingType()),
+			// Modifier details
+			ModifierElapsedDuration:  m.GetModifierElapsedDuration(),
+			SilenceModifier:          m.GetSilenceModifier(),
+			HealFromLifesteal:        m.GetHealFromLifesteal(),
+			ModifierPurged:           m.GetModifierPurged(),
+			ModifierPurgeAbility:     int32(m.GetModifierPurgeAbility()),
+			ModifierPurgeNpc:         int32(m.GetModifierPurgeNpc()),
+			RootModifier:             m.GetRootModifier(),
+			AuraModifier:             m.GetAuraModifier(),
+			ArmorDebuffModifier:      m.GetArmorDebuffModifier(),
+			NoPhysicalDamageModifier: m.GetNoPhysicalDamageModifier(),
+			ModifierAbility:          int32(m.GetModifierAbility()),
+			ModifierHidden:           m.GetModifierHidden(),
+			MotionControllerModifier: m.GetMotionControllerModifier(),
+			// Kill/death info
+			SpellEvaded:         m.GetSpellEvaded(),
+			LongRangeKill:       m.GetLongRangeKill(),
+			TotalUnitDeathCount: int32(m.GetTotalUnitDeathCount()),
+			WillReincarnate:     m.GetWillReincarnate(),
+			// Ability info
+			InflictorIsStolenAbility: m.GetInflictorIsStolenAbility(),
+			SpellGeneratedAttack:     m.GetSpellGeneratedAttack(),
+			UsesCharges:              m.GetUsesCharges(),
+			// Game state
+			AtNightTime:        m.GetAtNightTime(),
+			AttackerHasScepter: m.GetAttackerHasScepter(),
+			RegeneratedHealth:  m.GetRegeneratedHealth(),
+			// Tracking/events
+			KillEaterEvent:  int32(m.GetKillEaterEvent()),
+			UnitStatusLabel: int32(m.GetUnitStatusLabel()),
+			TrackedStatId:   int32(m.GetTrackedStatId()),
+		}
+
+		result.Entries = append(result.Entries, entry)
 	}
 
 	result.Success = true

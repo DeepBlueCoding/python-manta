@@ -241,7 +241,7 @@ class StringTablesResult(BaseModel):
 # ============================================================================
 
 class CombatLogEntry(BaseModel):
-    """Structured combat log entry."""
+    """Structured combat log entry with ALL available fields for fight reconstruction."""
     tick: int
     net_tick: int
     type: int
@@ -260,6 +260,7 @@ class CombatLogEntry(BaseModel):
     value: int = 0
     health: int = 0
     timestamp: float = 0.0
+    timestamp_raw: float = 0.0
     stun_duration: float = 0.0
     slow_duration: float = 0.0
     is_ability_toggle_on: bool = False
@@ -270,6 +271,73 @@ class CombatLogEntry(BaseModel):
     last_hits: int = 0
     attacker_team: int = 0
     target_team: int = 0
+    # Location data
+    location_x: float = 0.0
+    location_y: float = 0.0
+    # Assist tracking
+    assist_player0: int = 0
+    assist_player1: int = 0
+    assist_player2: int = 0
+    assist_player3: int = 0
+    assist_players: List[int] = []
+    # Damage classification
+    damage_type: int = 0
+    damage_category: int = 0
+    # Additional combat info
+    is_target_building: bool = False
+    is_ultimate_ability: bool = False
+    is_heal_save: bool = False
+    target_is_self: bool = False
+    modifier_duration: float = 0.0
+    stack_count: int = 0
+    hidden_modifier: bool = False
+    invisibility_modifier: bool = False
+    # Hero levels
+    attacker_hero_level: int = 0
+    target_hero_level: int = 0
+    # Economy stats
+    xpm: int = 0
+    gpm: int = 0
+    event_location: int = 0
+    networth: int = 0
+    # Ward/rune/camp info
+    obs_wards_placed: int = 0
+    neutral_camp_type: int = 0
+    neutral_camp_team: int = 0
+    rune_type: int = 0
+    # Building info
+    building_type: int = 0
+    # Modifier details
+    modifier_elapsed_duration: float = 0.0
+    silence_modifier: bool = False
+    heal_from_lifesteal: bool = False
+    modifier_purged: bool = False
+    modifier_purge_ability: int = 0
+    modifier_purge_npc: int = 0
+    root_modifier: bool = False
+    aura_modifier: bool = False
+    armor_debuff_modifier: bool = False
+    no_physical_damage_modifier: bool = False
+    modifier_ability: int = 0
+    modifier_hidden: bool = False
+    motion_controller_modifier: bool = False
+    # Kill/death info
+    spell_evaded: bool = False
+    long_range_kill: bool = False
+    total_unit_death_count: int = 0
+    will_reincarnate: bool = False
+    # Ability info
+    inflictor_is_stolen_ability: bool = False
+    spell_generated_attack: bool = False
+    uses_charges: bool = False
+    # Game state
+    at_night_time: bool = False
+    attacker_has_scepter: bool = False
+    regenerated_health: float = 0.0
+    # Tracking/events
+    kill_eater_event: int = 0
+    unit_status_label: int = 0
+    tracked_stat_id: int = 0
 
 
 class CombatLogConfig(BaseModel):
