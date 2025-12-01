@@ -3,7 +3,7 @@
 > **Python bindings for the [dotabuff/manta](https://github.com/dotabuff/manta) Dota 2 replay parser**
 
 [![PyPI version](https://badge.fury.io/py/python-manta.svg)](https://pypi.org/project/python-manta/)
-[![Build Status](https://github.com/equilibrium-coach/python-manta/actions/workflows/ci.yml/badge.svg)](https://github.com/equilibrium-coach/python-manta/actions)
+[![Build Status](https://github.com/DeepBlueCoding/python-manta/actions/workflows/ci.yml/badge.svg)](https://github.com/DeepBlueCoding/python-manta/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
@@ -39,7 +39,7 @@ If you're working in Go, use [Manta](https://github.com/dotabuff/manta) directly
 - [Supported Callbacks (272 Total)](#supported-callbacks-272-total)
 - [Data Models](#data-models)
 - [Common Use Cases](#common-use-cases)
-- [Building from Source](#building-from-source)
+- [Development Setup](#development-setup)
 - [Architecture](#architecture)
 - [AI Integration Guide](#ai-integration-guide)
 - [Troubleshooting](#troubleshooting)
@@ -941,42 +941,36 @@ for msg_type, limit in message_types:
 
 ---
 
-## Building from Source
+## Development Setup
 
-### Prerequisites
+When you clone this repository, the shared library (`.so`/`.dylib`/`.dll`) is not included. You have two options:
 
-- **Python 3.8+**
-- **Go 1.19+**
-- **Git**
+### Option 1: Download Pre-built Library (Recommended)
 
-### Steps
+```bash
+git clone https://github.com/DeepBlueCoding/python-manta.git
+cd python-manta
+python scripts/download_library.py
+pip install -e '.[dev]'
+```
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/equilibrium-coach/python-manta.git
-   cd python-manta
-   ```
+### Option 2: Build from Source
 
-2. **Clone the Manta dependency:**
-   ```bash
-   # From the project root
-   git clone https://github.com/dotabuff/manta.git ../manta
-   ```
+Requires Go 1.19+ installed.
 
-3. **Build the CGO library:**
-   ```bash
-   ./build.sh
-   ```
+```bash
+git clone https://github.com/DeepBlueCoding/python-manta.git
+cd python-manta
+git clone https://github.com/dotabuff/manta.git ../manta
+./build.sh
+pip install -e '.[dev]'
+```
 
-4. **Install the Python package:**
-   ```bash
-   pip install -e '.[dev]'
-   ```
+### Verify Installation
 
-5. **Verify installation:**
-   ```bash
-   python -c "from python_manta import MantaParser; print('Success!')"
-   ```
+```bash
+python -c "from python_manta import MantaParser; print('Success!')"
+```
 
 ### Running Tests
 
@@ -1162,8 +1156,9 @@ result = parser.parse_universal("match.dem", "CNETMsg_Tick", 0)
 
 ## Project Links
 
-- **Python Manta GitHub:** https://github.com/equilibrium-coach/python-manta
-- **PyPI Package:** https://pypi.org/project/python-manta/
+- **GitHub:** https://github.com/DeepBlueCoding/python-manta
+- **Documentation:** https://deepbluecoding.github.io/python-manta/
+- **PyPI:** https://pypi.org/project/python-manta/
 - **Original Manta (Go):** https://github.com/dotabuff/manta
 - **Dotabuff:** https://www.dotabuff.com
 

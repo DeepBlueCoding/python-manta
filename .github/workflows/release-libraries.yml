@@ -1,0 +1,100 @@
+name: Release Libraries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to attach libraries to'
+        required: true
+        type: string
+
+jobs:
+  build-libraries:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: libmanta_wrapper-linux-x86_64.so
+            lib_name: libmanta_wrapper.so
+          - os: macos-13
+            artifact: libmanta_wrapper-macos-x86_64.dylib
+            lib_name: libmanta_wrapper.dylib
+          - os: macos-14
+            artifact: libmanta_wrapper-macos-arm64.dylib
+            lib_name: libmanta_wrapper.dylib
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read manta version
+        id: manta-version
+        shell: bash
+        run: |
+          MANTA_REF=$(grep -v '^#' .manta-version | grep -v '^[[:space:]]*$' | tail -n1 | tr -d '[:space:]')
+          echo "MANTA_REF=${MANTA_REF}" >> $GITHUB_ENV
+          echo "Locked manta version: ${MANTA_REF}"
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Clone Manta
+        run: |
+          git clone https://github.com/dotabuff/manta ../manta
+          cd ../manta
+          git checkout ${{ env.MANTA_REF }}
+
+      - name: Build shared library
+        working-directory: go_wrapper
+        run: |
+          go mod tidy
+          go build -buildmode=c-shared -o ${{ matrix.lib_name }} .
+
+      - name: Rename artifact
+        working-directory: go_wrapper
+        run: mv ${{ matrix.lib_name }} ${{ matrix.artifact }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: go_wrapper/${{ matrix.artifact }}
+
+  upload-to-release:
+    needs: build-libraries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: libraries
+          merge-multiple: true
+
+      - name: List libraries
+        run: |
+          echo "Built libraries:"
+          ls -lah libraries/
+
+      - name: Get release tag
+        id: get-tag
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            echo "tag=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get-tag.outputs.tag }}
+          files: libraries/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

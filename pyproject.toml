@@ -43,10 +43,10 @@ build = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/equilibrium-coach/python-manta"
-Repository = "https://github.com/equilibrium-coach/python-manta"
-Documentation = "https://python-manta.readthedocs.io/"
-"Bug Tracker" = "https://github.com/equilibrium-coach/python-manta/issues"
+Homepage = "https://github.com/DeepBlueCoding/python-manta"
+Repository = "https://github.com/DeepBlueCoding/python-manta"
+Documentation = "https://deepbluecoding.github.io/python-manta/"
+"Bug Tracker" = "https://github.com/DeepBlueCoding/python-manta/issues"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

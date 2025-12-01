@@ -1,0 +1,75 @@
+site_name: Python Manta
+site_url: https://deepbluecoding.github.io/python-manta/
+site_description: Python bindings for the dotabuff/manta Dota 2 replay parser
+site_author: DeepBlueCoding
+
+repo_name: DeepBlueCoding/python-manta
+repo_url: https://github.com/DeepBlueCoding/python-manta
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: deep purple
+    accent: purple
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - mike:
+      version_selector: true
+      css_dir: css
+      javascript_dir: js
+
+extra:
+  version:
+    provider: mike
+    default: latest
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/DeepBlueCoding/python-manta
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/python-manta/
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Reference:
+    - Overview: api/index.md
+    - MantaParser: api/manta-parser.md
+    - Data Models: api/models.md
+  - Guides:
+    - Overview: guides/index.md
+    - Game Events: guides/game-events.md
+    - Combat Log: guides/combat-log.md
+    - Entity Queries: guides/entities.md
+    - Modifiers: guides/modifiers.md
+    - Universal Messages: guides/universal.md
+  - Examples: examples.md
+  - Reference:
+    - Overview: reference/index.md
+    - Callbacks: reference/callbacks.md

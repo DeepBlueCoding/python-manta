@@ -230,7 +230,8 @@ parser.Callbacks.OnNewCallbackName(func(m *dota.NewCallbackName) error {
 
 ## Project Links
 
-- **This repo**: https://github.com/equilibrium-coach/python-manta
+- **GitHub**: https://github.com/DeepBlueCoding/python-manta
+- **Documentation**: https://deepbluecoding.github.io/python-manta/
 - **PyPI**: https://pypi.org/project/python-manta/
 - **Manta (Go)**: https://github.com/dotabuff/manta
 - **Dotabuff**: https://www.dotabuff.com
