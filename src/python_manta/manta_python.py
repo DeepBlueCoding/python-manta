@@ -2,9 +2,11 @@
 Python interface for Manta Dota 2 replay parser using ctypes.
 Provides basic file header reading functionality through Go CGO wrapper.
 """
+import bz2
 import ctypes
 import json
 import os
+import tempfile
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
@@ -372,21 +374,76 @@ class ParserInfo(BaseModel):
 
 class MantaParser:
     """Python wrapper for Manta Dota 2 replay parser."""
-    
+
+    # BZ2 magic bytes
+    _BZ2_MAGIC = b'BZh'
+
     def __init__(self, library_path: Optional[str] = None):
         """Initialize the Manta parser with the shared library."""
         if library_path is None:
             # Default to library in same directory
             library_path = Path(__file__).parent / "libmanta_wrapper.so"
-        
+
         if not os.path.exists(library_path):
             raise FileNotFoundError(f"Shared library not found: {library_path}")
-        
+
         # Load the shared library
         self.lib = ctypes.CDLL(str(library_path))
-        
+
         # Configure function signatures
         self._setup_function_signatures()
+
+        # Cache for decompressed files
+        self._decompressed_cache: Dict[str, str] = {}
+
+    def _prepare_demo_file(self, demo_file_path: str) -> str:
+        """
+        Prepare a demo file for parsing, decompressing if necessary.
+
+        Supports:
+        - Raw .dem files (PBDEMS2 format)
+        - BZ2 compressed .dem files (downloaded from Valve servers)
+
+        Args:
+            demo_file_path: Path to the .dem file (possibly compressed)
+
+        Returns:
+            Path to the uncompressed demo file (may be a temp file)
+        """
+        # Check cache first
+        if demo_file_path in self._decompressed_cache:
+            cached_path = self._decompressed_cache[demo_file_path]
+            if os.path.exists(cached_path):
+                return cached_path
+
+        # Check if file is bz2 compressed by reading magic bytes
+        with open(demo_file_path, 'rb') as f:
+            magic = f.read(3)
+
+        if magic == self._BZ2_MAGIC:
+            # Decompress to temp file
+            temp_fd, temp_path = tempfile.mkstemp(suffix='.dem')
+            try:
+                with bz2.open(demo_file_path, 'rb') as f_in:
+                    with os.fdopen(temp_fd, 'wb') as f_out:
+                        # Read and write in chunks to handle large files
+                        while True:
+                            chunk = f_in.read(1024 * 1024)  # 1MB chunks
+                            if not chunk:
+                                break
+                            f_out.write(chunk)
+
+                # Cache the decompressed path
+                self._decompressed_cache[demo_file_path] = temp_path
+                return temp_path
+            except Exception as e:
+                # Clean up temp file on error
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+                raise ValueError(f"Failed to decompress bz2 file: {e}")
+
+        # File is not compressed, use as-is
+        return demo_file_path
     
     def _setup_function_signatures(self):
         """Configure ctypes function signatures for the shared library."""
@@ -437,22 +494,25 @@ class MantaParser:
     def parse_header(self, demo_file_path: str) -> HeaderInfo:
         """
         Parse the header of a Dota 2 demo file.
-        
+
         Args:
-            demo_file_path: Path to the .dem file
-            
+            demo_file_path: Path to the .dem file (supports bz2 compressed)
+
         Returns:
             HeaderInfo object containing parsed header data
-            
+
         Raises:
             FileNotFoundError: If demo file doesn't exist
             ValueError: If parsing fails
         """
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-        
+
+        # Handle bz2 compression if needed
+        actual_path = self._prepare_demo_file(demo_file_path)
+
         # Convert path to bytes for C function
-        path_bytes = demo_file_path.encode('utf-8')
+        path_bytes = actual_path.encode('utf-8')
         
         # Call the Go function
         result_ptr = self.lib.ParseHeader(path_bytes)
@@ -497,10 +557,13 @@ class MantaParser:
         """
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-        
+
+        # Handle bz2 compression if needed
+        actual_path = self._prepare_demo_file(demo_file_path)
+
         # Convert path to bytes for C function
-        path_bytes = demo_file_path.encode('utf-8')
-        
+        path_bytes = actual_path.encode('utf-8')
+
         # Call the Go function
         result_ptr = self.lib.ParseDraft(path_bytes)
         
@@ -545,11 +608,14 @@ class MantaParser:
         """
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-        
+
+        # Handle bz2 compression if needed
+        actual_path = self._prepare_demo_file(demo_file_path)
+
         # Convert parameters to bytes for C function
-        path_bytes = demo_file_path.encode('utf-8')
+        path_bytes = actual_path.encode('utf-8')
         filter_bytes = message_filter.encode('utf-8')
-        
+
         # Call the Go function
         result_ptr = self.lib.ParseUniversal(path_bytes, filter_bytes, max_messages)
         
@@ -611,6 +677,9 @@ class MantaParser:
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
 
+        # Handle bz2 compression if needed
+        actual_path = self._prepare_demo_file(demo_file_path)
+
         # Build config
         config = EntityParseConfig(
             interval_ticks=interval_ticks,
@@ -620,7 +689,7 @@ class MantaParser:
         )
 
         # Convert parameters to bytes for C function
-        path_bytes = demo_file_path.encode('utf-8')
+        path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json().encode('utf-8')
 
         # Call the Go function
@@ -676,6 +745,9 @@ class MantaParser:
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
 
+        # Handle bz2 compression if needed
+        actual_path = self._prepare_demo_file(demo_file_path)
+
         config = GameEventsConfig(
             event_filter=event_filter,
             event_names=event_names or [],
@@ -683,7 +755,7 @@ class MantaParser:
             capture_types=capture_types
         )
 
-        path_bytes = demo_file_path.encode('utf-8')
+        path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json().encode('utf-8')
 
         result_ptr = self.lib.ParseGameEvents(path_bytes, config_json)
@@ -728,13 +800,16 @@ class MantaParser:
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
 
+        # Handle bz2 compression if needed
+        actual_path = self._prepare_demo_file(demo_file_path)
+
         config = ModifiersConfig(
             max_modifiers=max_modifiers,
             debuffs_only=debuffs_only,
             auras_only=auras_only
         )
 
-        path_bytes = demo_file_path.encode('utf-8')
+        path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json().encode('utf-8')
 
         result_ptr = self.lib.ParseModifiers(path_bytes, config_json)
@@ -783,6 +858,9 @@ class MantaParser:
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
 
+        # Handle bz2 compression if needed
+        actual_path = self._prepare_demo_file(demo_file_path)
+
         config = EntitiesConfig(
             class_filter=class_filter,
             class_names=class_names or [],
@@ -791,7 +869,7 @@ class MantaParser:
             max_entities=max_entities
         )
 
-        path_bytes = demo_file_path.encode('utf-8')
+        path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json().encode('utf-8')
 
         result_ptr = self.lib.QueryEntities(path_bytes, config_json)
@@ -836,13 +914,16 @@ class MantaParser:
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
 
+        # Handle bz2 compression if needed
+        actual_path = self._prepare_demo_file(demo_file_path)
+
         config = StringTablesConfig(
             table_names=table_names or [],
             include_values=include_values,
             max_entries=max_entries
         )
 
-        path_bytes = demo_file_path.encode('utf-8')
+        path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json().encode('utf-8')
 
         result_ptr = self.lib.GetStringTables(path_bytes, config_json)
@@ -889,13 +970,16 @@ class MantaParser:
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
 
+        # Handle bz2 compression if needed
+        actual_path = self._prepare_demo_file(demo_file_path)
+
         config = CombatLogConfig(
             types=types or [],
             max_entries=max_entries,
             heroes_only=heroes_only
         )
 
-        path_bytes = demo_file_path.encode('utf-8')
+        path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json().encode('utf-8')
 
         result_ptr = self.lib.ParseCombatLog(path_bytes, config_json)
@@ -931,7 +1015,10 @@ class MantaParser:
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
 
-        path_bytes = demo_file_path.encode('utf-8')
+        # Handle bz2 compression if needed
+        actual_path = self._prepare_demo_file(demo_file_path)
+
+        path_bytes = actual_path.encode('utf-8')
 
         result_ptr = self.lib.GetParserInfo(path_bytes)
 

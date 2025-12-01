@@ -9,6 +9,7 @@ on:
 
 jobs:
   # Determine if this is a base version (v1.4.5) or patch version (v1.4.5.1)
+  # Also check if go_wrapper changed since base version (requires rebuild)
   check-version:
     runs-on: ubuntu-latest
     outputs:
@@ -16,7 +17,13 @@ jobs:
       is_patch_version: ${{ steps.check.outputs.is_patch_version }}
       base_version: ${{ steps.check.outputs.base_version }}
       full_version: ${{ steps.check.outputs.full_version }}
+      go_wrapper_changed: ${{ steps.check-go-wrapper.outputs.changed }}
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history to compare tags
+
       - name: Check version type
         id: check
         run: |
@@ -45,10 +52,38 @@ jobs:
             echo "ℹ️ Not a version tag: $REF"
           fi
 
-  # Build wheels from scratch (for base versions and non-tag builds)
+      - name: Check if go_wrapper changed since base version
+        id: check-go-wrapper
+        run: |
+          BASE_VERSION="${{ steps.check.outputs.base_version }}"
+          IS_PATCH="${{ steps.check.outputs.is_patch_version }}"
+
+          if [[ "$IS_PATCH" == "true" && -n "$BASE_VERSION" ]]; then
+            # Check if go_wrapper/ changed since base version tag
+            BASE_TAG="v${BASE_VERSION}"
+            if git rev-parse "$BASE_TAG" >/dev/null 2>&1; then
+              CHANGED_FILES=$(git diff --name-only "$BASE_TAG"..HEAD -- go_wrapper/ || echo "")
+              if [[ -n "$CHANGED_FILES" ]]; then
+                echo "changed=true" >> $GITHUB_OUTPUT
+                echo "🔨 go_wrapper/ changed since $BASE_TAG - rebuild required:"
+                echo "$CHANGED_FILES"
+              else
+                echo "changed=false" >> $GITHUB_OUTPUT
+                echo "✅ go_wrapper/ unchanged since $BASE_TAG - can reversion wheels"
+              fi
+            else
+              echo "changed=true" >> $GITHUB_OUTPUT
+              echo "⚠️ Base tag $BASE_TAG not found - will rebuild to be safe"
+            fi
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ Not a patch version, skipping go_wrapper check"
+          fi
+
+  # Build wheels from scratch (for base versions, non-tag builds, or when go_wrapper changed)
   linux-wheels:
     needs: check-version
-    if: needs.check-version.outputs.is_patch_version != 'true'
+    if: needs.check-version.outputs.is_patch_version != 'true' || needs.check-version.outputs.go_wrapper_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -107,7 +142,7 @@ jobs:
 
   macos-wheels:
     needs: check-version
-    if: needs.check-version.outputs.is_patch_version != 'true'
+    if: needs.check-version.outputs.is_patch_version != 'true' || needs.check-version.outputs.go_wrapper_changed == 'true'
     runs-on: macos-latest
     strategy:
       matrix:
@@ -189,7 +224,7 @@ jobs:
 
   windows-wheels:
     needs: check-version
-    if: needs.check-version.outputs.is_patch_version != 'true'
+    if: needs.check-version.outputs.is_patch_version != 'true' || needs.check-version.outputs.go_wrapper_changed == 'true'
     runs-on: windows-latest
     steps:
       - name: Checkout source
@@ -280,10 +315,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Reversion wheels for patch releases (download from base release, re-version)
+  # Only used when go_wrapper has NOT changed - otherwise we rebuild from scratch
   reversion-wheels:
     name: Re-version wheels for patch release
     needs: check-version
-    if: needs.check-version.outputs.is_patch_version == 'true'
+    if: needs.check-version.outputs.is_patch_version == 'true' && needs.check-version.outputs.go_wrapper_changed != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source

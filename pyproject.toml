@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-manta"
-version = "1.4.5.1-dev6"
+version = "1.4.5.1-dev7"
 description = "Python interface for the Manta Dota 2 replay parser"
 readme = "README.md"
 license = {text = "MIT"}
