@@ -8,7 +8,47 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Determine if this is a base version (v1.4.5) or patch version (v1.4.5.1)
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      is_base_version: ${{ steps.check.outputs.is_base_version }}
+      is_patch_version: ${{ steps.check.outputs.is_patch_version }}
+      base_version: ${{ steps.check.outputs.base_version }}
+      full_version: ${{ steps.check.outputs.full_version }}
+    steps:
+      - name: Check version type
+        id: check
+        run: |
+          REF="${{ github.ref }}"
+          if [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            # Base version like v1.4.5
+            echo "is_base_version=true" >> $GITHUB_OUTPUT
+            echo "is_patch_version=false" >> $GITHUB_OUTPUT
+            echo "base_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "full_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "📦 Base version detected: ${BASH_REMATCH[1]}"
+          elif [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)\.([0-9]+)(-.*)?$ ]]; then
+            # Patch version like v1.4.5.1 or v1.4.5.1-dev1
+            echo "is_base_version=false" >> $GITHUB_OUTPUT
+            echo "is_patch_version=true" >> $GITHUB_OUTPUT
+            echo "base_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            FULL_VER="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}${BASH_REMATCH[3]}"
+            echo "full_version=$FULL_VER" >> $GITHUB_OUTPUT
+            echo "🔧 Patch version detected: $FULL_VER (base: ${BASH_REMATCH[1]})"
+          else
+            # Not a version tag (branch push, PR, etc.)
+            echo "is_base_version=false" >> $GITHUB_OUTPUT
+            echo "is_patch_version=false" >> $GITHUB_OUTPUT
+            echo "base_version=" >> $GITHUB_OUTPUT
+            echo "full_version=" >> $GITHUB_OUTPUT
+            echo "ℹ️ Not a version tag: $REF"
+          fi
+
+  # Build wheels from scratch (for base versions and non-tag builds)
   linux-wheels:
+    needs: check-version
+    if: needs.check-version.outputs.is_patch_version != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -45,7 +85,6 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/bin/pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
           wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
           wheel_venv/bin/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
@@ -53,10 +92,8 @@ jobs:
         run: |
           python -m venv test_venv
           test_venv/bin/pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
           test_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
           test_venv/bin/pip install pytest pytest-cov
-          # Copy test files into venv to run tests
           cp -r tests/ test_venv/
           cd test_venv
           bin/python -m pytest tests/test_models.py tests/test_parser.py tests/test_convenience.py tests/test_edge_cases.py -m unit -v || echo "⚠️  Unit tests not marked or failed"
@@ -69,6 +106,8 @@ jobs:
           path: dist/*.whl
 
   macos-wheels:
+    needs: check-version
+    if: needs.check-version.outputs.is_patch_version != 'true'
     runs-on: macos-latest
     strategy:
       matrix:
@@ -117,7 +156,6 @@ jobs:
           echo "Wheel count: $(ls -1 dist/*.whl 2>/dev/null | wc -l)"
 
       - name: Smoke test built wheel
-        # Only test ARM64 wheels on ARM64 runners (x86_64 wheels are cross-compiled and can't be tested here)
         if: matrix.arch == 'arm64'
         run: |
           echo "=== Pre-install debugging ==="
@@ -128,20 +166,16 @@ jobs:
           python -m venv wheel_venv
           wheel_venv/bin/python -m pip install --upgrade pip
           echo "=== Attempting install ==="
-          # Install from local wheel, but allow PyPI for dependencies
           wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta --verbose
           wheel_venv/bin/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
       - name: Run pytest unit tests
-        # Only test ARM64 wheels on ARM64 runners (x86_64 wheels are cross-compiled and can't be tested here)
         if: matrix.arch == 'arm64'
         run: |
           python -m venv test_venv
           test_venv/bin/python -m pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
           test_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
           test_venv/bin/pip install pytest pytest-cov
-          # Copy test files into venv to run tests
           cp -r tests/ test_venv/
           cd test_venv
           bin/python -m pytest tests/test_models.py tests/test_parser.py tests/test_convenience.py tests/test_edge_cases.py -m unit -v || echo "⚠️  Unit tests not marked or failed"
@@ -154,6 +188,8 @@ jobs:
           path: dist/*.whl
 
   windows-wheels:
+    needs: check-version
+    if: needs.check-version.outputs.is_patch_version != 'true'
     runs-on: windows-latest
     steps:
       - name: Checkout source
@@ -192,7 +228,6 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/Scripts/python -m pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
           wheel_venv/Scripts/pip install --find-links=./dist --no-cache-dir python-manta
           wheel_venv/Scripts/python -c "from python_manta import parse_demo_header; print('wheel import ok')"
 
@@ -201,10 +236,8 @@ jobs:
         run: |
           python -m venv test_venv
           test_venv/Scripts/python -m pip install --upgrade pip
-          # Install from local wheel, but allow PyPI for dependencies
           test_venv/Scripts/pip install --find-links=./dist --no-cache-dir python-manta
           test_venv/Scripts/pip install pytest pytest-cov
-          # Copy test files into venv to run tests
           cp -r tests/ test_venv/
           cd test_venv
           Scripts/python -m pytest tests/test_models.py tests/test_parser.py tests/test_convenience.py tests/test_edge_cases.py -m unit -v || echo "⚠️  Unit tests not marked or failed"
@@ -216,14 +249,14 @@ jobs:
           name: wheels-windows
           path: dist/*.whl
 
-  publish-test-pypi:
-    name: Publish to TestPyPI
-    needs: [linux-wheels, macos-wheels, windows-wheels]
+  # Upload wheels to GitHub Release (for base versions only)
+  upload-release:
+    name: Upload to GitHub Release
+    needs: [check-version, linux-wheels, macos-wheels, windows-wheels]
+    if: needs.check-version.outputs.is_base_version == 'true'
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-')
     permissions:
-      contents: read
-      id-token: write
+      contents: write
     steps:
       - name: Download all wheel artifacts
         uses: actions/download-artifact@v4
@@ -232,9 +265,90 @@ jobs:
           merge-multiple: true
           path: dist
 
+      - name: List wheels
+        run: |
+          echo "📦 Wheels to upload to release:"
+          ls -lh dist/
+          echo "Total: $(ls -1 dist/*.whl | wc -l) wheels"
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*.whl
+          tag_name: v${{ needs.check-version.outputs.base_version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Reversion wheels for patch releases (download from base release, re-version)
+  reversion-wheels:
+    name: Re-version wheels for patch release
+    needs: check-version
+    if: needs.check-version.outputs.is_patch_version == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download wheels from base release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BASE_VERSION="${{ needs.check-version.outputs.base_version }}"
+          echo "📥 Downloading wheels from release v${BASE_VERSION}..."
+          mkdir -p base_wheels
+          gh release download "v${BASE_VERSION}" --pattern "*.whl" --dir base_wheels
+          echo "Downloaded wheels:"
+          ls -lh base_wheels/
+
+      - name: Re-version wheels
+        run: |
+          FULL_VERSION="${{ needs.check-version.outputs.full_version }}"
+          echo "🔄 Re-versioning wheels to ${FULL_VERSION}..."
+          mkdir -p dist
+          for whl in base_wheels/*.whl; do
+            echo "Processing: $whl"
+            python tools/reversion_wheel.py "$whl" "$FULL_VERSION" --output-dir dist
+          done
+          echo ""
+          echo "📦 Re-versioned wheels:"
+          ls -lh dist/
+
+      - name: Upload wheels artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-reversioned
+          path: dist/*.whl
+
+  # Publish to TestPyPI (for dev/pre-release tags)
+  publish-test-pypi:
+    name: Publish to TestPyPI
+    needs: [check-version, linux-wheels, macos-wheels, windows-wheels, reversion-wheels]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      startsWith(github.ref, 'refs/tags/v') &&
+      contains(github.ref, '-') &&
+      (needs.reversion-wheels.result == 'success' || (needs.linux-wheels.result == 'success' && needs.macos-wheels.result == 'success' && needs.windows-wheels.result == 'success'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+
       - name: List downloaded artifacts
         run: |
-          echo "📦 Built wheels:"
+          echo "📦 Wheels to publish:"
           ls -lh dist/
           echo ""
           echo "Total wheels: $(ls -1 dist/*.whl | wc -l)"
@@ -247,11 +361,17 @@ jobs:
           verbose: true
           skip-existing: true
 
+  # Publish to PyPI (for final release tags)
   publish-pypi:
     name: Publish to PyPI
-    needs: [linux-wheels, macos-wheels, windows-wheels]
+    needs: [check-version, linux-wheels, macos-wheels, windows-wheels, reversion-wheels]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      startsWith(github.ref, 'refs/tags/v') &&
+      !contains(github.ref, '-') &&
+      (needs.reversion-wheels.result == 'success' || (needs.linux-wheels.result == 'success' && needs.macos-wheels.result == 'success' && needs.windows-wheels.result == 'success'))
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
     permissions:
       contents: read
       id-token: write
@@ -259,7 +379,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/python-manta
     steps:
-      - name: Download all wheel artifacts
+      - name: Download wheel artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: wheels-*
@@ -268,7 +388,7 @@ jobs:
 
       - name: List downloaded artifacts
         run: |
-          echo "📦 Built wheels:"
+          echo "📦 Wheels to publish:"
           ls -lh dist/
           echo ""
           echo "Total wheels: $(ls -1 dist/*.whl | wc -l)"
