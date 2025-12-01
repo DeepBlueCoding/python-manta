@@ -3,7 +3,8 @@
 > **Python bindings for the [dotabuff/manta](https://github.com/dotabuff/manta) Dota 2 replay parser**
 
 [![PyPI version](https://badge.fury.io/py/python-manta.svg)](https://pypi.org/project/python-manta/)
-[![Build Status](https://github.com/DeepBlueCoding/python-manta/actions/workflows/ci.yml/badge.svg)](https://github.com/DeepBlueCoding/python-manta/actions)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://deepbluecoding.github.io/python-manta/)
+[![Build Status](https://github.com/DeepBlueCoding/python-manta/actions/workflows/build-wheels.yml/badge.svg)](https://github.com/DeepBlueCoding/python-manta/actions/workflows/build-wheels.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
@@ -27,6 +28,7 @@ If you're working in Go, use [Manta](https://github.com/dotabuff/manta) directly
 
 ## Table of Contents
 
+- [Documentation](https://deepbluecoding.github.io/python-manta/) ← **Full docs with examples**
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [API Reference](#api-reference)
