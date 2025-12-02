@@ -726,9 +726,11 @@ type CombatLogEntry struct {
 	IsVisibleRadiant   bool    `json:"is_visible_radiant"`
 	IsVisibleDire      bool    `json:"is_visible_dire"`
 	Value              int32   `json:"value"`
+	ValueName          string  `json:"value_name"`
 	Health             int32   `json:"health"`
 	Timestamp          float32 `json:"timestamp"`
 	TimestampRaw       float32 `json:"timestamp_raw"`
+	GameTime           float32 `json:"game_time"`
 	StunDuration       float32 `json:"stun_duration"`
 	SlowDuration       float32 `json:"slow_duration"`
 	IsAbilityToggleOn  bool    `json:"is_ability_toggle_on"`
@@ -779,15 +781,18 @@ type CombatLogEntry struct {
 	ModifierElapsedDuration float32 `json:"modifier_elapsed_duration"`
 	SilenceModifier         bool    `json:"silence_modifier"`
 	HealFromLifesteal       bool    `json:"heal_from_lifesteal"`
-	ModifierPurged          bool    `json:"modifier_purged"`
-	ModifierPurgeAbility    int32   `json:"modifier_purge_ability"`
-	ModifierPurgeNpc        int32   `json:"modifier_purge_npc"`
-	RootModifier            bool    `json:"root_modifier"`
-	AuraModifier            bool    `json:"aura_modifier"`
-	ArmorDebuffModifier     bool    `json:"armor_debuff_modifier"`
-	NoPhysicalDamageModifier bool   `json:"no_physical_damage_modifier"`
-	ModifierAbility         int32   `json:"modifier_ability"`
-	ModifierHidden          bool    `json:"modifier_hidden"`
+	ModifierPurged              bool    `json:"modifier_purged"`
+	ModifierPurgeAbility        int32   `json:"modifier_purge_ability"`
+	ModifierPurgeAbilityName    string  `json:"modifier_purge_ability_name"`
+	ModifierPurgeNpc            int32   `json:"modifier_purge_npc"`
+	ModifierPurgeNpcName        string  `json:"modifier_purge_npc_name"`
+	RootModifier                bool    `json:"root_modifier"`
+	AuraModifier                bool    `json:"aura_modifier"`
+	ArmorDebuffModifier         bool    `json:"armor_debuff_modifier"`
+	NoPhysicalDamageModifier    bool    `json:"no_physical_damage_modifier"`
+	ModifierAbility             int32   `json:"modifier_ability"`
+	ModifierAbilityName         string  `json:"modifier_ability_name"`
+	ModifierHidden              bool    `json:"modifier_hidden"`
 	MotionControllerModifier bool   `json:"motion_controller_modifier"`
 	// Kill/death info
 	SpellEvaded         bool  `json:"spell_evaded"`
@@ -810,10 +815,11 @@ type CombatLogEntry struct {
 
 // CombatLogResult holds combat log parsing results
 type CombatLogResult struct {
-	Entries      []CombatLogEntry `json:"entries"`
-	Success      bool             `json:"success"`
-	Error        string           `json:"error,omitempty"`
-	TotalEntries int              `json:"total_entries"`
+	Entries       []CombatLogEntry `json:"entries"`
+	Success       bool             `json:"success"`
+	Error         string           `json:"error,omitempty"`
+	TotalEntries  int              `json:"total_entries"`
+	GameStartTime float32          `json:"game_start_time"` // Timestamp when game clock hits 00:00
 }
 
 // CombatLogConfig controls combat log parsing
@@ -873,8 +879,18 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 	}
 	rawEntries := make([]rawEntry, 0)
 
+	// Track game start time (when GAME_IN_PROGRESS state begins)
+	var gameStartTime float32 = 0
+
 	// Parse combat log entries - store raw data
 	parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
+		// Detect game start: GAME_STATE event with value=5 (GAME_IN_PROGRESS)
+		if m.GetType() == dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_GAME_STATE {
+			if m.GetValue() == 5 { // DOTA_GAMERULES_STATE_GAME_IN_PROGRESS
+				gameStartTime = m.GetTimestamp()
+			}
+		}
+
 		if config.MaxEntries > 0 && len(rawEntries) >= config.MaxEntries {
 			return nil
 		}
@@ -936,6 +952,34 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 			assistPlayers[i] = ap
 		}
 
+		// Resolve value name - for PURCHASE events, value is an index into CombatLogNames
+		valueName := ""
+		if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetValue())); ok {
+			valueName = name
+		}
+
+		// Resolve modifier-related name fields - these are also CombatLogNames indices
+		modifierAbilityName := ""
+		if v := m.GetModifierAbility(); v > 0 {
+			if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(v)); ok {
+				modifierAbilityName = name
+			}
+		}
+
+		modifierPurgeAbilityName := ""
+		if v := m.GetModifierPurgeAbility(); v > 0 {
+			if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(v)); ok {
+				modifierPurgeAbilityName = name
+			}
+		}
+
+		modifierPurgeNpcName := ""
+		if v := m.GetModifierPurgeNpc(); v > 0 {
+			if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(v)); ok {
+				modifierPurgeNpcName = name
+			}
+		}
+
 		entry := CombatLogEntry{
 			Tick:               raw.tick,
 			NetTick:            raw.netTick,
@@ -953,9 +997,11 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 			IsVisibleRadiant:   m.GetIsVisibleRadiant(),
 			IsVisibleDire:      m.GetIsVisibleDire(),
 			Value:              int32(m.GetValue()),
+			ValueName:          valueName,
 			Health:             m.GetHealth(),
 			Timestamp:          m.GetTimestamp(),
 			TimestampRaw:       m.GetTimestampRaw(),
+			GameTime:           m.GetTimestamp() - gameStartTime,
 			StunDuration:       m.GetStunDuration(),
 			SlowDuration:       m.GetSlowDuration(),
 			IsAbilityToggleOn:  m.GetIsAbilityToggleOn(),
@@ -1006,15 +1052,18 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 			ModifierElapsedDuration:  m.GetModifierElapsedDuration(),
 			SilenceModifier:          m.GetSilenceModifier(),
 			HealFromLifesteal:        m.GetHealFromLifesteal(),
-			ModifierPurged:           m.GetModifierPurged(),
-			ModifierPurgeAbility:     int32(m.GetModifierPurgeAbility()),
-			ModifierPurgeNpc:         int32(m.GetModifierPurgeNpc()),
-			RootModifier:             m.GetRootModifier(),
-			AuraModifier:             m.GetAuraModifier(),
-			ArmorDebuffModifier:      m.GetArmorDebuffModifier(),
-			NoPhysicalDamageModifier: m.GetNoPhysicalDamageModifier(),
-			ModifierAbility:          int32(m.GetModifierAbility()),
-			ModifierHidden:           m.GetModifierHidden(),
+			ModifierPurged:              m.GetModifierPurged(),
+			ModifierPurgeAbility:        int32(m.GetModifierPurgeAbility()),
+			ModifierPurgeAbilityName:    modifierPurgeAbilityName,
+			ModifierPurgeNpc:            int32(m.GetModifierPurgeNpc()),
+			ModifierPurgeNpcName:        modifierPurgeNpcName,
+			RootModifier:                m.GetRootModifier(),
+			AuraModifier:                m.GetAuraModifier(),
+			ArmorDebuffModifier:         m.GetArmorDebuffModifier(),
+			NoPhysicalDamageModifier:    m.GetNoPhysicalDamageModifier(),
+			ModifierAbility:             int32(m.GetModifierAbility()),
+			ModifierAbilityName:         modifierAbilityName,
+			ModifierHidden:              m.GetModifierHidden(),
 			MotionControllerModifier: m.GetMotionControllerModifier(),
 			// Kill/death info
 			SpellEvaded:         m.GetSpellEvaded(),
@@ -1040,6 +1089,7 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 
 	result.Success = true
 	result.TotalEntries = len(result.Entries)
+	result.GameStartTime = gameStartTime
 	return result, nil
 }
 

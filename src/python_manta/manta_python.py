@@ -260,9 +260,11 @@ class CombatLogEntry(BaseModel):
     is_visible_radiant: bool = False
     is_visible_dire: bool = False
     value: int = 0
+    value_name: str = ""
     health: int = 0
     timestamp: float = 0.0
     timestamp_raw: float = 0.0
+    game_time: float = 0.0
     stun_duration: float = 0.0
     slow_duration: float = 0.0
     is_ability_toggle_on: bool = False
@@ -315,12 +317,15 @@ class CombatLogEntry(BaseModel):
     heal_from_lifesteal: bool = False
     modifier_purged: bool = False
     modifier_purge_ability: int = 0
+    modifier_purge_ability_name: str = ""
     modifier_purge_npc: int = 0
+    modifier_purge_npc_name: str = ""
     root_modifier: bool = False
     aura_modifier: bool = False
     armor_debuff_modifier: bool = False
     no_physical_damage_modifier: bool = False
     modifier_ability: int = 0
+    modifier_ability_name: str = ""
     modifier_hidden: bool = False
     motion_controller_modifier: bool = False
     # Kill/death info
@@ -355,6 +360,7 @@ class CombatLogResult(BaseModel):
     success: bool = True
     error: Optional[str] = None
     total_entries: int = 0
+    game_start_time: float = 0.0
 
 
 # ============================================================================

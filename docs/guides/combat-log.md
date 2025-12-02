@@ -2,7 +2,7 @@
 # Combat Log Guide
 
 ??? info "AI Summary"
-    Parse structured combat log entries with `parse_combat_log()`. Filter by 45 log types including DAMAGE (0), HEAL (1), MODIFIER_ADD (2), DEATH (4), ABILITY (5), ITEM (6), FIRST_BLOOD (18). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use `heroes_only=True` for hero-related entries. Ideal for fight reconstruction and damage analysis. Note: `timestamp` is replay time (includes draft), not game clock - convert using `m_pGameRules.m_flPreGameStartTime`.
+    Parse structured combat log entries with `parse_combat_log()`. Filter by 45 log types including DAMAGE (0), HEAL (1), MODIFIER_ADD (2), DEATH (4), ABILITY (5), ITEM (6), PURCHASE (11), FIRST_BLOOD (18). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use `heroes_only=True` for hero-related entries. The `game_time` field provides accurate in-game clock time (can be negative for pre-game events). The `value_name` field resolves item names for PURCHASE events.
 
 ---
 
@@ -165,8 +165,9 @@ Each `CombatLogEntry` contains comprehensive data for fight analysis:
 | `net_tick` | int | Network tick |
 | `type` | int | Combat log type ID (0-44) |
 | `type_name` | str | Human-readable type name |
-| `timestamp` | float | Game time in seconds |
+| `timestamp` | float | Replay time in seconds (includes draft/pre-game) |
 | `timestamp_raw` | float | Raw timestamp value |
+| `game_time` | float | **In-game clock time** (0:00 = creep spawn, can be negative for pre-game) |
 
 ### Participant Fields
 
@@ -192,7 +193,8 @@ Each `CombatLogEntry` contains comprehensive data for fight analysis:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `value` | int | Damage/heal amount |
+| `value` | int | Damage/heal amount (or string table index for PURCHASE events) |
+| `value_name` | str | Resolved name from CombatLogNames (e.g., item name for PURCHASE) |
 | `health` | int | Target HP **after** this event |
 | `damage_type` | int | Damage type (physical/magical/pure) |
 | `damage_category` | int | Damage category |
@@ -223,7 +225,7 @@ Each `CombatLogEntry` contains comprehensive data for fight analysis:
 | `assist_player3` | int | Fourth assist player ID |
 | `assist_players` | List[int] | All assist player IDs |
 
-### Modifier Flags
+### Modifier Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -237,6 +239,12 @@ Each `CombatLogEntry` contains comprehensive data for fight analysis:
 | `modifier_hidden` | bool | Modifier is hidden from UI |
 | `modifier_purged` | bool | Modifier was purged |
 | `no_physical_damage_modifier` | bool | Blocks physical damage |
+| `modifier_ability` | int | Ability index in CombatLogNames |
+| `modifier_ability_name` | str | Resolved ability name that applied this modifier |
+| `modifier_purge_ability` | int | Ability index that purged this modifier |
+| `modifier_purge_ability_name` | str | Resolved ability name that purged this modifier |
+| `modifier_purge_npc` | int | NPC index that purged this modifier |
+| `modifier_purge_npc_name` | str | Resolved NPC name that purged this modifier |
 
 ### Ability Info
 
@@ -401,44 +409,68 @@ for unit, total in sorted(healing_received.items(), key=lambda x: -x[1])[:10]:
 
 ## Important Notes
 
-### Timestamp is Replay Time, Not Game Time
+### Game Time vs Replay Time
 
-!!! warning
+The combat log provides two timing fields:
 
-    The `timestamp` field in combat log entries is **replay time** (from recording start), NOT game clock time. Replay time includes draft and pre-game phases, so early game events may appear to have timestamps of 10-15+ minutes.
+| Field | Description |
+|-------|-------------|
+| `timestamp` | **Replay time** - seconds since replay recording started (includes draft/pre-game) |
+| `game_time` | **In-game clock time** - what you see on the game clock (0:00 = creep spawn) |
 
-To convert to actual game time:
+!!! tip "Use `game_time` for game clock"
+
+    The `game_time` field automatically calculates the in-game clock time. It detects when the game transitions to `GAME_IN_PROGRESS` state and computes the offset.
 
 ```python
 from python_manta import MantaParser
 
 parser = MantaParser()
+result = parser.parse_combat_log("match.dem", types=[11], max_entries=100)  # PURCHASE events
 
-# Get pre-game start time from game rules
-rules = parser.query_entities("match.dem", class_filter="GamerulesProxy", at_tick=30000)
-pre_game_start = rules.entities[0].properties.get("m_pGameRules.m_flPreGameStartTime", 0)
-
-# Convert replay timestamp to game time
-# Pre-game phase is 90 seconds before 0:00 (creep spawn)
-def replay_to_game_time(replay_timestamp: float) -> float:
-    return replay_timestamp - pre_game_start - 90
-
-# Example: First blood at replay timestamp 1011.6s
-# With pre_game_start = 910.77s
-# Game time = 1011.6 - 910.77 - 90 = 10.83s (0:10)
+for entry in result.entries:
+    # game_time is already the in-game clock time
+    mins = int(abs(entry.game_time) // 60)
+    secs = int(abs(entry.game_time)) % 60
+    sign = "-" if entry.game_time < 0 else ""
+    print(f"{sign}{mins:02d}:{secs:02d} - {entry.value_name}")
 ```
 
-### Quick Timing Check
+### Pre-Game Events (Negative Game Time)
+
+Events during the 90-second pre-game countdown have **negative** `game_time` values:
+
+```python
+result = parser.parse_combat_log("match.dem", types=[11], max_entries=200)  # PURCHASE
+
+# Pre-game purchases (during countdown)
+pregame = [e for e in result.entries if e.game_time < 0]
+print(f"Pre-game purchases: {len(pregame)}")
+
+for entry in pregame[:5]:
+    mins = int(abs(entry.game_time) // 60)
+    secs = int(abs(entry.game_time)) % 60
+    hero = entry.target_name.replace("npc_dota_hero_", "")
+    item = entry.value_name.replace("item_", "")
+    print(f"-{mins:02d}:{secs:02d} - {hero}: {item}")
+# Output:
+# -01:29 - antimage: ward_observer
+# -01:28 - troll_warlord: tango
+# -01:27 - crystal_maiden: blood_grenade
+```
+
+### Game Start Time
+
+The `CombatLogResult` includes `game_start_time` which is the replay timestamp when the game clock hit 0:00:
 
 ```python
 result = parser.parse_combat_log("match.dem", types=[18], max_entries=1)  # First blood
 
+print(f"Game started at replay time: {result.game_start_time:.1f}s")
+
 if result.entries:
     entry = result.entries[0]
-    game_time = replay_to_game_time(entry.timestamp)
-    mins = int(game_time // 60)
-    secs = int(game_time % 60)
-    print(f"First blood at game time: {mins}:{secs:02d}")
+    print(f"First blood at {entry.game_time:.0f}s game time")
 ```
 
 ### Illusion Filtering
@@ -484,6 +516,7 @@ The combat log exposes raw data that can be used by other tools for analysis or 
 | HP after event | `health` | Target's HP after this event |
 | Damage/heal amount | `value` | Raw numeric value |
 | Ability/item name | `inflictor_name` | Internal name (e.g., "pugna_nether_blast") |
+| Item name (PURCHASE) | `value_name` | Resolved item name for PURCHASE events |
 | Ability level | `ability_level` | 1-4+ |
 | Assist player IDs | `assist_players` | List of player IDs |
 | Stun duration | `stun_duration` | Seconds |
@@ -495,7 +528,8 @@ The combat log exposes raw data that can be used by other tools for analysis or 
 | Has Aghanim's | `attacker_has_scepter` | Boolean |
 | Hero levels | `attacker_hero_level`, `target_hero_level` | Integer |
 | Position | `location_x`, `location_y` | Map coordinates |
-| Timestamp | `timestamp` | Game time in seconds |
+| Game time | `game_time` | In-game clock time (can be negative for pre-game) |
+| Replay timestamp | `timestamp` | Replay time in seconds |
 
 ### Data NOT Available in Combat Log
 
