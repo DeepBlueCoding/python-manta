@@ -39,7 +39,7 @@ class TestRealPerformanceRequirements:
         """Test draft parsing meets performance requirement with real file."""
         start_time = time.time()
 
-        result = parser.parse_draft(DEMO_FILE)
+        result = parser.parse_game_info(DEMO_FILE)
 
         elapsed_time = time.time() - start_time
 
@@ -100,7 +100,7 @@ class TestRealErrorConditions:
         
         # Test draft parsing
         with pytest.raises(FileNotFoundError) as exc_info:
-            parser.parse_draft("/another/nonexistent/file.dem")
+            parser.parse_game_info("/another/nonexistent/file.dem")
         assert "Demo file not found" in str(exc_info.value)
         
         # Test universal parsing
@@ -119,7 +119,7 @@ class TestRealErrorConditions:
         assert "is a directory" in str(exc_info.value)
         
         with pytest.raises((ValueError, Exception)) as exc_info:
-            parser.parse_draft("/tmp")
+            parser.parse_game_info("/tmp")
         # May raise ValueError or ValidationError depending on implementation
 
     def test_empty_and_invalid_paths(self):
@@ -316,9 +316,9 @@ class TestRealMemoryAndResourceManagement:
             assert header.success is True
             assert header.map_name == "start"
             
-            draft = parser.parse_draft(DEMO_FILE)
-            assert draft.success is True
-            assert len(draft.picks_bans) == 24
+            game_info = parser.parse_game_info(DEMO_FILE)
+            assert game_info.success is True
+            assert len(game_info.picks_bans) == 24
             
             universal = parser.parse_universal(DEMO_FILE, max_messages=10)
             assert universal.success is True
@@ -326,7 +326,7 @@ class TestRealMemoryAndResourceManagement:
             
             # Verify data integrity is maintained across iterations
             assert header.build_num == 10512, f"Header corrupted on iteration {i}"
-            radiant_picks = [e.hero_id for e in draft.picks_bans if e.is_pick and e.team == 2]
+            radiant_picks = [e.hero_id for e in game_info.picks_bans if e.is_pick and e.team == 2]
             assert radiant_picks == [99, 123, 66, 114, 95], f"Draft corrupted on iteration {i}"
 
     def test_concurrent_parser_instances(self):

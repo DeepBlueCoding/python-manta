@@ -28,21 +28,14 @@ class HeaderInfo(BaseModel):
 
 
 class CHeroSelectEvent(BaseModel):
-    """Pydantic model for hero select event (pick/ban) - matches Manta naming."""
+    """Hero select event (pick/ban) - matches Manta CGameInfo.CDotaGameInfo.CHeroSelectEvent."""
     is_pick: bool      # true for pick, false for ban
     team: int         # 2=Radiant, 3=Dire
     hero_id: int      # Hero ID
 
 
-class CDotaGameInfo(BaseModel):
-    """Pydantic model for Dota game info including draft - matches Manta naming."""
-    picks_bans: List[CHeroSelectEvent]
-    success: bool
-    error: Optional[str] = None
-
-
-class PlayerMatchInfo(BaseModel):
-    """Player information from match metadata."""
+class CPlayerInfo(BaseModel):
+    """Player information - matches Manta CGameInfo.CDotaGameInfo.CPlayerInfo."""
     hero_name: str
     player_name: str
     is_fake_client: bool = False
@@ -50,9 +43,10 @@ class PlayerMatchInfo(BaseModel):
     game_team: int  # 2=Radiant, 3=Dire
 
 
-class MatchInfo(BaseModel):
-    """Complete match information including pro match data.
+class CDotaGameInfo(BaseModel):
+    """Dota game information - matches Manta CGameInfo.CDotaGameInfo.
 
+    Contains match metadata, draft picks/bans, player info, and team data.
     For pro matches, includes team IDs, team tags, and league ID.
     For pub matches, team fields will be 0/empty.
     """
@@ -60,7 +54,7 @@ class MatchInfo(BaseModel):
     match_id: int
     game_mode: int
     game_winner: int  # 2=Radiant, 3=Dire
-    league_id: int = 0
+    leagueid: int = 0  # Manta uses 'leagueid' not 'league_id'
     end_time: int = 0
 
     # Team info (pro matches only - 0/empty for pubs)
@@ -70,12 +64,12 @@ class MatchInfo(BaseModel):
     dire_team_tag: str = ""
 
     # Players
-    players: List[PlayerMatchInfo] = []
+    player_info: List[CPlayerInfo] = []
 
     # Draft
     picks_bans: List[CHeroSelectEvent] = []
 
-    # Playback info
+    # Playback info (from CDemoFileInfo parent)
     playback_time: float = 0.0
     playback_ticks: int = 0
     playback_frames: int = 0
@@ -85,7 +79,7 @@ class MatchInfo(BaseModel):
 
     def is_pro_match(self) -> bool:
         """Check if this is a pro/league match."""
-        return self.league_id > 0 or self.radiant_team_id > 0 or self.dire_team_id > 0
+        return self.leagueid > 0 or self.radiant_team_id > 0 or self.dire_team_id > 0
 
 
 # Universal Message Event for ALL Manta callbacks
@@ -507,9 +501,9 @@ class MantaParser:
         self.lib.ParseHeader.argtypes = [ctypes.c_char_p]
         self.lib.ParseHeader.restype = ctypes.c_char_p
 
-        # ParseDraft function: takes char* filename, returns char* JSON
-        self.lib.ParseDraft.argtypes = [ctypes.c_char_p]
-        self.lib.ParseDraft.restype = ctypes.c_char_p
+        # ParseMatchInfo function: takes char* filename, returns char* JSON (CDotaGameInfo)
+        self.lib.ParseMatchInfo.argtypes = [ctypes.c_char_p]
+        self.lib.ParseMatchInfo.restype = ctypes.c_char_p
 
         # ParseUniversal function: takes char* filename, char* filter, int maxMessages, returns char* JSON
         self.lib.ParseUniversal.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
@@ -601,60 +595,11 @@ class MantaParser:
             # TODO: Fix memory management properly
             pass
     
-    def parse_draft(self, demo_file_path: str) -> CDotaGameInfo:
+    def parse_game_info(self, demo_file_path: str) -> CDotaGameInfo:
         """
-        Parse the draft phase (picks/bans) from a Dota 2 demo file.
-        
-        Args:
-            demo_file_path: Path to the .dem file
-            
-        Returns:
-            CDotaGameInfo object containing draft picks and bans
-            
-        Raises:
-            FileNotFoundError: If demo file doesn't exist
-            ValueError: If parsing fails
-        """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
+        Parse game information from a Dota 2 demo file.
 
-        # Handle bz2 compression if needed
-        actual_path = self._prepare_demo_file(demo_file_path)
-
-        # Convert path to bytes for C function
-        path_bytes = actual_path.encode('utf-8')
-
-        # Call the Go function
-        result_ptr = self.lib.ParseDraft(path_bytes)
-        
-        if not result_ptr:
-            raise ValueError("ParseDraft returned null pointer")
-            
-        try:
-            # Convert C string result to Python string
-            result_json = ctypes.string_at(result_ptr).decode('utf-8')
-            
-            # Parse JSON response
-            result_dict = json.loads(result_json)
-            
-            # Convert to Pydantic model
-            draft_info = CDotaGameInfo(**result_dict)
-            
-            if not draft_info.success:
-                raise ValueError(f"Draft parsing failed: {draft_info.error}")
-            
-            return draft_info
-            
-        finally:
-            # Note: Skipping FreeString call to avoid memory issues
-            # TODO: Fix memory management properly
-            pass
-
-    def parse_match_info(self, demo_file_path: str) -> MatchInfo:
-        """
-        Parse complete match information from a Dota 2 demo file.
-
-        This extracts comprehensive match metadata including:
+        Extracts CDotaGameInfo which contains:
         - Match ID, game mode, winner
         - League ID (for pro matches)
         - Team IDs and tags (for pro matches)
@@ -666,7 +611,7 @@ class MantaParser:
             demo_file_path: Path to the .dem file
 
         Returns:
-            MatchInfo object containing all match metadata.
+            CDotaGameInfo object (matches Manta's CGameInfo.CDotaGameInfo).
             Use is_pro_match() to check if this is a league/pro match.
 
         Raises:
@@ -687,12 +632,12 @@ class MantaParser:
         try:
             result_json = ctypes.string_at(result_ptr).decode('utf-8')
             result_dict = json.loads(result_json)
-            match_info = MatchInfo(**result_dict)
+            game_info = CDotaGameInfo(**result_dict)
 
-            if not match_info.success:
-                raise ValueError(f"Match info parsing failed: {match_info.error}")
+            if not game_info.success:
+                raise ValueError(f"Game info parsing failed: {game_info.error}")
 
-            return match_info
+            return game_info
 
         finally:
             pass

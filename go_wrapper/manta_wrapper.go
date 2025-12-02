@@ -37,14 +37,8 @@ type CHeroSelectEvent struct {
 }
 
 // CDotaGameInfo represents complete draft phase information - matches Manta naming
-type CDotaGameInfo struct {
-	PicksBans []CHeroSelectEvent `json:"picks_bans"`
-	Success   bool               `json:"success"`
-	Error     string             `json:"error,omitempty"`
-}
-
-// PlayerInfo represents player information from a match
-type PlayerInfo struct {
+// CPlayerInfo matches Manta's CGameInfo.CDotaGameInfo.CPlayerInfo
+type CPlayerInfo struct {
 	HeroName     string `json:"hero_name"`
 	PlayerName   string `json:"player_name"`
 	IsFakeClient bool   `json:"is_fake_client"`
@@ -52,14 +46,14 @@ type PlayerInfo struct {
 	GameTeam     int32  `json:"game_team"` // 2=Radiant, 3=Dire
 }
 
-// MatchInfo represents complete match information including pro match data
-type MatchInfo struct {
+// CDotaGameInfo matches Manta's CGameInfo.CDotaGameInfo
+type CDotaGameInfo struct {
 	// Basic match info
-	MatchID      uint64 `json:"match_id"`
-	GameMode     int32  `json:"game_mode"`
-	GameWinner   int32  `json:"game_winner"` // 2=Radiant, 3=Dire
-	LeagueID     uint32 `json:"league_id"`
-	EndTime      uint32 `json:"end_time"`
+	MatchID    uint64 `json:"match_id"`
+	GameMode   int32  `json:"game_mode"`
+	GameWinner int32  `json:"game_winner"` // 2=Radiant, 3=Dire
+	LeagueID   uint32 `json:"leagueid"`    // Manta uses 'leagueid'
+	EndTime    uint32 `json:"end_time"`
 
 	// Team info (pro matches only)
 	RadiantTeamID  uint32 `json:"radiant_team_id"`
@@ -67,13 +61,13 @@ type MatchInfo struct {
 	RadiantTeamTag string `json:"radiant_team_tag"`
 	DireTeamTag    string `json:"dire_team_tag"`
 
-	// Players
-	Players []PlayerInfo `json:"players"`
+	// Players - Manta uses 'player_info'
+	PlayerInfo []CPlayerInfo `json:"player_info"`
 
 	// Draft
 	PicksBans []CHeroSelectEvent `json:"picks_bans"`
 
-	// Playback info
+	// Playback info (from CDemoFileInfo parent)
 	PlaybackTime   float32 `json:"playback_time"`
 	PlaybackTicks  int32   `json:"playback_ticks"`
 	PlaybackFrames int32   `json:"playback_frames"`
@@ -140,73 +134,6 @@ func ParseHeader(filePath *C.char) *C.char {
 	return marshalAndReturn(header)
 }
 
-//export ParseDraft
-func ParseDraft(filePath *C.char) *C.char {
-	goFilePath := C.GoString(filePath)
-	
-	draftInfo := &CDotaGameInfo{
-		Success: false,
-	}
-
-	// Open the file
-	file, err := os.Open(goFilePath)
-	if err != nil {
-		draftInfo.Error = fmt.Sprintf("Error opening file: %v", err)
-		return marshalAndReturnDraft(draftInfo)
-	}
-	defer file.Close()
-
-	// Create parser
-	parser, err := manta.NewStreamParser(file)
-	if err != nil {
-		draftInfo.Error = fmt.Sprintf("Error creating parser: %v", err)
-		return marshalAndReturnDraft(draftInfo)
-	}
-
-	// Set up callback to capture draft information
-	draftFound := false
-	parser.Callbacks.OnCDemoFileInfo(func(m *dota.CDemoFileInfo) error {
-		if m.GetGameInfo() != nil && m.GetGameInfo().GetDota() != nil {
-			dotaInfo := m.GetGameInfo().GetDota()
-			if dotaInfo.GetPicksBans() != nil {
-				draftInfo.PicksBans = make([]CHeroSelectEvent, 0)
-				
-				for _, pickBan := range dotaInfo.GetPicksBans() {
-					event := CHeroSelectEvent{
-						IsPick: pickBan.GetIsPick(),
-						Team:   pickBan.GetTeam(),
-						HeroId: pickBan.GetHeroId(),
-					}
-					draftInfo.PicksBans = append(draftInfo.PicksBans, event)
-				}
-				
-				draftInfo.Success = true
-				draftFound = true
-			}
-		}
-		
-		// Stop parsing after getting draft info
-		parser.Stop()
-		return nil
-	})
-
-	// Start parsing (will stop after draft info is found)
-	err = parser.Start()
-	if err != nil && !draftFound {
-		draftInfo.Error = fmt.Sprintf("Error parsing file: %v", err)
-		return marshalAndReturnDraft(draftInfo)
-	}
-
-	if !draftFound {
-		draftInfo.Error = "Draft information not found in demo file"
-		return marshalAndReturnDraft(draftInfo)
-	}
-
-	return marshalAndReturnDraft(draftInfo)
-}
-
-
-
 // Helper function to marshal HeaderInfo to JSON and return as C string
 func marshalAndReturn(header *HeaderInfo) *C.char {
 	jsonData, err := json.Marshal(header)
@@ -218,15 +145,15 @@ func marshalAndReturn(header *HeaderInfo) *C.char {
 		}
 		jsonData, _ = json.Marshal(fallback)
 	}
-	
+
 	// Allocate C string that Python can free
 	cstr := C.CString(string(jsonData))
 	return cstr
 }
 
 // Helper function to marshal CDotaGameInfo to JSON and return as C string
-func marshalAndReturnDraft(draftInfo *CDotaGameInfo) *C.char {
-	jsonData, err := json.Marshal(draftInfo)
+func marshalAndReturnGameInfo(gameInfo *CDotaGameInfo) *C.char {
+	jsonData, err := json.Marshal(gameInfo)
 	if err != nil {
 		// Fallback error response
 		fallback := &CDotaGameInfo{
@@ -235,89 +162,88 @@ func marshalAndReturnDraft(draftInfo *CDotaGameInfo) *C.char {
 		}
 		jsonData, _ = json.Marshal(fallback)
 	}
-	
+
 	// Allocate C string - caller must free with FreeString
 	cstr := C.CString(string(jsonData))
 	return cstr
 }
 
-
 //export ParseMatchInfo
 func ParseMatchInfo(filePath *C.char) *C.char {
 	goFilePath := C.GoString(filePath)
 
-	matchInfo := &MatchInfo{
+	gameInfo := &CDotaGameInfo{
 		Success: false,
 	}
 
 	// Open the file
 	file, err := os.Open(goFilePath)
 	if err != nil {
-		matchInfo.Error = fmt.Sprintf("Error opening file: %v", err)
-		return marshalAndReturnMatchInfo(matchInfo)
+		gameInfo.Error = fmt.Sprintf("Error opening file: %v", err)
+		return marshalAndReturnGameInfo(gameInfo)
 	}
 	defer file.Close()
 
 	// Create parser
 	parser, err := manta.NewStreamParser(file)
 	if err != nil {
-		matchInfo.Error = fmt.Sprintf("Error creating parser: %v", err)
-		return marshalAndReturnMatchInfo(matchInfo)
+		gameInfo.Error = fmt.Sprintf("Error creating parser: %v", err)
+		return marshalAndReturnGameInfo(gameInfo)
 	}
 
-	// Set up callback to capture match information from CDemoFileInfo
+	// Set up callback to capture game information from CDemoFileInfo
 	infoFound := false
 	parser.Callbacks.OnCDemoFileInfo(func(m *dota.CDemoFileInfo) error {
-		// Playback info
-		matchInfo.PlaybackTime = m.GetPlaybackTime()
-		matchInfo.PlaybackTicks = m.GetPlaybackTicks()
-		matchInfo.PlaybackFrames = m.GetPlaybackFrames()
+		// Playback info (from CDemoFileInfo)
+		gameInfo.PlaybackTime = m.GetPlaybackTime()
+		gameInfo.PlaybackTicks = m.GetPlaybackTicks()
+		gameInfo.PlaybackFrames = m.GetPlaybackFrames()
 
 		if m.GetGameInfo() != nil && m.GetGameInfo().GetDota() != nil {
 			dotaInfo := m.GetGameInfo().GetDota()
 
 			// Basic match info
-			matchInfo.MatchID = dotaInfo.GetMatchId()
-			matchInfo.GameMode = dotaInfo.GetGameMode()
-			matchInfo.GameWinner = dotaInfo.GetGameWinner()
-			matchInfo.LeagueID = dotaInfo.GetLeagueid()
-			matchInfo.EndTime = dotaInfo.GetEndTime()
+			gameInfo.MatchID = dotaInfo.GetMatchId()
+			gameInfo.GameMode = dotaInfo.GetGameMode()
+			gameInfo.GameWinner = dotaInfo.GetGameWinner()
+			gameInfo.LeagueID = dotaInfo.GetLeagueid()
+			gameInfo.EndTime = dotaInfo.GetEndTime()
 
 			// Team info (pro matches)
-			matchInfo.RadiantTeamID = dotaInfo.GetRadiantTeamId()
-			matchInfo.DireTeamID = dotaInfo.GetDireTeamId()
-			matchInfo.RadiantTeamTag = dotaInfo.GetRadiantTeamTag()
-			matchInfo.DireTeamTag = dotaInfo.GetDireTeamTag()
+			gameInfo.RadiantTeamID = dotaInfo.GetRadiantTeamId()
+			gameInfo.DireTeamID = dotaInfo.GetDireTeamId()
+			gameInfo.RadiantTeamTag = dotaInfo.GetRadiantTeamTag()
+			gameInfo.DireTeamTag = dotaInfo.GetDireTeamTag()
 
 			// Players
 			if dotaInfo.GetPlayerInfo() != nil {
-				matchInfo.Players = make([]PlayerInfo, 0, len(dotaInfo.GetPlayerInfo()))
+				gameInfo.PlayerInfo = make([]CPlayerInfo, 0, len(dotaInfo.GetPlayerInfo()))
 				for _, p := range dotaInfo.GetPlayerInfo() {
-					player := PlayerInfo{
+					player := CPlayerInfo{
 						HeroName:     p.GetHeroName(),
 						PlayerName:   p.GetPlayerName(),
 						IsFakeClient: p.GetIsFakeClient(),
 						SteamID:      p.GetSteamid(),
 						GameTeam:     p.GetGameTeam(),
 					}
-					matchInfo.Players = append(matchInfo.Players, player)
+					gameInfo.PlayerInfo = append(gameInfo.PlayerInfo, player)
 				}
 			}
 
 			// Draft picks/bans
 			if dotaInfo.GetPicksBans() != nil {
-				matchInfo.PicksBans = make([]CHeroSelectEvent, 0, len(dotaInfo.GetPicksBans()))
+				gameInfo.PicksBans = make([]CHeroSelectEvent, 0, len(dotaInfo.GetPicksBans()))
 				for _, pb := range dotaInfo.GetPicksBans() {
 					event := CHeroSelectEvent{
 						IsPick: pb.GetIsPick(),
 						Team:   pb.GetTeam(),
 						HeroId: pb.GetHeroId(),
 					}
-					matchInfo.PicksBans = append(matchInfo.PicksBans, event)
+					gameInfo.PicksBans = append(gameInfo.PicksBans, event)
 				}
 			}
 
-			matchInfo.Success = true
+			gameInfo.Success = true
 			infoFound = true
 		}
 
@@ -329,31 +255,16 @@ func ParseMatchInfo(filePath *C.char) *C.char {
 	// Start parsing
 	err = parser.Start()
 	if err != nil && !infoFound {
-		matchInfo.Error = fmt.Sprintf("Error parsing file: %v", err)
-		return marshalAndReturnMatchInfo(matchInfo)
+		gameInfo.Error = fmt.Sprintf("Error parsing file: %v", err)
+		return marshalAndReturnGameInfo(gameInfo)
 	}
 
 	if !infoFound {
-		matchInfo.Error = "Match information not found in demo file"
-		return marshalAndReturnMatchInfo(matchInfo)
+		gameInfo.Error = "Game information not found in demo file"
+		return marshalAndReturnGameInfo(gameInfo)
 	}
 
-	return marshalAndReturnMatchInfo(matchInfo)
-}
-
-// Helper function to marshal MatchInfo to JSON and return as C string
-func marshalAndReturnMatchInfo(matchInfo *MatchInfo) *C.char {
-	jsonData, err := json.Marshal(matchInfo)
-	if err != nil {
-		fallback := &MatchInfo{
-			Success: false,
-			Error:   fmt.Sprintf("JSON marshal error: %v", err),
-		}
-		jsonData, _ = json.Marshal(fallback)
-	}
-
-	cstr := C.CString(string(jsonData))
-	return cstr
+	return marshalAndReturnGameInfo(gameInfo)
 }
 
 //export FreeString

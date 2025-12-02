@@ -24,7 +24,7 @@
 |---------------|-----|-------|
 | Match metadata | `parse_header()` | [Getting Started](../getting-started) |
 | Draft picks/bans | `parse_draft()` | [Getting Started](../getting-started) |
-| Pro match info | `parse_match_info()` | [Getting Started](../getting-started) |
+| Pro match info | `parse_game_info()` | [Getting Started](../getting-started) |
 | Hero positions over time | `parse_entities(target_ticks=[...])` | [Entities](entities) |
 | Death positions | `parse_entities(target_ticks=[death.tick])` | [Entities](entities) |
 | Chat messages | `parse_universal("CDOTAUserMsg_ChatMessage")` | [Universal](universal) |

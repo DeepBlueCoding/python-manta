@@ -8,6 +8,7 @@ from python_manta import (
     MantaParser,
     HeaderInfo,
     CHeroSelectEvent,
+    CPlayerInfo,
     CDotaGameInfo,
     MessageEvent,
     UniversalParseResult,
@@ -63,43 +64,43 @@ class TestCHeroSelectEventRealValues:
 
     def test_draft_exact_structure(self, parser):
         """Test draft contains exact pick/ban structure from real game."""
-        draft = parser.parse_draft(DEMO_FILE)
-        
+        game_info = parser.parse_game_info(DEMO_FILE)
+
         # EXACT values from real demo file
-        assert draft.success is True
-        assert len(draft.picks_bans) == 24  # Exact number of events
-        assert draft.error is None
-        
+        assert game_info.success is True
+        assert len(game_info.picks_bans) == 24  # Exact number of events
+        assert game_info.error is None
+
         # Test first 5 events exact sequence
-        first_5_events = [(e.is_pick, e.team, e.hero_id) for e in draft.picks_bans[:5]]
+        first_5_events = [(e.is_pick, e.team, e.hero_id) for e in game_info.picks_bans[:5]]
         expected_first_5 = [(False, 3, 53), (False, 2, 74), (False, 2, 38), (False, 3, 11), (False, 2, 89)]
         assert first_5_events == expected_first_5
 
     def test_picks_exact_values(self, parser):
         """Test picks contain exact hero IDs from real game."""
-        draft = parser.parse_draft(DEMO_FILE)
-        
-        picks = [e for e in draft.picks_bans if e.is_pick]
+        game_info = parser.parse_game_info(DEMO_FILE)
+
+        picks = [e for e in game_info.picks_bans if e.is_pick]
         assert len(picks) == 10  # Standard 5v5 picks
-        
+
         # Exact pick sequences by team
         radiant_picks = [e.hero_id for e in picks if e.team == 2]
         dire_picks = [e.hero_id for e in picks if e.team == 3]
-        
+
         assert radiant_picks == [99, 123, 66, 114, 95]  # Real radiant picks
         assert dire_picks == [77, 45, 27, 17, 41]       # Real dire picks
 
     def test_bans_exact_values(self, parser):
         """Test bans contain exact hero IDs from real game."""
-        draft = parser.parse_draft(DEMO_FILE)
-        
-        bans = [e for e in draft.picks_bans if not e.is_pick]
+        game_info = parser.parse_game_info(DEMO_FILE)
+
+        bans = [e for e in game_info.picks_bans if not e.is_pick]
         assert len(bans) == 14  # Exact number of bans in this game
-        
+
         # Exact ban sequences by team
         radiant_bans = [e.hero_id for e in bans if e.team == 2]
         dire_bans = [e.hero_id for e in bans if e.team == 3]
-        
+
         assert radiant_bans == [74, 38, 89, 136, 102, 70, 8]  # Real radiant bans
         assert dire_bans == [53, 11, 7, 16, 110, 13, 1]       # Real dire bans
 
@@ -110,27 +111,27 @@ class TestCDotaGameInfoRealValues:
 
     def test_game_info_exact_structure(self, parser):
         """Test game info contains exact structure from real file."""
-        result = parser.parse_draft(DEMO_FILE)
-        
+        result = parser.parse_game_info(DEMO_FILE)
+
         assert result.success is True
         assert len(result.picks_bans) == 24
         assert result.error is None
-        
+
         # Test team distribution is correct
         team_2_events = [e for e in result.picks_bans if e.team == 2]  # Radiant
         team_3_events = [e for e in result.picks_bans if e.team == 3]  # Dire
-        
+
         assert len(team_2_events) == 12  # Radiant events (5 picks + 7 bans)
         assert len(team_3_events) == 12  # Dire events (5 picks + 7 bans)
 
     def test_game_info_serialization_roundtrip(self, parser):
         """Test CDotaGameInfo JSON serialization preserves exact values."""
-        original = parser.parse_draft(DEMO_FILE)
-        
+        original = parser.parse_game_info(DEMO_FILE)
+
         # Serialize and deserialize
         json_str = original.model_dump_json()
         restored = CDotaGameInfo.model_validate_json(json_str)
-        
+
         # Must be identical to original
         assert restored == original
         assert len(restored.picks_bans) == 24

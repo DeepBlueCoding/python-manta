@@ -60,7 +60,7 @@ for msg in result.messages:
 |---------|--------|-------------|
 | **Header** | `parse_header()` | Match metadata (map, build, server) |
 | **Draft** | `parse_draft()` | Picks and bans sequence |
-| **Match Info** | `parse_match_info()` | Pro match data (teams, league, players) |
+| **Match Info** | `parse_game_info()` | Pro match data (teams, league, players) |
 | **Messages** | `parse_universal()` | Any of 272 message types |
 | **Game Events** | `parse_game_events()` | 364 named event types |
 | **Combat Log** | `parse_combat_log()` | Damage, heals, kills |

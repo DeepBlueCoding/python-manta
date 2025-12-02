@@ -2,7 +2,7 @@
 # MantaParser
 
 ??? info "AI Summary"
-    `MantaParser` is the main class for parsing Dota 2 replays. Create an instance with `MantaParser()` and call methods like `parse_header()`, `parse_draft()`, `parse_match_info()`, `parse_universal()`. For specialized data, use `parse_game_events()`, `parse_combat_log()`, `parse_modifiers()`, `query_entities()`, `get_string_tables()`. Use `parse_match_info()` to get pro match data (team IDs, team tags, league ID, players). All methods take a file path and return Pydantic models. The same parser instance can be reused for multiple files.
+    `MantaParser` is the main class for parsing Dota 2 replays. Create an instance with `MantaParser()` and call methods like `parse_header()`, `parse_draft()`, `parse_game_info()`, `parse_universal()`. For specialized data, use `parse_game_events()`, `parse_combat_log()`, `parse_modifiers()`, `query_entities()`, `get_string_tables()`. Use `parse_game_info()` to get pro match data (team IDs, team tags, league ID, players). All methods take a file path and return Pydantic models. The same parser instance can be reused for multiple files.
 
 ---
 
@@ -18,7 +18,7 @@ These methods process and structure the raw Manta data, resolving string table i
 |--------|---------|
 | `parse_header()` | Demo file metadata |
 | `parse_draft()` | Draft picks/bans |
-| `parse_match_info()` | Pro match data (teams, players, league) |
+| `parse_game_info()` | Pro match data (teams, players, league) |
 | `parse_entities()` | Entity snapshots with player stats/positions |
 | `parse_game_events()` | Game events with field name resolution |
 | `parse_combat_log()` | Combat log with name resolution |
@@ -118,10 +118,10 @@ for event in draft.picks_bans:
 
 ---
 
-### parse_match_info
+### parse_game_info
 
 ```python
-def parse_match_info(self, demo_file_path: str) -> MatchInfo
+def parse_game_info(self, demo_file_path: str) -> CDotaGameInfo
 ```
 
 Parses complete match information including pro match data.
@@ -129,7 +129,7 @@ Parses complete match information including pro match data.
 **Parameters:**
 - `demo_file_path`: Path to the `.dem` replay file
 
-**Returns:** [`MatchInfo`](models#matchinfo)
+**Returns:** [`CDotaGameInfo`](models#cdotagameinfo)
 
 **Raises:**
 - `FileNotFoundError`: If the file doesn't exist
@@ -137,7 +137,7 @@ Parses complete match information including pro match data.
 
 **Example:**
 ```python
-match = parser.parse_match_info("match.dem")
+match = parser.parse_game_info("match.dem")
 
 print(f"Match ID: {match.match_id}")
 print(f"Game Mode: {match.game_mode}")

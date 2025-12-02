@@ -130,7 +130,7 @@ if result.success:
 ### Parse Draft (Picks & Bans)
 
 ```python
-draft = parser.parse_draft("match.dem")
+draft = parser.parse_game_info("match.dem")
 
 for pick_ban in draft.picks_bans:
     action = "PICK" if pick_ban.is_pick else "BAN"
@@ -152,7 +152,7 @@ class MantaParser:
 
     # Basic parsing
     def parse_header(self, demo_file_path: str) -> HeaderInfo
-    def parse_draft(self, demo_file_path: str) -> CDotaGameInfo
+    def parse_game_info(self, demo_file_path: str) -> CDotaGameInfo
     def parse_universal(self, demo_file_path: str, message_filter: str = "", max_messages: int = 0) -> UniversalParseResult
 
     # Advanced features
@@ -184,7 +184,7 @@ Parses the demo file header containing match metadata.
 - `FileNotFoundError`: If demo file doesn't exist
 - `ValueError`: If parsing fails
 
-#### parse_draft(demo_file_path: str) -> CDotaGameInfo
+#### parse_game_info(demo_file_path: str) -> CDotaGameInfo
 
 Extracts draft phase information (picks and bans).
 
@@ -1057,8 +1057,8 @@ parser = MantaParser()
 
 # Basic parsing
 header = parser.parse_header("match.dem")           # Match metadata
-draft = parser.parse_draft("match.dem")             # Picks and bans
-match = parser.parse_match_info("match.dem")        # Pro match data (teams, league)
+draft = parser.parse_game_info("match.dem")             # Picks and bans
+match = parser.parse_game_info("match.dem")        # Pro match data (teams, league)
 result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 100)
 
 # Hero positions over time
@@ -1077,8 +1077,8 @@ info = parser.get_parser_info("match.dem")
 | Task | Method | Notes |
 |------|--------|-------|
 | Match metadata | `parse_header()` | Build number, map, server |
-| Draft sequence | `parse_draft()` | Picks/bans with hero IDs |
-| Pro match info | `parse_match_info()` | Teams, league, players, winner |
+| Draft sequence | `parse_game_info()` | Picks/bans with hero IDs |
+| Pro match info | `parse_game_info()` | Teams, league, players, winner |
 | Hero positions over time | `parse_entities()` | Position, stats at intervals |
 | Chat messages | `parse_universal("CDOTAUserMsg_ChatMessage")` | Player text chat |
 | Item purchases | `parse_universal("CDOTAUserMsg_ItemPurchased")` | Item buy events |

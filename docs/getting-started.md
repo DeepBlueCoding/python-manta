@@ -94,7 +94,7 @@ for event in draft.picks_bans:
 Get complete match information including team data for pro/league matches:
 
 ```python
-match = parser.parse_match_info("match.dem")
+match = parser.parse_game_info("match.dem")
 
 print(f"Match ID: {match.match_id}")
 print(f"Winner: {'Radiant' if match.game_winner == 2 else 'Dire'}")

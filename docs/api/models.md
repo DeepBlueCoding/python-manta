@@ -2,7 +2,7 @@
 # Data Models
 
 ??? info "AI Summary"
-    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `CDotaGameInfo`/`CHeroSelectEvent` (draft), `MatchInfo`/`PlayerMatchInfo` (pro match data with teams, league, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). All have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `CDotaGameInfo`/`CHeroSelectEvent` (draft), `CDotaGameInfo`/`CPlayerInfo` (pro match data with teams, league, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). All have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
 
 ---
 
@@ -84,12 +84,12 @@ for pick in radiant_picks:
 
 ## Match Info Models
 
-### MatchInfo
+### CDotaGameInfo
 
 Complete match information including pro match data.
 
 ```python
-class MatchInfo(BaseModel):
+class CDotaGameInfo(BaseModel):
     # Basic match info
     match_id: int              # Match ID
     game_mode: int             # Game mode ID
@@ -104,7 +104,7 @@ class MatchInfo(BaseModel):
     dire_team_tag: str         # Dire team tag (e.g., "Secret")
 
     # Players
-    players: List[PlayerMatchInfo]  # All players in match
+    players: List[CPlayerInfo]  # All players in match
 
     # Draft
     picks_bans: List[CHeroSelectEvent]  # Draft sequence
@@ -121,12 +121,12 @@ class MatchInfo(BaseModel):
         """Check if this is a pro/league match."""
 ```
 
-### PlayerMatchInfo
+### CPlayerInfo
 
 Player information from match metadata.
 
 ```python
-class PlayerMatchInfo(BaseModel):
+class CPlayerInfo(BaseModel):
     hero_name: str           # Hero internal name (e.g., "npc_dota_hero_axe")
     player_name: str         # Player display name
     is_fake_client: bool     # True for bots
@@ -136,7 +136,7 @@ class PlayerMatchInfo(BaseModel):
 
 **Example:**
 ```python
-match = parser.parse_match_info("match.dem")
+match = parser.parse_game_info("match.dem")
 
 # Basic match info
 print(f"Match {match.match_id}")

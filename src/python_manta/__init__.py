@@ -15,13 +15,12 @@ Usage:
 from .manta_python import (
     # Main parser class
     MantaParser,
-    # Header/Draft models
+    # Header model
     HeaderInfo,
+    # Game info models (match Manta's CGameInfo.CDotaGameInfo)
     CHeroSelectEvent,
+    CPlayerInfo,
     CDotaGameInfo,
-    # Match info (pro match data)
-    PlayerMatchInfo,
-    MatchInfo,
     # Universal parsing
     MessageEvent,
     UniversalParseResult,
@@ -62,13 +61,12 @@ __description__ = "Python interface for Manta Dota 2 replay parser"
 __all__ = [
     # Main parser class
     "MantaParser",
-    # Header/Draft models
+    # Header model
     "HeaderInfo",
+    # Game info models (match Manta's CGameInfo.CDotaGameInfo)
     "CHeroSelectEvent",
+    "CPlayerInfo",
     "CDotaGameInfo",
-    # Match info (pro match data)
-    "PlayerMatchInfo",
-    "MatchInfo",
     # Universal parsing
     "MessageEvent",
     "UniversalParseResult",

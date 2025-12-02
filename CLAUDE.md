@@ -99,8 +99,8 @@ from python_manta import (
     CHeroSelectEvent,      # Draft pick/ban event
     CDotaGameInfo,         # Draft information
     # Pro match data
-    PlayerMatchInfo,       # Player info from match
-    MatchInfo,             # Complete match info (teams, league)
+    CPlayerInfo,       # Player info from match
+    CDotaGameInfo,             # Complete match info (teams, league)
     MessageEvent,          # Universal message wrapper
     UniversalParseResult,  # Parse result container
     # Entity snapshots (positions, stats over time)
@@ -126,10 +126,10 @@ parser = MantaParser()
 
 # Header and draft
 header = parser.parse_header("match.dem")
-draft = parser.parse_draft("match.dem")
+draft = parser.parse_game_info("match.dem")
 
 # Pro match info (teams, league, players)
-match = parser.parse_match_info("match.dem")
+match = parser.parse_game_info("match.dem")
 if match.is_pro_match():
     print(f"League: {match.league_id}, {match.radiant_team_tag} vs {match.dire_team_tag}")
 
@@ -164,8 +164,8 @@ info = parser.get_parser_info("match.dem")
 | Task | Method |
 |------|--------|
 | Match metadata | `parse_header()` |
-| Draft picks/bans | `parse_draft()` |
-| Pro match info | `parse_match_info()` |
+| Draft picks/bans | `parse_game_info()` |
+| Pro match info | `parse_game_info()` |
 | Hero positions | `parse_entities()` |
 | Chat messages | `parse_universal("CDOTAUserMsg_ChatMessage")` |
 | Item purchases | `parse_universal("CDOTAUserMsg_ItemPurchased")` |

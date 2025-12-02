@@ -37,7 +37,7 @@ for msg in result.messages:
 
 | Class | Purpose |
 |-------|---------|
-| `MantaParser` | Main parser class with `parse_header()`, `parse_draft()`, `parse_universal()` |
+| `MantaParser` | Main parser class with `parse_header()`, `parse_game_info()`, `parse_universal()` |
 | `HeaderInfo` | Demo file metadata (map_name, build_num, server_name, etc.) |
 | `CDotaGameInfo` | Draft information with picks_bans list |
 | `CHeroSelectEvent` | Single pick/ban (is_pick, team, hero_id) |
@@ -53,7 +53,7 @@ parser = MantaParser()
 header: HeaderInfo = parser.parse_header("match.dem")
 
 # Parse draft (picks/bans)
-draft: CDotaGameInfo = parser.parse_draft("match.dem")
+draft: CDotaGameInfo = parser.parse_game_info("match.dem")
 
 # Parse any message type
 result: UniversalParseResult = parser.parse_universal(

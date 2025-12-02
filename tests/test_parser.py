@@ -32,7 +32,7 @@ class TestMantaParserBusinessLogic:
     def test_parser_draft_business_rules(self):
         """Test draft parsing follows Dota 2 business rules."""
         parser = MantaParser()
-        result = parser.parse_draft(DEMO_FILE)
+        result = parser.parse_game_info(DEMO_FILE)
         
         # Business rule: Must have exactly 10 picks in 5v5 game
         picks = [e for e in result.picks_bans if e.is_pick]
@@ -84,14 +84,14 @@ class TestMantaParserBusinessLogic:
         assert header1.build_num == header2.build_num == header3.build_num == 10512
         
         # Test with draft parsing
-        draft1 = parser1.parse_draft(DEMO_FILE)
-        draft2 = parser2.parse_draft(DEMO_FILE)
+        game_info1 = parser1.parse_game_info(DEMO_FILE)
+        game_info2 = parser2.parse_game_info(DEMO_FILE)
         
-        assert len(draft1.picks_bans) == len(draft2.picks_bans) == 24
+        assert len(game_info1.picks_bans) == len(game_info2.picks_bans) == 24
         
         # Pick sequences must be identical
-        picks1 = [e.hero_id for e in draft1.picks_bans if e.is_pick and e.team == 2]
-        picks2 = [e.hero_id for e in draft2.picks_bans if e.is_pick and e.team == 2]
+        picks1 = [e.hero_id for e in game_info1.picks_bans if e.is_pick and e.team == 2]
+        picks2 = [e.hero_id for e in game_info2.picks_bans if e.is_pick and e.team == 2]
         assert picks1 == picks2 == [99, 123, 66, 114, 95]
 
     def test_parser_mixed_operations_consistency(self):
@@ -100,17 +100,17 @@ class TestMantaParserBusinessLogic:
         
         # Parse all types on same parser instance
         header = parser.parse_header(DEMO_FILE)
-        draft = parser.parse_draft(DEMO_FILE)
+        game_info = parser.parse_game_info(DEMO_FILE)
         universal = parser.parse_universal(DEMO_FILE, max_messages=5)
         
         # All operations must succeed
         assert header.success is True
-        assert draft.success is True  
+        assert game_info.success is True  
         assert universal.success is True
         
         # Verify consistent data across operations
         assert header.map_name == "start"
-        assert len(draft.picks_bans) == 24
+        assert len(game_info.picks_bans) == 24
         assert len(universal.messages) == 5
         assert universal.messages[0].type == "CDemoFileHeader"
 
@@ -122,7 +122,7 @@ class TestMantaParserDataIntegrity:
     def test_draft_data_relationships(self):
         """Test draft data maintains proper relationships."""
         parser = MantaParser()
-        result = parser.parse_draft(DEMO_FILE)
+        result = parser.parse_game_info(DEMO_FILE)
         
         # Data integrity: Total events = picks + bans
         picks = [e for e in result.picks_bans if e.is_pick]
@@ -196,7 +196,7 @@ class TestMantaParserLibraryIntegration:
         
         # Verify ctypes functions exist and are callable
         assert hasattr(parser.lib, 'ParseHeader')
-        assert hasattr(parser.lib, 'ParseDraft')
+        assert hasattr(parser.lib, 'ParseMatchInfo')
         assert hasattr(parser.lib, 'ParseUniversal')
         
         # Verify functions can be called and return valid results
@@ -212,8 +212,8 @@ class TestMantaParserLibraryIntegration:
             header = parser.parse_header(DEMO_FILE)
             assert header.map_name == "start", f"Failed on iteration {i}"
             
-            draft = parser.parse_draft(DEMO_FILE) 
-            assert len(draft.picks_bans) == 24, f"Failed on iteration {i}"
+            game_info = parser.parse_game_info(DEMO_FILE) 
+            assert len(game_info.picks_bans) == 24, f"Failed on iteration {i}"
             
             universal = parser.parse_universal(DEMO_FILE, max_messages=3)
             assert len(universal.messages) == 3, f"Failed on iteration {i}"
@@ -236,7 +236,7 @@ class TestMantaParserErrorHandling:
             parser.parse_header("/nonexistent/file.dem")
             
         with pytest.raises(FileNotFoundError, match="Demo file not found"):
-            parser.parse_draft("/nonexistent/file.dem")
+            parser.parse_game_info("/nonexistent/file.dem")
             
         with pytest.raises(FileNotFoundError, match="Demo file not found"):
             parser.parse_universal("/nonexistent/file.dem")
@@ -252,7 +252,7 @@ class TestMantaParserErrorHandling:
         assert "is a directory" in str(exc_info.value)
             
         with pytest.raises((ValueError, Exception)) as exc_info:
-            parser.parse_draft("/tmp")
+            parser.parse_game_info("/tmp")
         # May raise ValueError or ValidationError depending on implementation
 
     def test_empty_file_path_error(self):
@@ -263,7 +263,7 @@ class TestMantaParserErrorHandling:
             parser.parse_header("")
             
         with pytest.raises(FileNotFoundError):
-            parser.parse_draft("")
+            parser.parse_game_info("")
             
         with pytest.raises(FileNotFoundError):
             parser.parse_universal("")
