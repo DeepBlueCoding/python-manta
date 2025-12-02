@@ -651,10 +651,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#parse_match_info" class="md-nav__link">
+  <a href="#parse_game_info" class="md-nav__link">
     <span class="md-ellipsis">
       
-        parse_match_info
+        parse_game_info
       
     </span>
   </a>
@@ -1541,10 +1541,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#parse_match_info" class="md-nav__link">
+  <a href="#parse_game_info" class="md-nav__link">
     <span class="md-ellipsis">
       
-        parse_match_info
+        parse_game_info
       
     </span>
   </a>
@@ -1786,7 +1786,7 @@
 <h1 id="mantaparser">MantaParser<a class="headerlink" href="#mantaparser" title="Permanent link">&para;</a></h1>
 <details class="info">
 <summary>AI Summary</summary>
-<p><code>MantaParser</code> is the main class for parsing Dota 2 replays. Create an instance with <code>MantaParser()</code> and call methods like <code>parse_header()</code>, <code>parse_draft()</code>, <code>parse_match_info()</code>, <code>parse_universal()</code>. For specialized data, use <code>parse_game_events()</code>, <code>parse_combat_log()</code>, <code>parse_modifiers()</code>, <code>query_entities()</code>, <code>get_string_tables()</code>. Use <code>parse_match_info()</code> to get pro match data (team IDs, team tags, league ID, players). All methods take a file path and return Pydantic models. The same parser instance can be reused for multiple files.</p>
+<p><code>MantaParser</code> is the main class for parsing Dota 2 replays. Create an instance with <code>MantaParser()</code> and call methods like <code>parse_header()</code>, <code>parse_draft()</code>, <code>parse_game_info()</code>, <code>parse_universal()</code>. For specialized data, use <code>parse_game_events()</code>, <code>parse_combat_log()</code>, <code>parse_modifiers()</code>, <code>query_entities()</code>, <code>get_string_tables()</code>. Use <code>parse_game_info()</code> to get pro match data (team IDs, team tags, league ID, players). All methods take a file path and return Pydantic models. The same parser instance can be reused for multiple files.</p>
 </details>
 <hr />
 <h2 id="api-levels">API Levels<a class="headerlink" href="#api-levels" title="Permanent link">&para;</a></h2>
@@ -1810,7 +1810,7 @@
 <td>Draft picks/bans</td>
 </tr>
 <tr>
-<td><code>parse_match_info()</code></td>
+<td><code>parse_game_info()</code></td>
 <td>Pro match data (teams, players, league)</td>
 </tr>
 <tr>
@@ -1913,18 +1913,18 @@
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">team</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">: Hero </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">hero_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
-<h3 id="parse_match_info">parse_match_info<a class="headerlink" href="#parse_match_info" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_match_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">demo_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MatchInfo</span>
+<h3 id="parse_game_info">parse_game_info<a class="headerlink" href="#parse_game_info" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_game_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">demo_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CDotaGameInfo</span>
 </code></pre></div>
 <p>Parses complete match information including pro match data.</p>
 <p><strong>Parameters:</strong>
 - <code>demo_file_path</code>: Path to the <code>.dem</code> replay file</p>
-<p><strong>Returns:</strong> <a href="models#matchinfo"><code>MatchInfo</code></a></p>
+<p><strong>Returns:</strong> <a href="models#cdotagameinfo"><code>CDotaGameInfo</code></a></p>
 <p><strong>Raises:</strong>
 - <code>FileNotFoundError</code>: If the file doesn't exist
 - <code>ValueError</code>: If parsing fails</p>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_match_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_game_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Match ID: </span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">match_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Game Mode: </span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">game_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

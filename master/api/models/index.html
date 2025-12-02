@@ -674,10 +674,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#matchinfo" class="md-nav__link">
+  <a href="#cdotagameinfo_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MatchInfo
+        CDotaGameInfo
       
     </span>
   </a>
@@ -685,10 +685,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#playermatchinfo" class="md-nav__link">
+  <a href="#cplayerinfo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PlayerMatchInfo
+        CPlayerInfo
       
     </span>
   </a>
@@ -1608,10 +1608,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#matchinfo" class="md-nav__link">
+  <a href="#cdotagameinfo_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MatchInfo
+        CDotaGameInfo
       
     </span>
   </a>
@@ -1619,10 +1619,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#playermatchinfo" class="md-nav__link">
+  <a href="#cplayerinfo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PlayerMatchInfo
+        CPlayerInfo
       
     </span>
   </a>
@@ -1930,7 +1930,7 @@
 <h1 id="data-models">Data Models<a class="headerlink" href="#data-models" title="Permanent link">&para;</a></h1>
 <details class="info">
 <summary>AI Summary</summary>
-<p>All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: <code>HeaderInfo</code> (match metadata), <code>CDotaGameInfo</code>/<code>CHeroSelectEvent</code> (draft), <code>MatchInfo</code>/<code>PlayerMatchInfo</code> (pro match data with teams, league, players), <code>UniversalParseResult</code>/<code>MessageEvent</code> (messages), <code>GameEventsResult</code>/<code>GameEventData</code> (events), <code>CombatLogResult</code>/<code>CombatLogEntry</code> (combat), <code>ModifiersResult</code>/<code>ModifierEntry</code> (buffs), <code>EntitiesResult</code>/<code>EntityData</code> (entities), <code>StringTablesResult</code> (tables), <code>ParserInfo</code> (state). All have <code>.model_dump()</code> for dict conversion and <code>.model_dump_json()</code> for JSON.</p>
+<p>All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: <code>HeaderInfo</code> (match metadata), <code>CDotaGameInfo</code>/<code>CHeroSelectEvent</code> (draft), <code>CDotaGameInfo</code>/<code>CPlayerInfo</code> (pro match data with teams, league, players), <code>UniversalParseResult</code>/<code>MessageEvent</code> (messages), <code>GameEventsResult</code>/<code>GameEventData</code> (events), <code>CombatLogResult</code>/<code>CombatLogEntry</code> (combat), <code>ModifiersResult</code>/<code>ModifierEntry</code> (buffs), <code>EntitiesResult</code>/<code>EntityData</code> (entities), <code>StringTablesResult</code> (tables), <code>ParserInfo</code> (state). All have <code>.model_dump()</code> for dict conversion and <code>.model_dump_json()</code> for JSON.</p>
 </details>
 <hr />
 <h2 id="header-models">Header Models<a class="headerlink" href="#header-models" title="Permanent link">&para;</a></h2>
@@ -1990,9 +1990,9 @@
 </code></pre></div></p>
 <hr />
 <h2 id="match-info-models">Match Info Models<a class="headerlink" href="#match-info-models" title="Permanent link">&para;</a></h2>
-<h3 id="matchinfo">MatchInfo<a class="headerlink" href="#matchinfo" title="Permanent link">&para;</a></h3>
+<h3 id="cdotagameinfo_1">CDotaGameInfo<a class="headerlink" href="#cdotagameinfo_1" title="Permanent link">&para;</a></h3>
 <p>Complete match information including pro match data.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MatchInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CDotaGameInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="c1"># Basic match info</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">match_id</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># Match ID</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">game_mode</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Game mode ID</span>
@@ -2007,7 +2007,7 @@
 <a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="n">dire_team_tag</span><span class="p">:</span> <span class="nb">str</span>         <span class="c1"># Dire team tag (e.g., &quot;Secret&quot;)</span>
 <a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
 <a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="c1"># Players</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="n">players</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PlayerMatchInfo</span><span class="p">]</span>  <span class="c1"># All players in match</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="n">players</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CPlayerInfo</span><span class="p">]</span>  <span class="c1"># All players in match</span>
 <a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>
 <a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    <span class="c1"># Draft</span>
 <a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>    <span class="n">picks_bans</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CHeroSelectEvent</span><span class="p">]</span>  <span class="c1"># Draft sequence</span>
@@ -2023,9 +2023,9 @@
 <a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">is_pro_match</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if this is a pro/league match.&quot;&quot;&quot;</span>
 </code></pre></div>
-<h3 id="playermatchinfo">PlayerMatchInfo<a class="headerlink" href="#playermatchinfo" title="Permanent link">&para;</a></h3>
+<h3 id="cplayerinfo">CPlayerInfo<a class="headerlink" href="#cplayerinfo" title="Permanent link">&para;</a></h3>
 <p>Player information from match metadata.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">PlayerMatchInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CPlayerInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">hero_name</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># Hero internal name (e.g., &quot;npc_dota_hero_axe&quot;)</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">player_name</span><span class="p">:</span> <span class="nb">str</span>         <span class="c1"># Player display name</span>
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">is_fake_client</span><span class="p">:</span> <span class="nb">bool</span>     <span class="c1"># True for bots</span>
@@ -2033,7 +2033,7 @@
 <a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">game_team</span><span class="p">:</span> <span class="nb">int</span>           <span class="c1"># Team (2=Radiant, 3=Dire)</span>
 </code></pre></div>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_match_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_game_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># Basic match info</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Match </span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">match_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
