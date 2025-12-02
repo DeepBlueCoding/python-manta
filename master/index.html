@@ -1332,9 +1332,9 @@
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">header</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_header</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Map: </span><span class="si">{</span><span class="n">header</span><span class="o">.</span><span class="n">map_name</span><span class="si">}</span><span class="s2">, Build: </span><span class="si">{</span><span class="n">header</span><span class="o">.</span><span class="n">build_num</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># Get draft picks/bans</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">draft</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_draft</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">for</span> <span class="n">pb</span> <span class="ow">in</span> <span class="n">draft</span><span class="o">.</span><span class="n">picks_bans</span><span class="p">:</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># Get game info (draft, players, teams)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">game_info</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_game_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">for</span> <span class="n">pb</span> <span class="ow">in</span> <span class="n">game_info</span><span class="o">.</span><span class="n">picks_bans</span><span class="p">:</span>
 <a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">action</span> <span class="o">=</span> <span class="s2">&quot;PICK&quot;</span> <span class="k">if</span> <span class="n">pb</span><span class="o">.</span><span class="n">is_pick</span> <span class="k">else</span> <span class="s2">&quot;BAN&quot;</span>
 <a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">: Hero </span><span class="si">{</span><span class="n">pb</span><span class="o">.</span><span class="n">hero_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
@@ -1359,14 +1359,9 @@
 <td>Match metadata (map, build, server)</td>
 </tr>
 <tr>
-<td><strong>Draft</strong></td>
-<td><code>parse_draft()</code></td>
-<td>Picks and bans sequence</td>
-</tr>
-<tr>
-<td><strong>Match Info</strong></td>
+<td><strong>Game Info</strong></td>
 <td><code>parse_game_info()</code></td>
-<td>Pro match data (teams, league, players)</td>
+<td>Draft, players, teams, league</td>
 </tr>
 <tr>
 <td><strong>Messages</strong></td>

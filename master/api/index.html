@@ -1272,7 +1272,7 @@
 <h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
 <details class="info">
 <summary>AI Summary</summary>
-<p>Complete API documentation for Python Manta. The main class is <code>MantaParser</code> which provides all parsing methods. Data is returned as Pydantic models (<code>HeaderInfo</code>, <code>CDotaGameInfo</code>, <code>GameEventsResult</code>, etc.) for type safety and easy serialization. Key methods: <code>parse_header()</code>, <code>parse_draft()</code>, <code>parse_universal()</code>, <code>parse_game_events()</code>, <code>parse_combat_log()</code>, <code>parse_modifiers()</code>, <code>query_entities()</code>, <code>get_string_tables()</code>, <code>get_parser_info()</code>.</p>
+<p>Complete API documentation for Python Manta. The main class is <code>MantaParser</code> which provides all parsing methods. Data is returned as Pydantic models (<code>HeaderInfo</code>, <code>GameInfo</code>, <code>GameEventsResult</code>, etc.) for type safety and easy serialization. Key methods: <code>parse_header()</code>, <code>parse_game_info()</code>, <code>parse_universal()</code>, <code>parse_game_events()</code>, <code>parse_combat_log()</code>, <code>parse_modifiers()</code>, <code>query_entities()</code>, <code>get_string_tables()</code>, <code>get_parser_info()</code>.</p>
 </details>
 <hr />
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
@@ -1306,12 +1306,16 @@
 <td>Demo file header metadata</td>
 </tr>
 <tr>
-<td><a href="models#cdotagameinfo"><code>CDotaGameInfo</code></a></td>
-<td>Draft information</td>
+<td><a href="models#gameinfo"><code>GameInfo</code></a></td>
+<td>Game information (draft, players, teams)</td>
 </tr>
 <tr>
-<td><a href="models#cheroselectevent"><code>CHeroSelectEvent</code></a></td>
+<td><a href="models#draftevent"><code>DraftEvent</code></a></td>
 <td>Single pick/ban event</td>
+</tr>
+<tr>
+<td><a href="models#playerinfo"><code>PlayerInfo</code></a></td>
+<td>Player information from match</td>
 </tr>
 <tr>
 <td><a href="models#universalparseresult"><code>UniversalParseResult</code></a></td>
@@ -1371,7 +1375,7 @@
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Basic parsing</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">header</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_header</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">draft</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_draft</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">game_info</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_game_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">messages</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;CDOTAUserMsg_ChatMessage&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Advanced parsing</span>
