@@ -7,9 +7,73 @@ import ctypes
 import json
 import os
 import tempfile
+from enum import Enum
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
+
+
+class RuneType(str, Enum):
+    """Dota 2 rune types with their modifier names.
+
+    Usage:
+        # Check if a combat log entry is a rune pickup
+        if RuneType.from_modifier(entry.inflictor_name):
+            rune = RuneType.from_modifier(entry.inflictor_name)
+            print(f"Picked up {rune.display_name}")
+
+        # Get all rune modifiers for filtering
+        rune_modifiers = RuneType.all_modifiers()
+    """
+    DOUBLE_DAMAGE = "modifier_rune_doubledamage"
+    HASTE = "modifier_rune_haste"
+    ILLUSION = "modifier_rune_illusion"
+    INVISIBILITY = "modifier_rune_invis"
+    REGENERATION = "modifier_rune_regen"
+    ARCANE = "modifier_rune_arcane"
+    SHIELD = "modifier_rune_shield"
+    WATER = "modifier_rune_water"
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable rune name."""
+        names = {
+            RuneType.DOUBLE_DAMAGE: "Double Damage",
+            RuneType.HASTE: "Haste",
+            RuneType.ILLUSION: "Illusion",
+            RuneType.INVISIBILITY: "Invisibility",
+            RuneType.REGENERATION: "Regeneration",
+            RuneType.ARCANE: "Arcane",
+            RuneType.SHIELD: "Shield",
+            RuneType.WATER: "Water",
+        }
+        return names[self]
+
+    @property
+    def modifier_name(self) -> str:
+        """Combat log modifier name for this rune."""
+        return self.value
+
+    @classmethod
+    def from_modifier(cls, modifier_name: str) -> Optional["RuneType"]:
+        """Get RuneType from a combat log modifier name.
+
+        Returns None if the modifier is not a rune modifier.
+        """
+        for rune in cls:
+            if rune.value == modifier_name:
+                return rune
+        return None
+
+    @classmethod
+    def all_modifiers(cls) -> List[str]:
+        """Get list of all rune modifier names for filtering."""
+        return [rune.value for rune in cls]
+
+    @classmethod
+    def is_rune_modifier(cls, modifier_name: str) -> bool:
+        """Check if a modifier name is a rune modifier."""
+        return modifier_name.startswith("modifier_rune_")
 
 
 class HeaderInfo(BaseModel):

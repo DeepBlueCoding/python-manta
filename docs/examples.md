@@ -413,58 +413,63 @@ extract_chat_log("match.dem")
 
 ## Rune Tracking
 
-Track rune spawns and pickups throughout the match.
+Track rune pickups throughout the match using combat log modifiers.
 
 ```python
-from python_manta import MantaParser
+from python_manta import MantaParser, RuneType
+from collections import defaultdict
 
 def track_runes(demo_path: str):
     parser = MantaParser()
 
-    # Get rune events
-    result = parser.parse_game_events(
+    # Rune pickups are tracked via combat log modifiers
+    # When a hero picks up a rune, they receive a modifier_rune_* buff
+    result = parser.parse_combat_log(
         demo_path,
-        event_filter="rune",
-        max_events=200
+        types=[2],  # MODIFIER_ADD only
+        heroes_only=True,
+        max_entries=50000
     )
+
+    # Filter for rune modifiers using the RuneType enum
+    rune_pickups = [
+        e for e in result.entries
+        if RuneType.is_rune_modifier(e.inflictor_name)
+    ]
 
     print("Rune Tracking")
     print("=" * 50)
-
-    activations = [e for e in result.events if e.name == "dota_rune_activated"]
-    bounty_pickups = [e for e in result.events if e.name == "dota_bounty_rune_pickup"]
-
-    rune_types = {
-        0: "Double Damage",
-        1: "Haste",
-        2: "Illusion",
-        3: "Invisibility",
-        4: "Regeneration",
-        5: "Bounty",
-        6: "Arcane",
-        7: "Water",
-        8: "Shield",
-        9: "Wisdom"
-    }
-
-    print(f"\nRune Activations: {len(activations)}")
+    print(f"\nTotal Rune Pickups: {len(rune_pickups)}")
     print("-" * 40)
-    for event in activations[:20]:  # First 20
-        player = event.fields.get("player_id", "?")
-        rune_id = event.fields.get("rune", 0)
-        rune_name = rune_types.get(rune_id, f"Unknown({rune_id})")
 
-        print(f"[Tick {event.tick:>7}] Player {player} activated {rune_name}")
+    # Group by hero
+    hero_runes = defaultdict(list)
+    for pickup in rune_pickups:
+        hero = pickup.target_name.replace("npc_dota_hero_", "")
+        rune = RuneType.from_modifier(pickup.inflictor_name)
+        rune_name = rune.display_name if rune else pickup.inflictor_name
+        hero_runes[hero].append({
+            "time": pickup.timestamp,
+            "rune": rune_name
+        })
 
-    print(f"\nBounty Rune Pickups: {len(bounty_pickups)}")
+    # Print timeline
+    print("\nRune Pickup Timeline:")
+    print("-" * 60)
+    for pickup in rune_pickups:
+        hero = pickup.target_name.replace("npc_dota_hero_", "")
+        rune = RuneType.from_modifier(pickup.inflictor_name)
+        rune_name = rune.display_name if rune else pickup.inflictor_name
+        minutes = int(pickup.timestamp // 60)
+        seconds = int(pickup.timestamp % 60)
+        print(f"[{minutes:02d}:{seconds:02d}] {hero:<20} picked up {rune_name}")
+
+    # Print summary by hero
+    print("\nRunes by Hero:")
     print("-" * 40)
-    for event in bounty_pickups[:10]:  # First 10
-        player = event.fields.get("player_id", "?")
-        gold = event.fields.get("bounty_value", 0)
-        team = event.fields.get("team_id", 0)
-
-        team_name = "Radiant" if team == 2 else "Dire" if team == 3 else "?"
-        print(f"[Tick {event.tick:>7}] Player {player} ({team_name}) +{gold} gold")
+    for hero, runes in sorted(hero_runes.items()):
+        rune_summary = ", ".join(r["rune"] for r in runes)
+        print(f"  {hero}: {len(runes)} runes ({rune_summary})")
 
 # Usage
 track_runes("match.dem")

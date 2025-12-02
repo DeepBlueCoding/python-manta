@@ -2,7 +2,59 @@
 # Data Models
 
 ??? info "AI Summary"
-    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). All have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` for rune tracking. All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+
+---
+
+## Enums
+
+### RuneType
+
+Enum for Dota 2 power rune types with helper methods for combat log analysis.
+
+```python
+class RuneType(str, Enum):
+    DOUBLE_DAMAGE = "modifier_rune_doubledamage"
+    HASTE = "modifier_rune_haste"
+    ILLUSION = "modifier_rune_illusion"
+    INVISIBILITY = "modifier_rune_invis"
+    REGENERATION = "modifier_rune_regen"
+    ARCANE = "modifier_rune_arcane"
+    SHIELD = "modifier_rune_shield"
+    WATER = "modifier_rune_water"
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `display_name` | str | Human-readable name (e.g., "Double Damage") |
+| `modifier_name` | str | Combat log modifier name |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_modifier(name)` | `RuneType \| None` | Get RuneType from modifier name |
+| `is_rune_modifier(name)` | `bool` | Check if modifier is a rune |
+| `all_modifiers()` | `List[str]` | Get all rune modifier names |
+
+**Example:**
+```python
+from python_manta import RuneType
+
+# Check if a combat log entry is a rune pickup
+if RuneType.is_rune_modifier(entry.inflictor_name):
+    rune = RuneType.from_modifier(entry.inflictor_name)
+    print(f"Picked up {rune.display_name}")
+
+# Direct enum access
+print(RuneType.HASTE.display_name)  # "Haste"
+print(RuneType.HASTE.modifier_name)  # "modifier_rune_haste"
+
+# Get all rune modifiers for filtering
+rune_modifiers = RuneType.all_modifiers()
+```
 
 ---
 

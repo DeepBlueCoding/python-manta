@@ -15,6 +15,8 @@ Usage:
 from .manta_python import (
     # Main parser class
     MantaParser,
+    # Enums
+    RuneType,
     # Header model
     HeaderInfo,
     # Game info models
@@ -61,6 +63,8 @@ __description__ = "Python interface for Manta Dota 2 replay parser"
 __all__ = [
     # Main parser class
     "MantaParser",
+    # Enums
+    "RuneType",
     # Header model
     "HeaderInfo",
     # Game info models
