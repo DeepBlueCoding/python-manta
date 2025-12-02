@@ -4,7 +4,7 @@ Focus on parser behavior, business rules, and data consistency.
 """
 
 import pytest
-from python_manta import MantaParser, HeaderInfo, CDotaGameInfo, UniversalParseResult
+from python_manta import MantaParser, HeaderInfo, GameInfo, UniversalParseResult
 
 # Real demo file path
 DEMO_FILE = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
@@ -244,16 +244,16 @@ class TestMantaParserErrorHandling:
     def test_invalid_file_type_error(self):
         """Test parser handles invalid file types properly."""
         parser = MantaParser()
-        
-        # Directory instead of file should fail
-        with pytest.raises(ValueError) as exc_info:
+
+        # Directory instead of file should fail with IsADirectoryError
+        with pytest.raises(IsADirectoryError):
             parser.parse_header("/tmp")
-        assert "Parsing failed" in str(exc_info.value)
-        assert "is a directory" in str(exc_info.value)
-            
-        with pytest.raises((ValueError, Exception)) as exc_info:
+
+        with pytest.raises(IsADirectoryError):
             parser.parse_game_info("/tmp")
-        # May raise ValueError or ValidationError depending on implementation
+
+        with pytest.raises(IsADirectoryError):
+            parser.parse_universal("/tmp")
 
     def test_empty_file_path_error(self):
         """Test parser handles empty file paths properly.""" 

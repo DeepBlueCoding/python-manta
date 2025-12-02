@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │  └── ctypes bindings (FFI to shared library)                │
 ├─────────────────────────────────────────────────────────────┤
 │  libmanta_wrapper.so (go_wrapper/)                          │
-│  ├── CGO exports (ParseHeader, ParseDraft, ParseUniversal)  │
+│  ├── CGO exports (ParseHeader, ParseMatchInfo, ParseUniversal)  │
 │  ├── 272 callback implementations (callbacks_*.go)          │
 │  └── JSON serialization                                      │
 ├─────────────────────────────────────────────────────────────┤
@@ -37,7 +37,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |------|---------|
 | `src/python_manta/manta_python.py` | Main Python API - `MantaParser` class |
 | `src/python_manta/__init__.py` | Public exports |
-| `go_wrapper/manta_wrapper.go` | CGO exports (ParseHeader, ParseDraft) |
+| `go_wrapper/manta_wrapper.go` | CGO exports (ParseHeader, ParseMatchInfo) |
 | `go_wrapper/universal_parser.go` | Universal parsing with callback filtering |
 | `go_wrapper/data_parser.go` | Game events, modifiers, entities, combat log, string tables |
 | `go_wrapper/entity_parser.go` | Entity state snapshot tracking |
@@ -96,11 +96,9 @@ python simple_example.py
 from python_manta import (
     MantaParser,           # Main parser class
     HeaderInfo,            # Demo header metadata
-    CHeroSelectEvent,      # Draft pick/ban event
-    CDotaGameInfo,         # Draft information
-    # Pro match data
-    CPlayerInfo,       # Player info from match
-    CDotaGameInfo,             # Complete match info (teams, league)
+    DraftEvent,            # Draft pick/ban event
+    PlayerInfo,            # Player info from match
+    GameInfo,              # Complete game info (draft, teams, players)
     MessageEvent,          # Universal message wrapper
     UniversalParseResult,  # Parse result container
     # Entity snapshots (positions, stats over time)
@@ -124,14 +122,12 @@ from python_manta import MantaParser
 
 parser = MantaParser()
 
-# Header and draft
+# Header metadata
 header = parser.parse_header("match.dem")
-draft = parser.parse_game_info("match.dem")
 
-# Pro match info (teams, league, players)
-match = parser.parse_game_info("match.dem")
-if match.is_pro_match():
-    print(f"League: {match.league_id}, {match.radiant_team_tag} vs {match.dire_team_tag}")
+# Game info (draft, players, teams)
+game_info = parser.parse_game_info("match.dem")
+print(f"Match {game_info.match_id}: {game_info.radiant_team_tag} vs {game_info.dire_team_tag}")
 
 # Hero positions over time (see docs/guides/entities.md for details)
 snapshots = parser.parse_entities("match.dem", interval_ticks=900, max_snapshots=100)

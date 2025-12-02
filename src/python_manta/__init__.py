@@ -17,11 +17,11 @@ from .manta_python import (
     MantaParser,
     # Header model
     HeaderInfo,
-    # Game info models (match Manta's CGameInfo.CDotaGameInfo)
-    CHeroSelectEvent,
-    CPlayerInfo,
-    CDotaGameInfo,
-    # Universal parsing
+    # Game info models
+    DraftEvent,
+    PlayerInfo,
+    GameInfo,
+    # Universal parsing (low-level API)
     MessageEvent,
     UniversalParseResult,
     # Entity state snapshots
@@ -63,11 +63,11 @@ __all__ = [
     "MantaParser",
     # Header model
     "HeaderInfo",
-    # Game info models (match Manta's CGameInfo.CDotaGameInfo)
-    "CHeroSelectEvent",
-    "CPlayerInfo",
-    "CDotaGameInfo",
-    # Universal parsing
+    # Game info models
+    "DraftEvent",
+    "PlayerInfo",
+    "GameInfo",
+    # Universal parsing (low-level API)
     "MessageEvent",
     "UniversalParseResult",
     # Entity state snapshots

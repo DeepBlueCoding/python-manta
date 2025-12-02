@@ -27,34 +27,41 @@ class HeaderInfo(BaseModel):
     error: Optional[str] = None
 
 
-class CHeroSelectEvent(BaseModel):
-    """Hero select event (pick/ban) - matches Manta CGameInfo.CDotaGameInfo.CHeroSelectEvent."""
-    is_pick: bool      # true for pick, false for ban
-    team: int         # 2=Radiant, 3=Dire
-    hero_id: int      # Hero ID
+class DraftEvent(BaseModel):
+    """A single pick or ban event during the draft phase.
+
+    Maps to Manta's CGameInfo.CDotaGameInfo.CHeroSelectEvent protobuf.
+    """
+    is_pick: bool   # True for pick, False for ban
+    team: int       # 2=Radiant, 3=Dire
+    hero_id: int
 
 
-class CPlayerInfo(BaseModel):
-    """Player information - matches Manta CGameInfo.CDotaGameInfo.CPlayerInfo."""
+class PlayerInfo(BaseModel):
+    """Player information from match metadata.
+
+    Maps to Manta's CGameInfo.CDotaGameInfo.CPlayerInfo protobuf.
+    """
     hero_name: str
     player_name: str
     is_fake_client: bool = False
-    steamid: int
-    game_team: int  # 2=Radiant, 3=Dire
+    steam_id: int
+    team: int  # 2=Radiant, 3=Dire
 
 
-class CDotaGameInfo(BaseModel):
-    """Dota game information - matches Manta CGameInfo.CDotaGameInfo.
+class GameInfo(BaseModel):
+    """Complete game information extracted from replay.
 
     Contains match metadata, draft picks/bans, player info, and team data.
     For pro matches, includes team IDs, team tags, and league ID.
     For pub matches, team fields will be 0/empty.
+
+    Maps to Manta's CGameInfo.CDotaGameInfo protobuf.
     """
-    # Basic match info
     match_id: int
     game_mode: int
     game_winner: int  # 2=Radiant, 3=Dire
-    leagueid: int = 0  # Manta uses 'leagueid' not 'league_id'
+    league_id: int = 0
     end_time: int = 0
 
     # Team info (pro matches only - 0/empty for pubs)
@@ -64,12 +71,12 @@ class CDotaGameInfo(BaseModel):
     dire_team_tag: str = ""
 
     # Players
-    player_info: List[CPlayerInfo] = []
+    players: List[PlayerInfo] = []
 
     # Draft
-    picks_bans: List[CHeroSelectEvent] = []
+    picks_bans: List[DraftEvent] = []
 
-    # Playback info (from CDemoFileInfo parent)
+    # Playback info
     playback_time: float = 0.0
     playback_ticks: int = 0
     playback_frames: int = 0
@@ -79,7 +86,7 @@ class CDotaGameInfo(BaseModel):
 
     def is_pro_match(self) -> bool:
         """Check if this is a pro/league match."""
-        return self.leagueid > 0 or self.radiant_team_id > 0 or self.dire_team_id > 0
+        return self.league_id > 0 or self.radiant_team_id > 0 or self.dire_team_id > 0
 
 
 # Universal Message Event for ALL Manta callbacks
@@ -595,11 +602,11 @@ class MantaParser:
             # TODO: Fix memory management properly
             pass
     
-    def parse_game_info(self, demo_file_path: str) -> CDotaGameInfo:
+    def parse_game_info(self, demo_file_path: str) -> GameInfo:
         """
         Parse game information from a Dota 2 demo file.
 
-        Extracts CDotaGameInfo which contains:
+        Extracts match metadata including:
         - Match ID, game mode, winner
         - League ID (for pro matches)
         - Team IDs and tags (for pro matches)
@@ -611,7 +618,7 @@ class MantaParser:
             demo_file_path: Path to the .dem file
 
         Returns:
-            CDotaGameInfo object (matches Manta's CGameInfo.CDotaGameInfo).
+            GameInfo object with match metadata.
             Use is_pro_match() to check if this is a league/pro match.
 
         Raises:
@@ -632,7 +639,46 @@ class MantaParser:
         try:
             result_json = ctypes.string_at(result_ptr).decode('utf-8')
             result_dict = json.loads(result_json)
-            game_info = CDotaGameInfo(**result_dict)
+
+            # Map Go field names to Pythonic names
+            players = [
+                PlayerInfo(
+                    hero_name=p["hero_name"],
+                    player_name=p["player_name"],
+                    is_fake_client=p.get("is_fake_client", False),
+                    steam_id=p["steamid"],
+                    team=p["game_team"]
+                )
+                for p in result_dict.get("player_info", [])
+            ]
+
+            picks_bans = [
+                DraftEvent(
+                    is_pick=pb["is_pick"],
+                    team=pb["team"],
+                    hero_id=pb["hero_id"]
+                )
+                for pb in result_dict.get("picks_bans", [])
+            ]
+
+            game_info = GameInfo(
+                match_id=result_dict["match_id"],
+                game_mode=result_dict["game_mode"],
+                game_winner=result_dict["game_winner"],
+                league_id=result_dict.get("leagueid", 0),
+                end_time=result_dict.get("end_time", 0),
+                radiant_team_id=result_dict.get("radiant_team_id", 0),
+                dire_team_id=result_dict.get("dire_team_id", 0),
+                radiant_team_tag=result_dict.get("radiant_team_tag", ""),
+                dire_team_tag=result_dict.get("dire_team_tag", ""),
+                players=players,
+                picks_bans=picks_bans,
+                playback_time=result_dict.get("playback_time", 0.0),
+                playback_ticks=result_dict.get("playback_ticks", 0),
+                playback_frames=result_dict.get("playback_frames", 0),
+                success=result_dict["success"],
+                error=result_dict.get("error")
+            )
 
             if not game_info.success:
                 raise ValueError(f"Game info parsing failed: {game_info.error}")

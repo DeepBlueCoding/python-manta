@@ -7,9 +7,9 @@ import pytest
 from python_manta import (
     MantaParser,
     HeaderInfo,
-    CHeroSelectEvent,
-    CPlayerInfo,
-    CDotaGameInfo,
+    DraftEvent,
+    PlayerInfo,
+    GameInfo,
     MessageEvent,
     UniversalParseResult,
 )
@@ -59,8 +59,8 @@ class TestHeaderInfoRealValues:
 
 
 @pytest.mark.unit
-class TestCHeroSelectEventRealValues:
-    """Test CHeroSelectEvent with EXACT values from real draft."""
+class TestDraftEventRealValues:
+    """Test DraftEvent with EXACT values from real draft."""
 
     def test_draft_exact_structure(self, parser):
         """Test draft contains exact pick/ban structure from real game."""
@@ -106,8 +106,8 @@ class TestCHeroSelectEventRealValues:
 
 
 @pytest.mark.unit
-class TestCDotaGameInfoRealValues:
-    """Test CDotaGameInfo with EXACT values from real demo file."""
+class TestGameInfoRealValues:
+    """Test GameInfo with EXACT values from real demo file."""
 
     def test_game_info_exact_structure(self, parser):
         """Test game info contains exact structure from real file."""
@@ -125,12 +125,12 @@ class TestCDotaGameInfoRealValues:
         assert len(team_3_events) == 12  # Dire events (5 picks + 7 bans)
 
     def test_game_info_serialization_roundtrip(self, parser):
-        """Test CDotaGameInfo JSON serialization preserves exact values."""
+        """Test GameInfo JSON serialization preserves exact values."""
         original = parser.parse_game_info(DEMO_FILE)
 
         # Serialize and deserialize
         json_str = original.model_dump_json()
-        restored = CDotaGameInfo.model_validate_json(json_str)
+        restored = GameInfo.model_validate_json(json_str)
 
         # Must be identical to original
         assert restored == original
@@ -144,17 +144,26 @@ class TestMessageEventRealValues:
     def test_universal_exact_messages(self, parser):
         """Test universal parsing produces exact message sequence."""
         result = parser.parse_universal(DEMO_FILE, max_messages=10)
-        
+
         assert result.success is True
         assert len(result.messages) == 10
         assert result.count == 10
         assert result.error is None
-        
-        # Test exact message types from real file
+
+        # Test exact message types from real file (specific Manta callback names)
         message_types = [msg.type for msg in result.messages]
-        expected_types = ['CDemoFileHeader', 'CDemoPacket', 'CDemoPacket', 'CDemoPacket', 
-                         'CDemoPacket', 'CDemoPacket', 'CDemoPacket', 'CDemoPacket', 
-                         'CDemoPacket', 'CDemoPacket']
+        expected_types = [
+            'CDemoFileHeader',
+            'CNETMsg_Tick',
+            'CSVCMsg_ClearAllStringTables',
+            'CSVCMsg_CreateStringTable',
+            'CSVCMsg_CreateStringTable',
+            'CSVCMsg_CreateStringTable',
+            'CSVCMsg_CreateStringTable',
+            'CSVCMsg_CreateStringTable',
+            'CSVCMsg_CreateStringTable',
+            'CSVCMsg_CreateStringTable',
+        ]
         assert message_types == expected_types
 
     def test_first_message_exact_values(self, parser):
@@ -170,12 +179,13 @@ class TestMessageEventRealValues:
     def test_tick_progression_exact_sequence(self, parser):
         """Test tick progression follows exact sequence from real file."""
         result = parser.parse_universal(DEMO_FILE, max_messages=10)
-        
+
         ticks = [msg.tick for msg in result.messages]
-        expected_ticks = [0, 4, 7, 9, 11, 13, 15, 17, 19, 21]
+        # First 10 messages are all at tick 0 (header and string table setup)
+        expected_ticks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         assert ticks == expected_ticks
-        
-        # Ticks must be in ascending order
+
+        # Ticks must be in non-decreasing order
         assert ticks == sorted(ticks)
 
 

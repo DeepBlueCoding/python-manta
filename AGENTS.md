@@ -39,8 +39,9 @@ for msg in result.messages:
 |-------|---------|
 | `MantaParser` | Main parser class with `parse_header()`, `parse_game_info()`, `parse_universal()` |
 | `HeaderInfo` | Demo file metadata (map_name, build_num, server_name, etc.) |
-| `CDotaGameInfo` | Draft information with picks_bans list |
-| `CHeroSelectEvent` | Single pick/ban (is_pick, team, hero_id) |
+| `GameInfo` | Game information with picks_bans, players, match_id, teams |
+| `DraftEvent` | Single pick/ban (is_pick, team, hero_id) |
+| `PlayerInfo` | Player information (hero_name, player_name, steam_id, team) |
 | `MessageEvent` | Universal message wrapper (type, tick, net_tick, data, timestamp) |
 | `UniversalParseResult` | Parse result (success, count, messages, error) |
 
@@ -52,10 +53,10 @@ parser = MantaParser()
 # Parse header metadata
 header: HeaderInfo = parser.parse_header("match.dem")
 
-# Parse draft (picks/bans)
-draft: CDotaGameInfo = parser.parse_game_info("match.dem")
+# Parse game info (draft, players, teams)
+game_info: GameInfo = parser.parse_game_info("match.dem")
 
-# Parse any message type
+# Parse any message type (low-level API)
 result: UniversalParseResult = parser.parse_universal(
     "match.dem",                    # Demo file path
     "CDOTAUserMsg_ChatMessage",     # Callback filter (case-sensitive)
