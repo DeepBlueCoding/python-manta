@@ -5,27 +5,30 @@ Golden Master approach: Test against verified expected values.
 
 import pytest
 from python_manta import (
+    MantaParser,
     HeaderInfo,
     CHeroSelectEvent,
     CDotaGameInfo,
     MessageEvent,
     UniversalParseResult,
-    parse_demo_header,
-    parse_demo_draft,
-    parse_demo_universal
 )
 
 # Real demo file path
 DEMO_FILE = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
 
 
+@pytest.fixture
+def parser():
+    return MantaParser()
+
+
 @pytest.mark.unit
 class TestHeaderInfoRealValues:
     """Test HeaderInfo contains EXACT values from real demo file."""
 
-    def test_header_exact_values(self):
+    def test_header_exact_values(self, parser):
         """Test header parsing produces exact expected values from real file."""
-        result = parse_demo_header(DEMO_FILE)
+        result = parser.parse_header(DEMO_FILE)
         
         # EXACT values from the real demo file (verified manually)
         assert result.success is True
@@ -40,9 +43,9 @@ class TestHeaderInfoRealValues:
         assert result.server_start_tick == 381
         assert result.error is None
 
-    def test_header_serialization_roundtrip(self):
+    def test_header_serialization_roundtrip(self, parser):
         """Test HeaderInfo JSON serialization preserves exact values."""
-        original = parse_demo_header(DEMO_FILE)
+        original = parser.parse_header(DEMO_FILE)
         
         # Serialize and deserialize
         json_str = original.model_dump_json()
@@ -58,9 +61,9 @@ class TestHeaderInfoRealValues:
 class TestCHeroSelectEventRealValues:
     """Test CHeroSelectEvent with EXACT values from real draft."""
 
-    def test_draft_exact_structure(self):
+    def test_draft_exact_structure(self, parser):
         """Test draft contains exact pick/ban structure from real game."""
-        draft = parse_demo_draft(DEMO_FILE)
+        draft = parser.parse_draft(DEMO_FILE)
         
         # EXACT values from real demo file
         assert draft.success is True
@@ -72,9 +75,9 @@ class TestCHeroSelectEventRealValues:
         expected_first_5 = [(False, 3, 53), (False, 2, 74), (False, 2, 38), (False, 3, 11), (False, 2, 89)]
         assert first_5_events == expected_first_5
 
-    def test_picks_exact_values(self):
+    def test_picks_exact_values(self, parser):
         """Test picks contain exact hero IDs from real game."""
-        draft = parse_demo_draft(DEMO_FILE)
+        draft = parser.parse_draft(DEMO_FILE)
         
         picks = [e for e in draft.picks_bans if e.is_pick]
         assert len(picks) == 10  # Standard 5v5 picks
@@ -86,9 +89,9 @@ class TestCHeroSelectEventRealValues:
         assert radiant_picks == [99, 123, 66, 114, 95]  # Real radiant picks
         assert dire_picks == [77, 45, 27, 17, 41]       # Real dire picks
 
-    def test_bans_exact_values(self):
+    def test_bans_exact_values(self, parser):
         """Test bans contain exact hero IDs from real game."""
-        draft = parse_demo_draft(DEMO_FILE)
+        draft = parser.parse_draft(DEMO_FILE)
         
         bans = [e for e in draft.picks_bans if not e.is_pick]
         assert len(bans) == 14  # Exact number of bans in this game
@@ -105,9 +108,9 @@ class TestCHeroSelectEventRealValues:
 class TestCDotaGameInfoRealValues:
     """Test CDotaGameInfo with EXACT values from real demo file."""
 
-    def test_game_info_exact_structure(self):
+    def test_game_info_exact_structure(self, parser):
         """Test game info contains exact structure from real file."""
-        result = parse_demo_draft(DEMO_FILE)
+        result = parser.parse_draft(DEMO_FILE)
         
         assert result.success is True
         assert len(result.picks_bans) == 24
@@ -120,9 +123,9 @@ class TestCDotaGameInfoRealValues:
         assert len(team_2_events) == 12  # Radiant events (5 picks + 7 bans)
         assert len(team_3_events) == 12  # Dire events (5 picks + 7 bans)
 
-    def test_game_info_serialization_roundtrip(self):
+    def test_game_info_serialization_roundtrip(self, parser):
         """Test CDotaGameInfo JSON serialization preserves exact values."""
-        original = parse_demo_draft(DEMO_FILE)
+        original = parser.parse_draft(DEMO_FILE)
         
         # Serialize and deserialize
         json_str = original.model_dump_json()
@@ -137,9 +140,9 @@ class TestCDotaGameInfoRealValues:
 class TestMessageEventRealValues:
     """Test MessageEvent with EXACT values from real demo file."""
 
-    def test_universal_exact_messages(self):
+    def test_universal_exact_messages(self, parser):
         """Test universal parsing produces exact message sequence."""
-        result = parse_demo_universal(DEMO_FILE, max_messages=10)
+        result = parser.parse_universal(DEMO_FILE, max_messages=10)
         
         assert result.success is True
         assert len(result.messages) == 10
@@ -153,9 +156,9 @@ class TestMessageEventRealValues:
                          'CDemoPacket', 'CDemoPacket']
         assert message_types == expected_types
 
-    def test_first_message_exact_values(self):
+    def test_first_message_exact_values(self, parser):
         """Test first message contains exact expected values."""
-        result = parse_demo_universal(DEMO_FILE, max_messages=5)
+        result = parser.parse_universal(DEMO_FILE, max_messages=5)
         
         first_message = result.messages[0]
         assert first_message.type == "CDemoFileHeader"
@@ -163,9 +166,9 @@ class TestMessageEventRealValues:
         assert first_message.net_tick == 0
         assert first_message.data is not None
 
-    def test_tick_progression_exact_sequence(self):
+    def test_tick_progression_exact_sequence(self, parser):
         """Test tick progression follows exact sequence from real file."""
-        result = parse_demo_universal(DEMO_FILE, max_messages=10)
+        result = parser.parse_universal(DEMO_FILE, max_messages=10)
         
         ticks = [msg.tick for msg in result.messages]
         expected_ticks = [0, 4, 7, 9, 11, 13, 15, 17, 19, 21]
@@ -179,18 +182,18 @@ class TestMessageEventRealValues:
 class TestUniversalParseResultRealValues:
     """Test UniversalParseResult with EXACT values from real demo file."""
 
-    def test_universal_result_exact_structure(self):
+    def test_universal_result_exact_structure(self, parser):
         """Test universal result contains exact structure from real file."""
-        result = parse_demo_universal(DEMO_FILE, max_messages=5)
+        result = parser.parse_universal(DEMO_FILE, max_messages=5)
         
         assert result.success is True
         assert len(result.messages) == 5
         assert result.count == 5  # Should match message count for small requests
         assert result.error is None
 
-    def test_universal_result_serialization_roundtrip(self):
+    def test_universal_result_serialization_roundtrip(self, parser):
         """Test UniversalParseResult JSON serialization preserves exact values."""
-        original = parse_demo_universal(DEMO_FILE, max_messages=3)
+        original = parser.parse_universal(DEMO_FILE, max_messages=3)
         
         # Serialize and deserialize
         json_str = original.model_dump_json()
@@ -201,9 +204,9 @@ class TestUniversalParseResultRealValues:
         assert len(restored.messages) == 3
         assert restored.messages[0].type == "CDemoFileHeader"
 
-    def test_filtered_messages_exact_results(self):
+    def test_filtered_messages_exact_results(self, parser):
         """Test message filtering produces exact expected results."""
-        result = parse_demo_universal(DEMO_FILE, message_filter="CDemoFileHeader", max_messages=5)
+        result = parser.parse_universal(DEMO_FILE, message_filter="CDemoFileHeader", max_messages=5)
         
         assert result.success is True
         assert len(result.messages) >= 1

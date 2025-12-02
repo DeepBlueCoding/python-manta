@@ -114,10 +114,6 @@ from python_manta import (
     StringTablesResult,    # String tables result
     CombatLogResult,       # Combat log result
     ParserInfo,            # Parser state info
-    parse_demo_header,     # Quick header parsing
-    parse_demo_draft,      # Quick draft parsing
-    parse_demo_match_info, # Quick match info parsing
-    parse_demo_universal,  # Quick universal parsing
 )
 ```
 

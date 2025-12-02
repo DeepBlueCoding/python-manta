@@ -1167,119 +1167,22 @@ class MantaParser:
         finally:
             pass
 
-
-# Convenience functions for quick parsing
-def parse_demo_header(demo_file_path: str) -> HeaderInfo:
-    """
-    Quick function to parse demo file header.
-    
-    Args:
-        demo_file_path: Path to the .dem file
-        
-    Returns:
-        HeaderInfo object containing parsed header data
-    """
-    parser = MantaParser()
-    return parser.parse_header(demo_file_path)
-
-
-def parse_demo_draft(demo_file_path: str) -> CDotaGameInfo:
-    """
-    Quick function to parse demo file draft (picks/bans).
-
-    Args:
-        demo_file_path: Path to the .dem file
-
-    Returns:
-        CDotaGameInfo object containing draft picks and bans
-    """
-    parser = MantaParser()
-    return parser.parse_draft(demo_file_path)
-
-
-def parse_demo_match_info(demo_file_path: str) -> MatchInfo:
-    """
-    Quick function to parse complete match information from demo file.
-
-    This extracts comprehensive match metadata including pro match data
-    (team IDs, league ID, player names, etc.).
-
-    Args:
-        demo_file_path: Path to the .dem file
-
-    Returns:
-        MatchInfo object containing all match metadata.
-        Use is_pro_match() to check if this is a league/pro match.
-    """
-    parser = MantaParser()
-    return parser.parse_match_info(demo_file_path)
-
-
-def parse_demo_universal(demo_file_path: str, message_filter: str = "", max_messages: int = 0) -> UniversalParseResult:
-    """
-    Quick function to universally parse ALL Manta message types from demo file.
-
-    Args:
-        demo_file_path: Path to the .dem file
-        message_filter: Optional filter for specific message type (e.g., "CDOTAUserMsg_ChatEvent")
-        max_messages: Maximum number of messages to return (0 = no limit)
-
-    Returns:
-        UniversalParseResult containing all captured messages
-    """
-    parser = MantaParser()
-    return parser.parse_universal(demo_file_path, message_filter, max_messages)
-
-
-def parse_demo_entities(
-    demo_file_path: str,
-    interval_ticks: int = 1800,
-    max_snapshots: int = 0,
-    entity_classes: Optional[List[str]] = None,
-    include_raw: bool = False
-) -> EntityParseResult:
-    """
-    Quick function to parse entity state snapshots from demo file.
-
-    This extracts player stats (last hits, denies, gold, etc.) at regular
-    intervals throughout the game. Unlike combat log, this captures data
-    from the very start of the game.
-
-    Args:
-        demo_file_path: Path to the .dem file
-        interval_ticks: Capture snapshot every N ticks (default 1800 = ~1 min)
-        max_snapshots: Maximum snapshots to capture (0 = unlimited)
-        entity_classes: List of entity class names to include raw data for
-        include_raw: Whether to include raw entity data in snapshots
-
-    Returns:
-        EntityParseResult containing player/team state snapshots over time
-    """
-    parser = MantaParser()
-    return parser.parse_entities(
-        demo_file_path,
-        interval_ticks=interval_ticks,
-        max_snapshots=max_snapshots,
-        entity_classes=entity_classes,
-        include_raw=include_raw
-    )
-
-
 def _run_cli(argv=None):
     """Run the CLI interface. Separated for testing."""
     import sys
-    
+
     if argv is None:
         argv = sys.argv
-    
+
     if len(argv) != 2:
         print("Usage: python manta_python.py <demo_file.dem>")
         sys.exit(1)
-    
+
     demo_file = argv[1]
-    
+
     try:
-        header = parse_demo_header(demo_file)
+        parser = MantaParser()
+        header = parser.parse_header(demo_file)
         print(f"Success! Parsed header from: {demo_file}")
         print(f"  Map: {header.map_name}")
         print(f"  Server: {header.server_name}")

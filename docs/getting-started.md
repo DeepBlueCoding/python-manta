@@ -126,25 +126,6 @@ for msg in result.messages:
 
 ---
 
-## Convenience Functions
-
-For quick one-off parsing, use the convenience functions:
-
-```python
-from python_manta import parse_demo_header, parse_demo_draft, parse_demo_universal
-
-# Quick header
-header = parse_demo_header("match.dem")
-
-# Quick draft
-draft = parse_demo_draft("match.dem")
-
-# Quick message parsing
-result = parse_demo_universal("match.dem", "CDOTAUserMsg_ChatMessage", 50)
-```
-
----
-
 ## Error Handling
 
 ```python

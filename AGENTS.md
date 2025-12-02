@@ -17,14 +17,13 @@ pip install python-manta
 
 ### Basic Usage
 ```python
-from python_manta import MantaParser, parse_demo_header
+from python_manta import MantaParser
 
-# Quick header parsing
-header = parse_demo_header("match.dem")
-print(f"Map: {header.map_name}, Build: {header.build_num}")
-
-# Full parser usage
 parser = MantaParser()
+
+# Parse header
+header = parser.parse_header("match.dem")
+print(f"Map: {header.map_name}, Build: {header.build_num}")
 
 # Parse any message type (272 available)
 result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 100)
@@ -44,14 +43,6 @@ for msg in result.messages:
 | `CHeroSelectEvent` | Single pick/ban (is_pick, team, hero_id) |
 | `MessageEvent` | Universal message wrapper (type, tick, net_tick, data, timestamp) |
 | `UniversalParseResult` | Parse result (success, count, messages, error) |
-
-### Functions
-
-| Function | Purpose |
-|----------|---------|
-| `parse_demo_header(path)` | Quick header parsing |
-| `parse_demo_draft(path)` | Quick draft parsing |
-| `parse_demo_universal(path, filter, max)` | Quick universal parsing |
 
 ### MantaParser Methods
 

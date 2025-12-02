@@ -7,78 +7,78 @@ import pytest
 import time
 import subprocess
 import sys
-from python_manta import (
-    MantaParser,
-    parse_demo_header,
-    parse_demo_draft,
-    parse_demo_universal
-)
+from python_manta import MantaParser
 
 # Real demo file path
 DEMO_FILE = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
+
+
+@pytest.fixture
+def parser():
+    return MantaParser()
 
 
 @pytest.mark.unit
 class TestRealPerformanceRequirements:
     """Test performance requirements with real demo file processing."""
 
-    def test_header_parsing_performance_requirement(self):
+    def test_header_parsing_performance_requirement(self, parser):
         """Test header parsing meets performance requirement with real file."""
         start_time = time.time()
-        
-        result = parse_demo_header(DEMO_FILE)
-        
+
+        result = parser.parse_header(DEMO_FILE)
+
         elapsed_time = time.time() - start_time
-        
+
         # Verify parsing succeeded and meets performance requirement
         assert result.success is True
         assert result.map_name == "start"
         assert elapsed_time < 10.0, f"Header parsing took {elapsed_time:.2f}s, must be under 10s"
 
-    def test_draft_parsing_performance_requirement(self):
+    def test_draft_parsing_performance_requirement(self, parser):
         """Test draft parsing meets performance requirement with real file."""
         start_time = time.time()
-        
-        result = parse_demo_draft(DEMO_FILE)
-        
+
+        result = parser.parse_draft(DEMO_FILE)
+
         elapsed_time = time.time() - start_time
-        
+
         # Verify parsing succeeded and meets performance requirement
         assert result.success is True
         assert len(result.picks_bans) == 24
         assert elapsed_time < 20.0, f"Draft parsing took {elapsed_time:.2f}s, must be under 20s"
 
-    def test_universal_parsing_performance_requirement(self):
+    def test_universal_parsing_performance_requirement(self, parser):
         """Test universal parsing meets performance requirement with real file."""
         start_time = time.time()
-        
-        result = parse_demo_universal(DEMO_FILE, max_messages=100)
-        
+
+        result = parser.parse_universal(DEMO_FILE, max_messages=100)
+
         elapsed_time = time.time() - start_time
-        
+
         # Verify parsing succeeded and meets performance requirement
         assert result.success is True
         assert len(result.messages) == 100
         assert elapsed_time < 30.0, f"Universal parsing took {elapsed_time:.2f}s, must be under 30s"
 
-    def test_repeated_parsing_performance_consistency(self):
+    def test_repeated_parsing_performance_consistency(self, parser):
         """Test repeated parsing maintains consistent performance."""
         parse_times = []
-        
+
         # Perform multiple parsing operations
         for _ in range(5):
             start_time = time.time()
-            result = parse_demo_header(DEMO_FILE)
+            result = parser.parse_header(DEMO_FILE)
             elapsed_time = time.time() - start_time
-            
+
             assert result.success is True
             assert result.map_name == "start"
             parse_times.append(elapsed_time)
-        
+
         # All times should be under limit
         for i, parse_time in enumerate(parse_times):
             assert parse_time < 10.0, f"Parse {i+1} took {parse_time:.2f}s, must be under 10s"
-        
+
         # Performance should be relatively consistent (no extreme outliers)
         avg_time = sum(parse_times) / len(parse_times)
         for parse_time in parse_times:
@@ -155,54 +155,54 @@ class TestRealErrorConditions:
 class TestRealDataBoundaryConditions:
     """Test boundary conditions with real data parsing."""
 
-    def test_universal_parsing_boundary_values(self):
+    def test_universal_parsing_boundary_values(self, parser):
         """Test universal parsing with boundary values for max_messages."""
         # Test with max_messages = 1
-        result_1 = parse_demo_universal(DEMO_FILE, max_messages=1)
+        result_1 = parser.parse_universal(DEMO_FILE, max_messages=1)
         assert result_1.success is True
         assert len(result_1.messages) == 1
         assert result_1.messages[0].type == "CDemoFileHeader"
-        
+
         # Test with max_messages = 0 (returns all messages in this implementation)
-        result_0 = parse_demo_universal(DEMO_FILE, max_messages=0)
+        result_0 = parser.parse_universal(DEMO_FILE, max_messages=0)
         assert result_0.success is True
         assert len(result_0.messages) > 0  # Returns all messages when limit is 0
-        
+
         # Test with very large max_messages
-        result_large = parse_demo_universal(DEMO_FILE, max_messages=10000)
+        result_large = parser.parse_universal(DEMO_FILE, max_messages=10000)
         assert result_large.success is True
         assert len(result_large.messages) > 0
         # Should not crash or cause memory issues
 
-    def test_message_filter_boundary_conditions(self):
+    def test_message_filter_boundary_conditions(self, parser):
         """Test message filtering with boundary conditions."""
         # Empty filter string (should return all messages)
-        result_empty = parse_demo_universal(DEMO_FILE, message_filter="", max_messages=10)
+        result_empty = parser.parse_universal(DEMO_FILE, message_filter="", max_messages=10)
         assert result_empty.success is True
         assert len(result_empty.messages) == 10
-        
+
         # Filter that matches no messages
-        result_none = parse_demo_universal(DEMO_FILE, message_filter="NonExistentMessageType", max_messages=10)
+        result_none = parser.parse_universal(DEMO_FILE, message_filter="NonExistentMessageType", max_messages=10)
         assert result_none.success is True
         # May have 0 messages or fail to find matches
-        
+
         # Very long filter string
         long_filter = "CDemoFileHeader" + "X" * 1000
-        result_long = parse_demo_universal(DEMO_FILE, message_filter=long_filter, max_messages=5)
+        result_long = parser.parse_universal(DEMO_FILE, message_filter=long_filter, max_messages=5)
         assert result_long.success is True
 
-    def test_data_consistency_edge_cases(self):
+    def test_data_consistency_edge_cases(self, parser):
         """Test data consistency at edge cases."""
         # Parse very few messages
-        result_few = parse_demo_universal(DEMO_FILE, max_messages=2)
+        result_few = parser.parse_universal(DEMO_FILE, max_messages=2)
         assert result_few.success is True
         assert len(result_few.messages) <= 2
-        
+
         if len(result_few.messages) > 0:
             # First message should still be CDemoFileHeader
             assert result_few.messages[0].type == "CDemoFileHeader"
             assert result_few.messages[0].tick == 0
-            
+
             # All messages should have valid data
             for msg in result_few.messages:
                 assert len(msg.type) > 0
@@ -346,22 +346,22 @@ class TestRealMemoryAndResourceManagement:
             assert result.map_name == results[0].map_name, f"Parser {i} inconsistent map name"
             assert result.build_num == results[0].build_num, f"Parser {i} inconsistent build number"
 
-    def test_large_message_parsing_stability(self):
+    def test_large_message_parsing_stability(self, parser):
         """Test parsing large numbers of messages maintains stability."""
         # Test with progressively larger message counts
         message_counts = [10, 50, 100, 500, 1000]
-        
+
         for count in message_counts:
-            result = parse_demo_universal(DEMO_FILE, max_messages=count)
-            
+            result = parser.parse_universal(DEMO_FILE, max_messages=count)
+
             assert result.success is True, f"Failed at {count} messages"
             assert len(result.messages) <= count, f"Returned too many messages for {count} limit"
-            
+
             # Verify data integrity
             if len(result.messages) > 0:
                 assert result.messages[0].type == "CDemoFileHeader"
                 assert result.messages[0].tick == 0
-                
+
                 # Verify tick ordering is maintained
                 ticks = [msg.tick for msg in result.messages]
                 assert ticks == sorted(ticks), f"Tick ordering broken at {count} messages"

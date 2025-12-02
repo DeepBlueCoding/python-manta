@@ -36,17 +36,6 @@ Python Manta provides a single main class and several data models:
 | [`StringTablesResult`](models#stringtablesresult) | String table results |
 | [`ParserInfo`](models#parserinfo) | Parser state information |
 
-### Convenience Functions
-
-```python
-from python_manta import (
-    parse_demo_header,    # Quick header parsing
-    parse_demo_draft,     # Quick draft parsing
-    parse_demo_universal, # Quick message parsing
-    parse_demo_entities,  # Quick entity parsing
-)
-```
-
 ---
 
 ## Quick Reference

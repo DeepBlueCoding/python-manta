@@ -100,10 +100,10 @@ See [Building from Source](#building-from-source) section below.
 ### Parse Demo Header
 
 ```python
-from python_manta import parse_demo_header
+from python_manta import MantaParser
 
-# Parse header metadata
-header = parse_demo_header("match.dem")
+parser = MantaParser()
+header = parser.parse_header("match.dem")
 
 print(f"Map: {header.map_name}")
 print(f"Server: {header.server_name}")
@@ -130,10 +130,7 @@ if result.success:
 ### Parse Draft (Picks & Bans)
 
 ```python
-from python_manta import parse_demo_draft
-
-# Get draft information
-draft = parse_demo_draft("match.dem")
+draft = parser.parse_draft("match.dem")
 
 for pick_ban in draft.picks_bans:
     action = "PICK" if pick_ban.is_pick else "BAN"
@@ -206,19 +203,6 @@ Universal parser for any Manta callback/message type.
 - `max_messages`: Maximum messages to return (0 = unlimited)
 
 **Returns:** `UniversalParseResult` with matched messages
-
-### Convenience Functions
-
-```python
-# Quick header parsing
-header = parse_demo_header("match.dem")
-
-# Quick draft parsing
-draft = parse_demo_draft("match.dem")
-
-# Quick universal parsing
-result = parse_demo_universal("match.dem", "CDOTAUserMsg_ChatMessage", 50)
-```
 
 ---
 
