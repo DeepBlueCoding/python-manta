@@ -662,6 +662,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#match-info-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Match Info Models
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Match Info Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matchinfo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MatchInfo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#playermatchinfo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PlayerMatchInfo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#universal-parse-models" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1557,6 +1596,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#match-info-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Match Info Models
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Match Info Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matchinfo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MatchInfo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#playermatchinfo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PlayerMatchInfo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#universal-parse-models" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1852,7 +1930,7 @@
 <h1 id="data-models">Data Models<a class="headerlink" href="#data-models" title="Permanent link">&para;</a></h1>
 <details class="info">
 <summary>AI Summary</summary>
-<p>All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: <code>HeaderInfo</code> (match metadata), <code>CDotaGameInfo</code>/<code>CHeroSelectEvent</code> (draft), <code>UniversalParseResult</code>/<code>MessageEvent</code> (messages), <code>GameEventsResult</code>/<code>GameEventData</code> (events), <code>CombatLogResult</code>/<code>CombatLogEntry</code> (combat), <code>ModifiersResult</code>/<code>ModifierEntry</code> (buffs), <code>EntitiesResult</code>/<code>EntityData</code> (entities), <code>StringTablesResult</code> (tables), <code>ParserInfo</code> (state). All have <code>.model_dump()</code> for dict conversion and <code>.model_dump_json()</code> for JSON.</p>
+<p>All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: <code>HeaderInfo</code> (match metadata), <code>CDotaGameInfo</code>/<code>CHeroSelectEvent</code> (draft), <code>MatchInfo</code>/<code>PlayerMatchInfo</code> (pro match data with teams, league, players), <code>UniversalParseResult</code>/<code>MessageEvent</code> (messages), <code>GameEventsResult</code>/<code>GameEventData</code> (events), <code>CombatLogResult</code>/<code>CombatLogEntry</code> (combat), <code>ModifiersResult</code>/<code>ModifierEntry</code> (buffs), <code>EntitiesResult</code>/<code>EntityData</code> (entities), <code>StringTablesResult</code> (tables), <code>ParserInfo</code> (state). All have <code>.model_dump()</code> for dict conversion and <code>.model_dump_json()</code> for JSON.</p>
 </details>
 <hr />
 <h2 id="header-models">Header Models<a class="headerlink" href="#header-models" title="Permanent link">&para;</a></h2>
@@ -1911,168 +1989,231 @@
 <a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Radiant picked hero </span><span class="si">{</span><span class="n">pick</span><span class="o">.</span><span class="n">hero_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
+<h2 id="match-info-models">Match Info Models<a class="headerlink" href="#match-info-models" title="Permanent link">&para;</a></h2>
+<h3 id="matchinfo">MatchInfo<a class="headerlink" href="#matchinfo" title="Permanent link">&para;</a></h3>
+<p>Complete match information including pro match data.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MatchInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="c1"># Basic match info</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">match_id</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># Match ID</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">game_mode</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Game mode ID</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">game_winner</span><span class="p">:</span> <span class="nb">int</span>           <span class="c1"># Winner (2=Radiant, 3=Dire)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">league_id</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># League ID (0 for pub matches)</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">end_time</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># End time (Unix timestamp)</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="c1"># Team info (pro matches only - 0/empty for pubs)</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">radiant_team_id</span><span class="p">:</span> <span class="nb">int</span>       <span class="c1"># Radiant team ID</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="n">dire_team_id</span><span class="p">:</span> <span class="nb">int</span>          <span class="c1"># Dire team ID</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="n">radiant_team_tag</span><span class="p">:</span> <span class="nb">str</span>      <span class="c1"># Radiant team tag (e.g., &quot;OG&quot;)</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="n">dire_team_tag</span><span class="p">:</span> <span class="nb">str</span>         <span class="c1"># Dire team tag (e.g., &quot;Secret&quot;)</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="c1"># Players</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="n">players</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PlayerMatchInfo</span><span class="p">]</span>  <span class="c1"># All players in match</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    <span class="c1"># Draft</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>    <span class="n">picks_bans</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CHeroSelectEvent</span><span class="p">]</span>  <span class="c1"># Draft sequence</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>    <span class="c1"># Playback info</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>    <span class="n">playback_time</span><span class="p">:</span> <span class="nb">float</span>       <span class="c1"># Total playback time in seconds</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>    <span class="n">playback_ticks</span><span class="p">:</span> <span class="nb">int</span>        <span class="c1"># Total ticks</span>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>    <span class="n">playback_frames</span><span class="p">:</span> <span class="nb">int</span>       <span class="c1"># Total frames</span>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>              <span class="c1"># Parse success flag</span>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>       <span class="c1"># Error message if failed</span>
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">is_pro_match</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if this is a pro/league match.&quot;&quot;&quot;</span>
+</code></pre></div>
+<h3 id="playermatchinfo">PlayerMatchInfo<a class="headerlink" href="#playermatchinfo" title="Permanent link">&para;</a></h3>
+<p>Player information from match metadata.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">PlayerMatchInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">hero_name</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># Hero internal name (e.g., &quot;npc_dota_hero_axe&quot;)</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">player_name</span><span class="p">:</span> <span class="nb">str</span>         <span class="c1"># Player display name</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">is_fake_client</span><span class="p">:</span> <span class="nb">bool</span>     <span class="c1"># True for bots</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">steamid</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Player Steam ID</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">game_team</span><span class="p">:</span> <span class="nb">int</span>           <span class="c1"># Team (2=Radiant, 3=Dire)</span>
+</code></pre></div>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_match_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># Basic match info</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Match </span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">match_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duration: </span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">playback_time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">60</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> minutes&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">winner</span> <span class="o">=</span> <span class="s2">&quot;Radiant&quot;</span> <span class="k">if</span> <span class="n">match</span><span class="o">.</span><span class="n">game_winner</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="s2">&quot;Dire&quot;</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Winner: </span><span class="si">{</span><span class="n">winner</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="c1"># Pro match info</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="k">if</span> <span class="n">match</span><span class="o">.</span><span class="n">is_pro_match</span><span class="p">():</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;League: </span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">league_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">radiant_team_tag</span><span class="si">}</span><span class="s2"> vs </span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">dire_team_tag</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="c1"># Players</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="k">for</span> <span class="n">player</span> <span class="ow">in</span> <span class="n">match</span><span class="o">.</span><span class="n">players</span><span class="p">:</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    <span class="n">team</span> <span class="o">=</span> <span class="s2">&quot;Radiant&quot;</span> <span class="k">if</span> <span class="n">player</span><span class="o">.</span><span class="n">game_team</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="s2">&quot;Dire&quot;</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">player_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">team</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+<hr />
 <h2 id="universal-parse-models">Universal Parse Models<a class="headerlink" href="#universal-parse-models" title="Permanent link">&para;</a></h2>
 <h3 id="universalparseresult">UniversalParseResult<a class="headerlink" href="#universalparseresult" title="Permanent link">&para;</a></h3>
 <p>Result container for <code>parse_universal()</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">UniversalParseResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MessageEvent</span><span class="p">]</span>  <span class="c1"># Matched messages</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>                 <span class="c1"># Parse success flag</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>          <span class="c1"># Error message if failed</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">count</span><span class="p">:</span> <span class="nb">int</span>                    <span class="c1"># Number of messages</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">UniversalParseResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MessageEvent</span><span class="p">]</span>  <span class="c1"># Matched messages</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>                 <span class="c1"># Parse success flag</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>          <span class="c1"># Error message if failed</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">count</span><span class="p">:</span> <span class="nb">int</span>                    <span class="c1"># Number of messages</span>
 </code></pre></div>
 <h3 id="messageevent">MessageEvent<a class="headerlink" href="#messageevent" title="Permanent link">&para;</a></h3>
 <p>Single message from the replay.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MessageEvent</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># Callback name (e.g., &quot;CDOTAUserMsg_ChatMessage&quot;)</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>                    <span class="c1"># Game tick when message occurred</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>                <span class="c1"># Network tick</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">data</span><span class="p">:</span> <span class="n">Any</span>                    <span class="c1"># Message-specific data (dict)</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">timestamp</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>     <span class="c1"># Unix timestamp in milliseconds</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">MessageEvent</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># Callback name (e.g., &quot;CDOTAUserMsg_ChatMessage&quot;)</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>                    <span class="c1"># Game tick when message occurred</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>                <span class="c1"># Network tick</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">data</span><span class="p">:</span> <span class="n">Any</span>                    <span class="c1"># Message-specific data (dict)</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">timestamp</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>     <span class="c1"># Unix timestamp in milliseconds</span>
 </code></pre></div>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;CDOTAUserMsg_ChatMessage&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="c1"># Access common fields</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Type: </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tick: </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="c1"># Access message-specific data</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="n">player_id</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source_player_id&#39;</span><span class="p">)</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message_text&#39;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;CDOTAUserMsg_ChatMessage&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="c1"># Access common fields</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Type: </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tick: </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="c1"># Access message-specific data</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="n">player_id</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source_player_id&#39;</span><span class="p">)</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;message_text&#39;</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h2 id="game-events-models">Game Events Models<a class="headerlink" href="#game-events-models" title="Permanent link">&para;</a></h2>
 <h3 id="gameeventsresult">GameEventsResult<a class="headerlink" href="#gameeventsresult" title="Permanent link">&para;</a></h3>
 <p>Result container for <code>parse_game_events()</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">GameEventsResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">events</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">GameEventData</span><span class="p">]</span>  <span class="c1"># Parsed events</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">event_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>       <span class="c1"># Event type definitions (if capture_types=True)</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>                <span class="c1"># Parse success flag</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>         <span class="c1"># Error message if failed</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">total_events</span><span class="p">:</span> <span class="nb">int</span>            <span class="c1"># Total events captured</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">GameEventsResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="n">events</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">GameEventData</span><span class="p">]</span>  <span class="c1"># Parsed events</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">event_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>       <span class="c1"># Event type definitions (if capture_types=True)</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>                <span class="c1"># Parse success flag</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>         <span class="c1"># Error message if failed</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">total_events</span><span class="p">:</span> <span class="nb">int</span>            <span class="c1"># Total events captured</span>
 </code></pre></div>
 <h3 id="gameeventdata">GameEventData<a class="headerlink" href="#gameeventdata" title="Permanent link">&para;</a></h3>
 <p>Single game event with typed fields.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">GameEventData</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>                     <span class="c1"># Event name (e.g., &quot;dota_combatlog&quot;)</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>                     <span class="c1"># Game tick</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>                 <span class="c1"># Network tick</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">fields</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>        <span class="c1"># Event-specific fields</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">GameEventData</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>                     <span class="c1"># Event name (e.g., &quot;dota_combatlog&quot;)</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>                     <span class="c1"># Game tick</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>                 <span class="c1"># Network tick</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">fields</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>        <span class="c1"># Event-specific fields</span>
 </code></pre></div>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_game_events</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">event_filter</span><span class="o">=</span><span class="s2">&quot;dota_player_kill&quot;</span><span class="p">,</span> <span class="n">max_events</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">events</span><span class="p">:</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tick: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="c1"># Fields depend on event type</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_game_events</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">event_filter</span><span class="o">=</span><span class="s2">&quot;dota_player_kill&quot;</span><span class="p">,</span> <span class="n">max_events</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">events</span><span class="p">:</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tick: </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    <span class="c1"># Fields depend on event type</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h2 id="combat-log-models">Combat Log Models<a class="headerlink" href="#combat-log-models" title="Permanent link">&para;</a></h2>
 <h3 id="combatlogresult">CombatLogResult<a class="headerlink" href="#combatlogresult" title="Permanent link">&para;</a></h3>
 <p>Result container for <code>parse_combat_log()</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CombatLogResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="n">entries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CombatLogEntry</span><span class="p">]</span>  <span class="c1"># Combat log entries</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>                  <span class="c1"># Parse success flag</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>           <span class="c1"># Error message if failed</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">total_entries</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Total entries captured</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CombatLogResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">entries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CombatLogEntry</span><span class="p">]</span>  <span class="c1"># Combat log entries</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>                  <span class="c1"># Parse success flag</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>           <span class="c1"># Error message if failed</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">total_entries</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Total entries captured</span>
 </code></pre></div>
 <h3 id="combatlogentry">CombatLogEntry<a class="headerlink" href="#combatlogentry" title="Permanent link">&para;</a></h3>
 <p>Single combat log entry with structured data.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CombatLogEntry</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>                     <span class="c1"># Game tick</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>                 <span class="c1"># Network tick</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="nb">type</span><span class="p">:</span> <span class="nb">int</span>                     <span class="c1"># Combat log type ID</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">type_name</span><span class="p">:</span> <span class="nb">str</span>                <span class="c1"># Human-readable type name</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">target_name</span><span class="p">:</span> <span class="nb">str</span>              <span class="c1"># Target unit name</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">target_source_name</span><span class="p">:</span> <span class="nb">str</span>       <span class="c1"># Target source name</span>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">attacker_name</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># Attacker unit name</span>
-<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="n">damage_source_name</span><span class="p">:</span> <span class="nb">str</span>       <span class="c1"># Damage source name</span>
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="n">inflictor_name</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># Ability/item that caused this</span>
-<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>    <span class="n">is_attacker_illusion</span><span class="p">:</span> <span class="nb">bool</span>    <span class="c1"># Attacker is illusion</span>
-<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>    <span class="n">is_attacker_hero</span><span class="p">:</span> <span class="nb">bool</span>        <span class="c1"># Attacker is a hero</span>
-<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="n">is_target_illusion</span><span class="p">:</span> <span class="nb">bool</span>      <span class="c1"># Target is illusion</span>
-<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="n">is_target_hero</span><span class="p">:</span> <span class="nb">bool</span>          <span class="c1"># Target is a hero</span>
-<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>    <span class="n">is_visible_radiant</span><span class="p">:</span> <span class="nb">bool</span>      <span class="c1"># Visible to Radiant</span>
-<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    <span class="n">is_visible_dire</span><span class="p">:</span> <span class="nb">bool</span>         <span class="c1"># Visible to Dire</span>
-<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>    <span class="n">value</span><span class="p">:</span> <span class="nb">int</span>                    <span class="c1"># Damage/heal value</span>
-<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>    <span class="n">health</span><span class="p">:</span> <span class="nb">int</span>                   <span class="c1"># Target health after</span>
-<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span>              <span class="c1"># Game time in seconds</span>
-<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>    <span class="n">stun_duration</span><span class="p">:</span> <span class="nb">float</span>          <span class="c1"># Stun duration if applicable</span>
-<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>    <span class="n">slow_duration</span><span class="p">:</span> <span class="nb">float</span>          <span class="c1"># Slow duration if applicable</span>
-<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>    <span class="n">is_ability_toggle_on</span><span class="p">:</span> <span class="nb">bool</span>    <span class="c1"># Ability toggled on</span>
-<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>    <span class="n">is_ability_toggle_off</span><span class="p">:</span> <span class="nb">bool</span>   <span class="c1"># Ability toggled off</span>
-<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>    <span class="n">ability_level</span><span class="p">:</span> <span class="nb">int</span>            <span class="c1"># Ability level</span>
-<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a>    <span class="n">xp</span><span class="p">:</span> <span class="nb">int</span>                       <span class="c1"># XP reason/amount</span>
-<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a>    <span class="n">gold</span><span class="p">:</span> <span class="nb">int</span>                     <span class="c1"># Gold reason/amount</span>
-<a id="__codelineno-12-27" name="__codelineno-12-27" href="#__codelineno-12-27"></a>    <span class="n">last_hits</span><span class="p">:</span> <span class="nb">int</span>                <span class="c1"># Last hits at time</span>
-<a id="__codelineno-12-28" name="__codelineno-12-28" href="#__codelineno-12-28"></a>    <span class="n">attacker_team</span><span class="p">:</span> <span class="nb">int</span>            <span class="c1"># Attacker team ID</span>
-<a id="__codelineno-12-29" name="__codelineno-12-29" href="#__codelineno-12-29"></a>    <span class="n">target_team</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># Target team ID</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CombatLogEntry</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>                     <span class="c1"># Game tick</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>                 <span class="c1"># Network tick</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="nb">type</span><span class="p">:</span> <span class="nb">int</span>                     <span class="c1"># Combat log type ID</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">type_name</span><span class="p">:</span> <span class="nb">str</span>                <span class="c1"># Human-readable type name</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">target_name</span><span class="p">:</span> <span class="nb">str</span>              <span class="c1"># Target unit name</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="n">target_source_name</span><span class="p">:</span> <span class="nb">str</span>       <span class="c1"># Target source name</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="n">attacker_name</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># Attacker unit name</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="n">damage_source_name</span><span class="p">:</span> <span class="nb">str</span>       <span class="c1"># Damage source name</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="n">inflictor_name</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># Ability/item that caused this</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>    <span class="n">is_attacker_illusion</span><span class="p">:</span> <span class="nb">bool</span>    <span class="c1"># Attacker is illusion</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>    <span class="n">is_attacker_hero</span><span class="p">:</span> <span class="nb">bool</span>        <span class="c1"># Attacker is a hero</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>    <span class="n">is_target_illusion</span><span class="p">:</span> <span class="nb">bool</span>      <span class="c1"># Target is illusion</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>    <span class="n">is_target_hero</span><span class="p">:</span> <span class="nb">bool</span>          <span class="c1"># Target is a hero</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>    <span class="n">is_visible_radiant</span><span class="p">:</span> <span class="nb">bool</span>      <span class="c1"># Visible to Radiant</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span class="n">is_visible_dire</span><span class="p">:</span> <span class="nb">bool</span>         <span class="c1"># Visible to Dire</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>    <span class="n">value</span><span class="p">:</span> <span class="nb">int</span>                    <span class="c1"># Damage/heal value</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>    <span class="n">health</span><span class="p">:</span> <span class="nb">int</span>                   <span class="c1"># Target health after</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span>              <span class="c1"># Game time in seconds</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>    <span class="n">stun_duration</span><span class="p">:</span> <span class="nb">float</span>          <span class="c1"># Stun duration if applicable</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>    <span class="n">slow_duration</span><span class="p">:</span> <span class="nb">float</span>          <span class="c1"># Slow duration if applicable</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>    <span class="n">is_ability_toggle_on</span><span class="p">:</span> <span class="nb">bool</span>    <span class="c1"># Ability toggled on</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>    <span class="n">is_ability_toggle_off</span><span class="p">:</span> <span class="nb">bool</span>   <span class="c1"># Ability toggled off</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>    <span class="n">ability_level</span><span class="p">:</span> <span class="nb">int</span>            <span class="c1"># Ability level</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>    <span class="n">xp</span><span class="p">:</span> <span class="nb">int</span>                       <span class="c1"># XP reason/amount</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>    <span class="n">gold</span><span class="p">:</span> <span class="nb">int</span>                     <span class="c1"># Gold reason/amount</span>
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>    <span class="n">last_hits</span><span class="p">:</span> <span class="nb">int</span>                <span class="c1"># Last hits at time</span>
+<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a>    <span class="n">attacker_team</span><span class="p">:</span> <span class="nb">int</span>            <span class="c1"># Attacker team ID</span>
+<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a>    <span class="n">target_team</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># Target team ID</span>
 </code></pre></div>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># DAMAGE</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> hit </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># DAMAGE</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> hit </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h2 id="modifier-models">Modifier Models<a class="headerlink" href="#modifier-models" title="Permanent link">&para;</a></h2>
 <h3 id="modifiersresult">ModifiersResult<a class="headerlink" href="#modifiersresult" title="Permanent link">&para;</a></h3>
 <p>Result container for <code>parse_modifiers()</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ModifiersResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">modifiers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ModifierEntry</span><span class="p">]</span>  <span class="c1"># Modifier entries</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>                   <span class="c1"># Parse success flag</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>            <span class="c1"># Error message if failed</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">total_modifiers</span><span class="p">:</span> <span class="nb">int</span>            <span class="c1"># Total modifiers captured</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ModifiersResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="n">modifiers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ModifierEntry</span><span class="p">]</span>  <span class="c1"># Modifier entries</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>                   <span class="c1"># Parse success flag</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>            <span class="c1"># Error message if failed</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="n">total_modifiers</span><span class="p">:</span> <span class="nb">int</span>            <span class="c1"># Total modifiers captured</span>
 </code></pre></div>
 <h3 id="modifierentry">ModifierEntry<a class="headerlink" href="#modifierentry" title="Permanent link">&para;</a></h3>
 <p>Single modifier/buff entry.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ModifierEntry</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>               <span class="c1"># Game tick</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>           <span class="c1"># Network tick</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">parent</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Entity handle of unit with modifier</span>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">caster</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Entity handle of caster</span>
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">ability</span><span class="p">:</span> <span class="nb">int</span>            <span class="c1"># Ability that created modifier</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="n">modifier_class</span><span class="p">:</span> <span class="nb">int</span>     <span class="c1"># Modifier class ID</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="n">serial_num</span><span class="p">:</span> <span class="nb">int</span>         <span class="c1"># Serial number</span>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># Modifier index</span>
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="n">creation_time</span><span class="p">:</span> <span class="nb">float</span>    <span class="c1"># When modifier was created</span>
-<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>    <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span>         <span class="c1"># Duration in seconds (-1 = permanent)</span>
-<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>    <span class="n">stack_count</span><span class="p">:</span> <span class="nb">int</span>        <span class="c1"># Number of stacks</span>
-<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>    <span class="n">is_aura</span><span class="p">:</span> <span class="nb">bool</span>           <span class="c1"># Whether it&#39;s an aura</span>
-<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>    <span class="n">is_debuff</span><span class="p">:</span> <span class="nb">bool</span>         <span class="c1"># Whether it&#39;s a debuff</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ModifierEntry</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>               <span class="c1"># Game tick</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>           <span class="c1"># Network tick</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">parent</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Entity handle of unit with modifier</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">caster</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Entity handle of caster</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="n">ability</span><span class="p">:</span> <span class="nb">int</span>            <span class="c1"># Ability that created modifier</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">modifier_class</span><span class="p">:</span> <span class="nb">int</span>     <span class="c1"># Modifier class ID</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="n">serial_num</span><span class="p">:</span> <span class="nb">int</span>         <span class="c1"># Serial number</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># Modifier index</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>    <span class="n">creation_time</span><span class="p">:</span> <span class="nb">float</span>    <span class="c1"># When modifier was created</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span>         <span class="c1"># Duration in seconds (-1 = permanent)</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>    <span class="n">stack_count</span><span class="p">:</span> <span class="nb">int</span>        <span class="c1"># Number of stacks</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>    <span class="n">is_aura</span><span class="p">:</span> <span class="nb">bool</span>           <span class="c1"># Whether it&#39;s an aura</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>    <span class="n">is_debuff</span><span class="p">:</span> <span class="nb">bool</span>         <span class="c1"># Whether it&#39;s a debuff</span>
 </code></pre></div>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_modifiers</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">max_modifiers</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">modifiers</span><span class="p">:</span>
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="n">duration_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mod</span><span class="o">.</span><span class="n">duration</span><span class="si">}</span><span class="s2">s&quot;</span> <span class="k">if</span> <span class="n">mod</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;permanent&quot;</span>
-<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Entity </span><span class="si">{</span><span class="n">mod</span><span class="o">.</span><span class="n">parent</span><span class="si">}</span><span class="s2">: duration=</span><span class="si">{</span><span class="n">duration_str</span><span class="si">}</span><span class="s2">, stacks=</span><span class="si">{</span><span class="n">mod</span><span class="o">.</span><span class="n">stack_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_modifiers</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">max_modifiers</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">modifiers</span><span class="p">:</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">duration_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mod</span><span class="o">.</span><span class="n">duration</span><span class="si">}</span><span class="s2">s&quot;</span> <span class="k">if</span> <span class="n">mod</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;permanent&quot;</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Entity </span><span class="si">{</span><span class="n">mod</span><span class="o">.</span><span class="n">parent</span><span class="si">}</span><span class="s2">: duration=</span><span class="si">{</span><span class="n">duration_str</span><span class="si">}</span><span class="s2">, stacks=</span><span class="si">{</span><span class="n">mod</span><span class="o">.</span><span class="n">stack_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h2 id="entity-models">Entity Models<a class="headerlink" href="#entity-models" title="Permanent link">&para;</a></h2>
 <h3 id="entitiesresult">EntitiesResult<a class="headerlink" href="#entitiesresult" title="Permanent link">&para;</a></h3>
 <p>Result container for <code>query_entities()</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">EntitiesResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="n">entities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EntityData</span><span class="p">]</span>  <span class="c1"># Entity data</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>               <span class="c1"># Parse success flag</span>
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>        <span class="c1"># Error message if failed</span>
-<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="n">total_entities</span><span class="p">:</span> <span class="nb">int</span>         <span class="c1"># Total entities returned</span>
-<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>                   <span class="c1"># Tick when captured</span>
-<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>               <span class="c1"># Network tick when captured</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">EntitiesResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>    <span class="n">entities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EntityData</span><span class="p">]</span>  <span class="c1"># Entity data</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>               <span class="c1"># Parse success flag</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>        <span class="c1"># Error message if failed</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    <span class="n">total_entities</span><span class="p">:</span> <span class="nb">int</span>         <span class="c1"># Total entities returned</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>                   <span class="c1"># Tick when captured</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>               <span class="c1"># Network tick when captured</span>
 </code></pre></div>
 <h3 id="entitydata">EntityData<a class="headerlink" href="#entitydata" title="Permanent link">&para;</a></h3>
 <p>Single entity with properties.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">EntityData</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span>                    <span class="c1"># Entity index</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">serial</span><span class="p">:</span> <span class="nb">int</span>                   <span class="c1"># Entity serial number</span>
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span>               <span class="c1"># Entity class name</span>
-<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">properties</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>    <span class="c1"># Entity properties</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">EntityData</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span>                    <span class="c1"># Entity index</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    <span class="n">serial</span><span class="p">:</span> <span class="nb">int</span>                   <span class="c1"># Entity serial number</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span>               <span class="c1"># Entity class name</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    <span class="n">properties</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>    <span class="c1"># Entity properties</span>
 </code></pre></div>
 <p><strong>Common Hero Properties:</strong></p>
 <table>
@@ -2137,66 +2278,66 @@
 </tbody>
 </table>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Hero&quot;</span><span class="p">,</span> <span class="n">max_entities</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span><span class="p">:</span>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">class_name</span><span class="si">}</span><span class="s2"> (index=</span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Health: </span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iHealth&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iMaxHealth&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Level: </span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iCurrentLevel&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Hero&quot;</span><span class="p">,</span> <span class="n">max_entities</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span><span class="p">:</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">class_name</span><span class="si">}</span><span class="s2"> (index=</span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Health: </span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iHealth&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iMaxHealth&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Level: </span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iCurrentLevel&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h2 id="string-table-models">String Table Models<a class="headerlink" href="#string-table-models" title="Permanent link">&para;</a></h2>
 <h3 id="stringtablesresult">StringTablesResult<a class="headerlink" href="#stringtablesresult" title="Permanent link">&para;</a></h3>
 <p>Result container for <code>get_string_tables()</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">StringTablesResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>    <span class="n">tables</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">StringTableData</span><span class="p">]]</span>  <span class="c1"># Table name -&gt; entries</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">table_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>                    <span class="c1"># List of table names</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>                             <span class="c1"># Parse success flag</span>
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>                      <span class="c1"># Error message if failed</span>
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>    <span class="n">total_entries</span><span class="p">:</span> <span class="nb">int</span>                        <span class="c1"># Total entries</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">StringTablesResult</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>    <span class="n">tables</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">StringTableData</span><span class="p">]]</span>  <span class="c1"># Table name -&gt; entries</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="n">table_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>                    <span class="c1"># List of table names</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>                             <span class="c1"># Parse success flag</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>                      <span class="c1"># Error message if failed</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>    <span class="n">total_entries</span><span class="p">:</span> <span class="nb">int</span>                        <span class="c1"># Total entries</span>
 </code></pre></div>
 <h3 id="stringtabledata">StringTableData<a class="headerlink" href="#stringtabledata" title="Permanent link">&para;</a></h3>
 <p>Single string table entry.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">StringTableData</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>    <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span>         <span class="c1"># Table name</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># Entry index</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span>                <span class="c1"># Entry key</span>
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>    <span class="c1"># Entry value (may be binary/base64)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">StringTableData</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>    <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span>         <span class="c1"># Table name</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># Entry index</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span>                <span class="c1"># Entry key</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>    <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>    <span class="c1"># Entry value (may be binary/base64)</span>
 </code></pre></div>
 <hr />
 <h2 id="parser-info-model">Parser Info Model<a class="headerlink" href="#parser-info-model" title="Permanent link">&para;</a></h2>
 <h3 id="parserinfo">ParserInfo<a class="headerlink" href="#parserinfo" title="Permanent link">&para;</a></h3>
 <p>Parser state information.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ParserInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>    <span class="n">game_build</span><span class="p">:</span> <span class="nb">int</span>           <span class="c1"># Game build number</span>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>                 <span class="c1"># Final parser tick</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Final network tick</span>
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    <span class="n">string_tables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># List of string table names</span>
-<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    <span class="n">entity_count</span><span class="p">:</span> <span class="nb">int</span>         <span class="c1"># Number of entities</span>
-<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>             <span class="c1"># Parse success flag</span>
-<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>      <span class="c1"># Error message if failed</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ParserInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>    <span class="n">game_build</span><span class="p">:</span> <span class="nb">int</span>           <span class="c1"># Game build number</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>    <span class="n">tick</span><span class="p">:</span> <span class="nb">int</span>                 <span class="c1"># Final parser tick</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>    <span class="n">net_tick</span><span class="p">:</span> <span class="nb">int</span>             <span class="c1"># Final network tick</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>    <span class="n">string_tables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># List of string table names</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>    <span class="n">entity_count</span><span class="p">:</span> <span class="nb">int</span>         <span class="c1"># Number of entities</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>             <span class="c1"># Parse success flag</span>
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>    <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>      <span class="c1"># Error message if failed</span>
 </code></pre></div>
 <p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">info</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_parser_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Game lasted </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2"> ticks&quot;</span><span class="p">)</span>
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final entity count: </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">entity_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;String tables: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">string_tables</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">info</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_parser_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Game lasted </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2"> ticks&quot;</span><span class="p">)</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final entity count: </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">entity_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;String tables: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">string_tables</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 <hr />
 <h2 id="serialization">Serialization<a class="headerlink" href="#serialization" title="Permanent link">&para;</a></h2>
 <p>All models support Pydantic serialization:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># To dictionary</span>
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">data</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
-<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># To JSON string</span>
-<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="n">json_str</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">()</span>
-<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
-<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="c1"># From dictionary</span>
-<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="n">model</span> <span class="o">=</span> <span class="n">HeaderInfo</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>
-<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="c1"># From JSON</span>
-<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="n">model</span> <span class="o">=</span> <span class="n">HeaderInfo</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># To dictionary</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="n">data</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="c1"># To JSON string</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="n">json_str</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">()</span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="c1"># From dictionary</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="n">model</span> <span class="o">=</span> <span class="n">HeaderInfo</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>
+<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="c1"># From JSON</span>
+<a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a><span class="n">model</span> <span class="o">=</span> <span class="n">HeaderInfo</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
 </code></pre></div>
 
 

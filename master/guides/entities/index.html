@@ -1083,6 +1083,100 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#hero-position-tracking-with-parse_entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero Position Tracking with parse_entities()
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hero Position Tracking with parse_entities()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-position-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Position Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#position-at-specific-ticks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Position at Specific Ticks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-by-hero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering by Hero
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getting-death-positions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Death Positions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#position-coordinate-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Position Coordinate System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#playerstate-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PlayerState Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#position-data-sources-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Position Data Sources Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1781,6 +1875,100 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#hero-position-tracking-with-parse_entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero Position Tracking with parse_entities()
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hero Position Tracking with parse_entities()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-position-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Position Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#position-at-specific-ticks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Position at Specific Ticks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-by-hero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering by Hero
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getting-death-positions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Death Positions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#position-coordinate-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Position Coordinate System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#playerstate-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PlayerState Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#position-data-sources-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Position Data Sources Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2332,6 +2520,191 @@
 <tr>
 <td>0/1</td>
 <td>Neutral/Spectator</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="hero-position-tracking-with-parse_entities">Hero Position Tracking with parse_entities()<a class="headerlink" href="#hero-position-tracking-with-parse_entities" title="Permanent link">&para;</a></h2>
+<p>For tracking hero positions over time (not just end of game), use <code>parse_entities()</code> instead of <code>query_entities()</code>.</p>
+<h3 id="basic-position-tracking">Basic Position Tracking<a class="headerlink" href="#basic-position-tracking" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="c1"># Capture snapshots every 30 seconds (900 ticks at 30 ticks/sec)</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">interval_ticks</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span> <span class="n">max_snapshots</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="k">for</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span><span class="p">:</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Game time: </span><span class="si">{</span><span class="n">snapshot</span><span class="o">.</span><span class="n">game_time</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="k">for</span> <span class="n">player</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">players</span><span class="p">:</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2">: (</span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">position_x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">position_y</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="position-at-specific-ticks">Position at Specific Ticks<a class="headerlink" href="#position-at-specific-ticks" title="Permanent link">&para;</a></h3>
+<p>Use <code>target_ticks</code> to capture state at exact moments:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Get hero positions at specific ticks</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">target_ticks</span><span class="o">=</span><span class="p">[</span><span class="mi">30000</span><span class="p">,</span> <span class="mi">45000</span><span class="p">,</span> <span class="mi">60000</span><span class="p">])</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="k">for</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span><span class="p">:</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tick </span><span class="si">{</span><span class="n">snapshot</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="k">for</span> <span class="n">player</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">players</span><span class="p">:</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2">: (</span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">position_x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">position_y</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="filtering-by-hero">Filtering by Hero<a class="headerlink" href="#filtering-by-hero" title="Permanent link">&para;</a></h3>
+<p>Use <code>target_heroes</code> to only get specific heroes. Use the <code>npc_dota_hero_*</code> format (same as combat log):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Get only specific heroes</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_entities</span><span class="p">(</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="s2">&quot;match.dem&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">target_ticks</span><span class="o">=</span><span class="p">[</span><span class="mi">50000</span><span class="p">],</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="n">target_heroes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;npc_dota_hero_axe&quot;</span><span class="p">,</span> <span class="s2">&quot;npc_dota_hero_lina&quot;</span><span class="p">]</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="getting-death-positions">Getting Death Positions<a class="headerlink" href="#getting-death-positions" title="Permanent link">&para;</a></h3>
+<p>Combat log <code>location_x</code>/<code>location_y</code> are <strong>always 0</strong>. To get death positions, combine combat log with entity snapshots:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Get deaths from combat log</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">combat</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># type 1 = deaths</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="k">for</span> <span class="n">death</span> <span class="ow">in</span> <span class="n">combat</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="c1"># Get victim&#39;s position at death tick</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_entities</span><span class="p">(</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>        <span class="s2">&quot;match.dem&quot;</span><span class="p">,</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>        <span class="n">target_ticks</span><span class="o">=</span><span class="p">[</span><span class="n">death</span><span class="o">.</span><span class="n">tick</span><span class="p">],</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>        <span class="n">target_heroes</span><span class="o">=</span><span class="p">[</span><span class="n">death</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span>  <span class="c1"># e.g., &quot;npc_dota_hero_axe&quot;</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>    <span class="p">)</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">players</span><span class="p">:</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>        <span class="n">victim</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">players</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">victim</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2"> died at (</span><span class="si">{</span><span class="n">victim</span><span class="o">.</span><span class="n">position_x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">victim</span><span class="o">.</span><span class="n">position_y</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="position-coordinate-system">Position Coordinate System<a class="headerlink" href="#position-coordinate-system" title="Permanent link">&para;</a></h3>
+<p>Hero positions use world coordinates centered on the map:</p>
+<ul>
+<li><strong>X axis</strong>: West (Radiant, negative) to East (Dire, positive)</li>
+<li><strong>Y axis</strong>: South (negative) to North (positive)</li>
+<li><strong>Origin (0,0)</strong>: Center of the map</li>
+<li><strong>Range</strong>: Approximately -8000 to +8000 for both axes</li>
+</ul>
+<h3 id="playerstate-fields">PlayerState Fields<a class="headerlink" href="#playerstate-fields" title="Permanent link">&para;</a></h3>
+<p>Each player in a snapshot includes:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>player_id</code></td>
+<td>int</td>
+<td>Player slot (0-9)</td>
+</tr>
+<tr>
+<td><code>hero_id</code></td>
+<td>int</td>
+<td>Hero ID</td>
+</tr>
+<tr>
+<td><code>hero_name</code></td>
+<td>str</td>
+<td>Hero name (<code>npc_dota_hero_*</code> format)</td>
+</tr>
+<tr>
+<td><code>team</code></td>
+<td>int</td>
+<td>2=Radiant, 3=Dire</td>
+</tr>
+<tr>
+<td><code>position_x</code></td>
+<td>float</td>
+<td>X world coordinate</td>
+</tr>
+<tr>
+<td><code>position_y</code></td>
+<td>float</td>
+<td>Y world coordinate</td>
+</tr>
+<tr>
+<td><code>health</code></td>
+<td>int</td>
+<td>Current health</td>
+</tr>
+<tr>
+<td><code>max_health</code></td>
+<td>int</td>
+<td>Maximum health</td>
+</tr>
+<tr>
+<td><code>mana</code></td>
+<td>float</td>
+<td>Current mana</td>
+</tr>
+<tr>
+<td><code>max_mana</code></td>
+<td>float</td>
+<td>Maximum mana</td>
+</tr>
+<tr>
+<td><code>last_hits</code></td>
+<td>int</td>
+<td>Last hits</td>
+</tr>
+<tr>
+<td><code>denies</code></td>
+<td>int</td>
+<td>Denies</td>
+</tr>
+<tr>
+<td><code>gold</code></td>
+<td>int</td>
+<td>Current gold</td>
+</tr>
+<tr>
+<td><code>net_worth</code></td>
+<td>int</td>
+<td>Net worth</td>
+</tr>
+<tr>
+<td><code>kills</code></td>
+<td>int</td>
+<td>Kills</td>
+</tr>
+<tr>
+<td><code>deaths</code></td>
+<td>int</td>
+<td>Deaths</td>
+</tr>
+<tr>
+<td><code>assists</code></td>
+<td>int</td>
+<td>Assists</td>
+</tr>
+</tbody>
+</table>
+<h3 id="position-data-sources-comparison">Position Data Sources Comparison<a class="headerlink" href="#position-data-sources-comparison" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Use Case</th>
+<th>Position Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>parse_entities()</code></td>
+<td>Time-series or specific ticks</td>
+<td>✅ <code>position_x</code>, <code>position_y</code></td>
+</tr>
+<tr>
+<td><code>query_entities()</code></td>
+<td>End-of-game state</td>
+<td>✅ Raw <code>CBodyComponent.m_cellX/Y</code></td>
+</tr>
+<tr>
+<td><code>parse_combat_log()</code></td>
+<td>Combat events</td>
+<td>❌ <code>location_x/y</code> always 0</td>
 </tr>
 </tbody>
 </table>
