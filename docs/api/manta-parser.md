@@ -6,6 +6,37 @@
 
 ---
 
+## API Levels
+
+MantaParser provides two levels of APIs:
+
+### High-Level APIs (Recommended)
+
+These methods process and structure the raw Manta data, resolving string table indices to names and returning typed Pydantic models:
+
+| Method | Purpose |
+|--------|---------|
+| `parse_header()` | Demo file metadata |
+| `parse_draft()` | Draft picks/bans |
+| `parse_match_info()` | Pro match data (teams, players, league) |
+| `parse_entities()` | Entity snapshots with player stats/positions |
+| `parse_game_events()` | Game events with field name resolution |
+| `parse_combat_log()` | Combat log with name resolution |
+| `parse_modifiers()` | Buff/debuff tracking |
+| `query_entities()` | Entity properties at end of replay |
+| `get_string_tables()` | String table data |
+| `get_parser_info()` | Parser state metadata |
+
+### Low-Level API (Raw Manta Data)
+
+| Method | Purpose |
+|--------|---------|
+| `parse_universal()` | Raw protobuf messages from any Manta callback |
+
+`parse_universal()` returns data exactly as Manta provides it - raw protobuf message fields serialized to JSON with no processing. Use this when you need access to message types not covered by high-level APIs, or when you need the raw unprocessed data.
+
+---
+
 ## Constructor
 
 ```python
@@ -125,6 +156,60 @@ for player in match.players:
 
 ---
 
+### parse_entities
+
+```python
+def parse_entities(
+    self,
+    demo_file_path: str,
+    interval_ticks: int = 1800,
+    max_snapshots: int = 0,
+    target_ticks: Optional[List[int]] = None,
+    target_heroes: Optional[List[str]] = None,
+    entity_classes: Optional[List[str]] = None,
+    include_raw: bool = False
+) -> EntityParseResult
+```
+
+Parses entity state snapshots over time, capturing player stats and positions at regular intervals or specific ticks.
+
+**Parameters:**
+
+- `demo_file_path`: Path to the `.dem` replay file
+- `interval_ticks`: Capture snapshot every N ticks (default 1800 ≈ 1 minute at 30 ticks/sec)
+- `max_snapshots`: Maximum snapshots to return (0 = unlimited)
+- `target_ticks`: Specific ticks to capture (overrides interval_ticks)
+- `target_heroes`: Filter to specific hero names (e.g., `["npc_dota_hero_invoker"]`)
+- `entity_classes`: Filter to specific entity classes
+- `include_raw`: Include raw entity properties in output
+
+**Returns:** [`EntityParseResult`](models#entityparseresult)
+
+**Example:**
+```python
+# Capture every minute
+result = parser.parse_entities("match.dem", interval_ticks=1800, max_snapshots=60)
+
+for snapshot in result.snapshots:
+    print(f"Tick {snapshot.tick}:")
+    for player in snapshot.players:
+        print(f"  {player.hero}: LH={player.last_hits}, DN={player.denies}, Gold={player.gold}")
+
+# Capture at specific ticks
+result = parser.parse_entities("match.dem", target_ticks=[30000, 45000, 60000])
+
+# Track specific heroes
+result = parser.parse_entities(
+    "match.dem",
+    target_ticks=[30000],
+    target_heroes=["npc_dota_hero_invoker", "npc_dota_hero_antimage"]
+)
+```
+
+---
+
+## Low-Level API
+
 ### parse_universal
 
 ```python
@@ -136,7 +221,7 @@ def parse_universal(
 ) -> UniversalParseResult
 ```
 
-Parses any message type from the replay using callback filtering.
+Low-level API for accessing raw Manta callback data. Returns protobuf messages exactly as Manta provides them, serialized to JSON with no processing or name resolution.
 
 **Parameters:**
 - `demo_file_path`: Path to the `.dem` replay file
