@@ -216,12 +216,19 @@ parser.Callbacks.OnNewCallbackName(func(m *dota.NewCallbackName) error {
 4. Try empty filter `""` to see all messages
 5. Check Go build for CGO warnings
 
-### Releasing a new version
-1. Update version in `pyproject.toml`
-2. Update CHANGELOG.md
-3. Create git tag: `git tag v1.x.x`
-4. Push tag: `git push origin v1.x.x`
-5. CI builds and publishes to PyPI
+### Releasing a new version (CRITICAL - follow exactly)
+1. **Read `pyproject.toml`** to check the current version
+2. **Increment the version** appropriately (e.g., `1.4.5.1-dev11` → `1.4.5.1-dev12`)
+3. **Update `pyproject.toml`** with the new version
+4. **Commit the version bump**: `git commit -m "chore: bump version to X.Y.Z"`
+5. **Push to master**: `git push origin master`
+6. **Create git tag** matching the version: `git tag vX.Y.Z` (note the `v` prefix)
+7. **Push the tag**: `git push origin vX.Y.Z`
+
+**Version format**: `MAJOR.MINOR.PATCH.BUILD-devN` (e.g., `1.4.5.1-dev12`)
+**Tag format**: `v` + version (e.g., `v1.4.5.1-dev12`)
+
+⚠️ **NEVER guess the version number** - always read pyproject.toml first!
 
 ## Dependencies
 
