@@ -572,17 +572,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#convenience-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Convenience Functions
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1244,17 +1233,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#convenience-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Convenience Functions
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1385,32 +1363,24 @@
 </tr>
 </tbody>
 </table>
-<h3 id="convenience-functions">Convenience Functions<a class="headerlink" href="#convenience-functions" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">parse_demo_header</span><span class="p">,</span>    <span class="c1"># Quick header parsing</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">parse_demo_draft</span><span class="p">,</span>     <span class="c1"># Quick draft parsing</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">parse_demo_universal</span><span class="p">,</span> <span class="c1"># Quick message parsing</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">parse_demo_entities</span><span class="p">,</span>  <span class="c1"># Quick entity parsing</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span>
-</code></pre></div>
 <hr />
 <h2 id="quick-reference">Quick Reference<a class="headerlink" href="#quick-reference" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Basic parsing</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">header</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_header</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">draft</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_draft</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">messages</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;CDOTAUserMsg_ChatMessage&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Advanced parsing</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">events</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_game_events</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">event_filter</span><span class="o">=</span><span class="s2">&quot;dota&quot;</span><span class="p">,</span> <span class="n">max_events</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">combat</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="n">modifiers</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_modifiers</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">max_modifiers</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="n">entities</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Hero&quot;</span><span class="p">,</span> <span class="n">max_entities</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">tables</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_string_tables</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">table_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;userinfo&quot;</span><span class="p">])</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">info</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_parser_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Basic parsing</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">header</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_header</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">draft</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_draft</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">messages</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;CDOTAUserMsg_ChatMessage&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Advanced parsing</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">events</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_game_events</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">event_filter</span><span class="o">=</span><span class="s2">&quot;dota&quot;</span><span class="p">,</span> <span class="n">max_events</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">combat</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">modifiers</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_modifiers</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">max_modifiers</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">entities</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Hero&quot;</span><span class="p">,</span> <span class="n">max_entities</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="n">tables</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_string_tables</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">table_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;userinfo&quot;</span><span class="p">])</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">info</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_parser_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
 </code></pre></div>
 
 
