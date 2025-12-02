@@ -2,7 +2,7 @@
 # Data Models
 
 ??? info "AI Summary"
-    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `CDotaGameInfo`/`CHeroSelectEvent` (draft), `CDotaGameInfo`/`CPlayerInfo` (pro match data with teams, league, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). All have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). All have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
 
 ---
 
@@ -44,52 +44,14 @@ json_str = header.model_dump_json()
 
 ---
 
-## Draft Models
+## Game Info Models
 
-### CDotaGameInfo
+### GameInfo
 
-Draft information containing picks and bans.
-
-```python
-class CDotaGameInfo(BaseModel):
-    picks_bans: List[CHeroSelectEvent]  # Draft sequence
-    success: bool                        # Parse success flag
-    error: Optional[str]                 # Error message if failed
-```
-
-### CHeroSelectEvent
-
-Single pick or ban event in the draft.
+Complete game information including draft, players, and teams.
 
 ```python
-class CHeroSelectEvent(BaseModel):
-    is_pick: bool    # True for pick, False for ban
-    team: int        # 2 = Radiant, 3 = Dire
-    hero_id: int     # Hero ID (see Dota 2 Wiki for mappings)
-```
-
-**Example:**
-```python
-draft = parser.parse_draft("match.dem")
-
-radiant_picks = [e for e in draft.picks_bans if e.is_pick and e.team == 2]
-dire_bans = [e for e in draft.picks_bans if not e.is_pick and e.team == 3]
-
-# Hero IDs: 1=Anti-Mage, 2=Axe, etc.
-for pick in radiant_picks:
-    print(f"Radiant picked hero {pick.hero_id}")
-```
-
----
-
-## Match Info Models
-
-### CDotaGameInfo
-
-Complete match information including pro match data.
-
-```python
-class CDotaGameInfo(BaseModel):
+class GameInfo(BaseModel):
     # Basic match info
     match_id: int              # Match ID
     game_mode: int             # Game mode ID
@@ -104,10 +66,10 @@ class CDotaGameInfo(BaseModel):
     dire_team_tag: str         # Dire team tag (e.g., "Secret")
 
     # Players
-    players: List[CPlayerInfo]  # All players in match
+    players: List[PlayerInfo]  # All players in match
 
     # Draft
-    picks_bans: List[CHeroSelectEvent]  # Draft sequence
+    picks_bans: List[DraftEvent]  # Draft sequence
 
     # Playback info
     playback_time: float       # Total playback time in seconds
@@ -116,43 +78,59 @@ class CDotaGameInfo(BaseModel):
 
     success: bool              # Parse success flag
     error: Optional[str]       # Error message if failed
-
-    def is_pro_match(self) -> bool:
-        """Check if this is a pro/league match."""
 ```
 
-### CPlayerInfo
+### DraftEvent
+
+Single pick or ban event in the draft.
+
+```python
+class DraftEvent(BaseModel):
+    is_pick: bool    # True for pick, False for ban
+    team: int        # 2 = Radiant, 3 = Dire
+    hero_id: int     # Hero ID (see Dota 2 Wiki for mappings)
+```
+
+### PlayerInfo
 
 Player information from match metadata.
 
 ```python
-class CPlayerInfo(BaseModel):
+class PlayerInfo(BaseModel):
     hero_name: str           # Hero internal name (e.g., "npc_dota_hero_axe")
     player_name: str         # Player display name
     is_fake_client: bool     # True for bots
-    steamid: int             # Player Steam ID
-    game_team: int           # Team (2=Radiant, 3=Dire)
+    steam_id: int            # Player Steam ID
+    team: int                # Team (2=Radiant, 3=Dire)
 ```
 
 **Example:**
 ```python
-match = parser.parse_game_info("match.dem")
+game_info = parser.parse_game_info("match.dem")
 
 # Basic match info
-print(f"Match {match.match_id}")
-print(f"Duration: {match.playback_time / 60:.1f} minutes")
-winner = "Radiant" if match.game_winner == 2 else "Dire"
+print(f"Match {game_info.match_id}")
+print(f"Duration: {game_info.playback_time / 60:.1f} minutes")
+winner = "Radiant" if game_info.game_winner == 2 else "Dire"
 print(f"Winner: {winner}")
 
-# Pro match info
-if match.is_pro_match():
-    print(f"League: {match.league_id}")
-    print(f"{match.radiant_team_tag} vs {match.dire_team_tag}")
+# Team info (pro matches)
+if game_info.league_id > 0:
+    print(f"League: {game_info.league_id}")
+    print(f"{game_info.radiant_team_tag} vs {game_info.dire_team_tag}")
 
 # Players
-for player in match.players:
-    team = "Radiant" if player.game_team == 2 else "Dire"
+for player in game_info.players:
+    team = "Radiant" if player.team == 2 else "Dire"
     print(f"  {player.player_name} ({team}): {player.hero_name}")
+
+# Draft
+radiant_picks = [e for e in game_info.picks_bans if e.is_pick and e.team == 2]
+dire_bans = [e for e in game_info.picks_bans if not e.is_pick and e.team == 3]
+
+# Hero IDs: 1=Anti-Mage, 2=Axe, etc.
+for pick in radiant_picks:
+    print(f"Radiant picked hero {pick.hero_id}")
 ```
 
 ---

@@ -2,7 +2,7 @@
 # MantaParser
 
 ??? info "AI Summary"
-    `MantaParser` is the main class for parsing Dota 2 replays. Create an instance with `MantaParser()` and call methods like `parse_header()`, `parse_draft()`, `parse_game_info()`, `parse_universal()`. For specialized data, use `parse_game_events()`, `parse_combat_log()`, `parse_modifiers()`, `query_entities()`, `get_string_tables()`. Use `parse_game_info()` to get pro match data (team IDs, team tags, league ID, players). All methods take a file path and return Pydantic models. The same parser instance can be reused for multiple files.
+    `MantaParser` is the main class for parsing Dota 2 replays. Create an instance with `MantaParser()` and call methods like `parse_header()`, `parse_game_info()`, `parse_universal()`. For specialized data, use `parse_game_events()`, `parse_combat_log()`, `parse_modifiers()`, `query_entities()`, `get_string_tables()`. Use `parse_game_info()` to get match data (draft, teams, players, league). All methods take a file path and return Pydantic models. The same parser instance can be reused for multiple files.
 
 ---
 
@@ -17,8 +17,7 @@ These methods process and structure the raw Manta data, resolving string table i
 | Method | Purpose |
 |--------|---------|
 | `parse_header()` | Demo file metadata |
-| `parse_draft()` | Draft picks/bans |
-| `parse_game_info()` | Pro match data (teams, players, league) |
+| `parse_game_info()` | Game data (draft, teams, players, league) |
 | `parse_entities()` | Entity snapshots with player stats/positions |
 | `parse_game_events()` | Game events with field name resolution |
 | `parse_combat_log()` | Combat log with name resolution |
@@ -93,43 +92,18 @@ print(f"Protocol: {header.network_protocol}")
 
 ---
 
-### parse_draft
-
-```python
-def parse_draft(self, demo_file_path: str) -> CDotaGameInfo
-```
-
-Extracts draft phase information (picks and bans).
-
-**Parameters:**
-- `demo_file_path`: Path to the `.dem` replay file
-
-**Returns:** [`CDotaGameInfo`](models#cdotagameinfo)
-
-**Example:**
-```python
-draft = parser.parse_draft("match.dem")
-
-for event in draft.picks_bans:
-    action = "PICK" if event.is_pick else "BAN"
-    team = "Radiant" if event.team == 2 else "Dire"
-    print(f"{team} {action}: Hero {event.hero_id}")
-```
-
----
-
 ### parse_game_info
 
 ```python
-def parse_game_info(self, demo_file_path: str) -> CDotaGameInfo
+def parse_game_info(self, demo_file_path: str) -> GameInfo
 ```
 
-Parses complete match information including pro match data.
+Parses complete game information including draft, players, and teams.
 
 **Parameters:**
 - `demo_file_path`: Path to the `.dem` replay file
 
-**Returns:** [`CDotaGameInfo`](models#cdotagameinfo)
+**Returns:** [`GameInfo`](models#gameinfo)
 
 **Raises:**
 - `FileNotFoundError`: If the file doesn't exist
@@ -137,20 +111,26 @@ Parses complete match information including pro match data.
 
 **Example:**
 ```python
-match = parser.parse_game_info("match.dem")
+game_info = parser.parse_game_info("match.dem")
 
-print(f"Match ID: {match.match_id}")
-print(f"Game Mode: {match.game_mode}")
-print(f"Winner: {'Radiant' if match.game_winner == 2 else 'Dire'}")
+print(f"Match ID: {game_info.match_id}")
+print(f"Game Mode: {game_info.game_mode}")
+print(f"Winner: {'Radiant' if game_info.game_winner == 2 else 'Dire'}")
 
-# Check if pro match
-if match.is_pro_match():
-    print(f"League ID: {match.league_id}")
-    print(f"{match.radiant_team_tag} vs {match.dire_team_tag}")
+# Team info (pro matches)
+if game_info.league_id > 0:
+    print(f"League ID: {game_info.league_id}")
+    print(f"{game_info.radiant_team_tag} vs {game_info.dire_team_tag}")
+
+# Draft
+for event in game_info.picks_bans:
+    action = "PICK" if event.is_pick else "BAN"
+    team = "Radiant" if event.team == 2 else "Dire"
+    print(f"{team} {action}: Hero {event.hero_id}")
 
 # Player info
-for player in match.players:
-    team = "Radiant" if player.game_team == 2 else "Dire"
+for player in game_info.players:
+    team = "Radiant" if player.team == 2 else "Dire"
     print(f"  {player.player_name} ({team}): {player.hero_name}")
 ```
 

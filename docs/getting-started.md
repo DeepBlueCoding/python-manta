@@ -78,35 +78,29 @@ print(f"Build: {header.build_num}")
 print(f"Network Protocol: {header.network_protocol}")
 ```
 
-### Parse Draft (Picks & Bans)
+### Parse Game Info (Draft, Players, Teams)
 
 ```python
-draft = parser.parse_draft("match.dem")
+game_info = parser.parse_game_info("match.dem")
 
-for event in draft.picks_bans:
+# Match basics
+print(f"Match ID: {game_info.match_id}")
+print(f"Winner: {'Radiant' if game_info.game_winner == 2 else 'Dire'}")
+
+# Draft picks and bans
+for event in game_info.picks_bans:
     action = "PICK" if event.is_pick else "BAN"
     team = "Radiant" if event.team == 2 else "Dire"
     print(f"{team} {action}: Hero ID {event.hero_id}")
-```
 
-### Parse Match Info (Pro Matches)
-
-Get complete match information including team data for pro/league matches:
-
-```python
-match = parser.parse_game_info("match.dem")
-
-print(f"Match ID: {match.match_id}")
-print(f"Winner: {'Radiant' if match.game_winner == 2 else 'Dire'}")
-
-# Pro match data (league_id, team tags, etc.)
-if match.is_pro_match():
-    print(f"League: {match.league_id}")
-    print(f"{match.radiant_team_tag} vs {match.dire_team_tag}")
+# Team data (pro/league matches)
+if game_info.league_id > 0:
+    print(f"League: {game_info.league_id}")
+    print(f"{game_info.radiant_team_tag} vs {game_info.dire_team_tag}")
 
 # Player info
-for player in match.players:
-    team = "Radiant" if player.game_team == 2 else "Dire"
+for player in game_info.players:
+    team = "Radiant" if player.team == 2 else "Dire"
     print(f"  {player.player_name} ({team}): {player.hero_name}")
 ```
 

@@ -24,14 +24,14 @@ def generate_match_summary(demo_path: str):
     print(f"Build: {header.build_num}")
     print(f"Server: {header.server_name}")
 
-    # Get draft
-    draft = parser.parse_draft(demo_path)
+    # Get game info (draft)
+    game_info = parser.parse_game_info(demo_path)
     print(f"\nDraft:")
     print("-" * 30)
 
     radiant_picks = []
     dire_picks = []
-    for event in draft.picks_bans:
+    for event in game_info.picks_bans:
         if event.is_pick:
             if event.team == 2:
                 radiant_picks.append(event.hero_id)
@@ -496,9 +496,9 @@ def full_analysis(demo_path: str):
     print(f"    Entities: {info.entity_count}")
 
     # 2. Draft
-    draft = parser.parse_draft(demo_path)
-    picks = [e for e in draft.picks_bans if e.is_pick]
-    bans = [e for e in draft.picks_bans if not e.is_pick]
+    game_info = parser.parse_game_info(demo_path)
+    picks = [e for e in game_info.picks_bans if e.is_pick]
+    bans = [e for e in game_info.picks_bans if not e.is_pick]
 
     print(f"\n[2] Draft")
     print(f"    Picks: {len(picks)}")
