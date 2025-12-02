@@ -30,8 +30,18 @@ manta.commit
 go_wrapper/manta/
 go_wrapper/manta.commit
 
+# CGO header files (generated during build)
+go_wrapper/libmanta_wrapper.h
+src/python_manta/libmanta_wrapper.h
+
+# MkDocs site output
+site/
+
 # Test fixtures
 tests/fixtures/replays/*.dem
+
+# Lock files
+uv.lock
 
 # Editor and OS files
 .DS_Store
