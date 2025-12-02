@@ -1090,10 +1090,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#spectator" class="md-nav__link">
+  <a href="#spectator-and-player-input" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Spectator
+        Spectator and Player Input
       
     </span>
   </a>
@@ -1631,10 +1631,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#spectator" class="md-nav__link">
+  <a href="#spectator-and-player-input" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Spectator
+        Spectator and Player Input
       
     </span>
   </a>
@@ -2303,7 +2303,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="spectator">Spectator<a class="headerlink" href="#spectator" title="Permanent link">&para;</a></h3>
+<h3 id="spectator-and-player-input">Spectator and Player Input<a class="headerlink" href="#spectator-and-player-input" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -2318,7 +2318,7 @@
 </tr>
 <tr>
 <td><code>CDOTAUserMsg_SpectatorPlayerUnitOrders</code></td>
-<td>Spectator unit orders</td>
+<td><strong>Player commands</strong> - attack, move, cast, items. See <a href="../guides/unit-orders">Unit Orders Guide</a></td>
 </tr>
 <tr>
 <td><code>CDOTAUserMsg_MoveCameraToUnit</code></td>
@@ -2330,6 +2330,10 @@
 </tr>
 </tbody>
 </table>
+<div class="admonition tip">
+<p class="admonition-title">Creep Aggro Detection</p>
+<p>Use <code>CDOTAUserMsg_SpectatorPlayerUnitOrders</code> with <code>order_type=4</code> (ATTACK_TARGET) to detect attack commands that trigger creep aggro. See the <a href="../guides/unit-orders">Unit Orders Guide</a> for detailed examples.</p>
+</div>
 <h3 id="alerts">Alerts<a class="headerlink" href="#alerts" title="Permanent link">&para;</a></h3>
 <table>
 <thead>

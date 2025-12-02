@@ -1229,6 +1229,10 @@
 </thead>
 <tbody>
 <tr>
+<td><a href="unit-orders">Unit Orders</a></td>
+<td>Detect attack commands, creep aggro triggers, and player inputs</td>
+</tr>
+<tr>
 <td><a href="game-events">Game Events</a></td>
 <td>Parse 364 Source 1 game event types</td>
 </tr>
@@ -1268,11 +1272,6 @@
 </tr>
 <tr>
 <td>Draft picks/bans</td>
-<td><code>parse_draft()</code></td>
-<td><a href="../getting-started">Getting Started</a></td>
-</tr>
-<tr>
-<td>Pro match info</td>
 <td><code>parse_game_info()</code></td>
 <td><a href="../getting-started">Getting Started</a></td>
 </tr>
@@ -1285,6 +1284,16 @@
 <td>Death positions</td>
 <td><code>parse_entities(target_ticks=[death.tick])</code></td>
 <td><a href="entities">Entities</a></td>
+</tr>
+<tr>
+<td><strong>Creep aggro triggers</strong></td>
+<td><code>parse_universal("SpectatorPlayerUnitOrders")</code></td>
+<td><a href="unit-orders">Unit Orders</a></td>
+</tr>
+<tr>
+<td><strong>Attack commands</strong></td>
+<td><code>parse_universal("SpectatorPlayerUnitOrders")</code></td>
+<td><a href="unit-orders">Unit Orders</a></td>
 </tr>
 <tr>
 <td>Chat messages</td>
