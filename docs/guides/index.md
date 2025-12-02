@@ -10,6 +10,7 @@
 
 | Guide | Description |
 |-------|-------------|
+| [Unit Orders](unit-orders) | Detect attack commands, creep aggro triggers, and player inputs |
 | [Game Events](game-events) | Parse 364 Source 1 game event types |
 | [Combat Log](combat-log) | Analyze damage, heals, deaths, and kills |
 | [Entity Queries](entities) | Query hero/unit state and properties |
@@ -23,10 +24,11 @@
 | What You Need | API | Guide |
 |---------------|-----|-------|
 | Match metadata | `parse_header()` | [Getting Started](../getting-started) |
-| Draft picks/bans | `parse_draft()` | [Getting Started](../getting-started) |
-| Pro match info | `parse_game_info()` | [Getting Started](../getting-started) |
+| Draft picks/bans | `parse_game_info()` | [Getting Started](../getting-started) |
 | Hero positions over time | `parse_entities(target_ticks=[...])` | [Entities](entities) |
 | Death positions | `parse_entities(target_ticks=[death.tick])` | [Entities](entities) |
+| **Creep aggro triggers** | `parse_universal("SpectatorPlayerUnitOrders")` | [Unit Orders](unit-orders) |
+| **Attack commands** | `parse_universal("SpectatorPlayerUnitOrders")` | [Unit Orders](unit-orders) |
 | Chat messages | `parse_universal("CDOTAUserMsg_ChatMessage")` | [Universal](universal) |
 | Item purchases | `parse_universal("CDOTAUserMsg_ItemPurchased")` | [Universal](universal) |
 | Map pings | `parse_universal("CDOTAUserMsg_LocationPing")` | [Universal](universal) |

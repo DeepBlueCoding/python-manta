@@ -147,14 +147,18 @@ Game-related messages visible to players.
 | `CDOTAUserMsg_GuildChallenge_Progress` | Guild challenge |
 | `CDOTAUserMsg_CompendiumState` | Compendium state |
 
-### Spectator
+### Spectator and Player Input
 
 | Callback | Description |
 |----------|-------------|
 | `CDOTAUserMsg_SpectatorPlayerClick` | Spectator clicks |
-| `CDOTAUserMsg_SpectatorPlayerUnitOrders` | Spectator unit orders |
+| `CDOTAUserMsg_SpectatorPlayerUnitOrders` | **Player commands** - attack, move, cast, items. See [Unit Orders Guide](../guides/unit-orders) |
 | `CDOTAUserMsg_MoveCameraToUnit` | Camera movement |
 | `CDOTAUserMsg_CombatHeroPositions` | Hero positions |
+
+!!! tip "Creep Aggro Detection"
+
+    Use `CDOTAUserMsg_SpectatorPlayerUnitOrders` with `order_type=4` (ATTACK_TARGET) to detect attack commands that trigger creep aggro. See the [Unit Orders Guide](../guides/unit-orders) for detailed examples.
 
 ### Alerts
 
