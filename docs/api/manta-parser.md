@@ -2,7 +2,7 @@
 # MantaParser
 
 ??? info "AI Summary"
-    `MantaParser` is the main class for parsing Dota 2 replays. Create an instance with `MantaParser()` and call methods like `parse_header()`, `parse_draft()`, `parse_universal()`. For specialized data, use `parse_game_events()`, `parse_combat_log()`, `parse_modifiers()`, `query_entities()`, `get_string_tables()`. All methods take a file path and return Pydantic models. The same parser instance can be reused for multiple files.
+    `MantaParser` is the main class for parsing Dota 2 replays. Create an instance with `MantaParser()` and call methods like `parse_header()`, `parse_draft()`, `parse_match_info()`, `parse_universal()`. For specialized data, use `parse_game_events()`, `parse_combat_log()`, `parse_modifiers()`, `query_entities()`, `get_string_tables()`. Use `parse_match_info()` to get pro match data (team IDs, team tags, league ID, players). All methods take a file path and return Pydantic models. The same parser instance can be reused for multiple files.
 
 ---
 
@@ -83,6 +83,44 @@ for event in draft.picks_bans:
     action = "PICK" if event.is_pick else "BAN"
     team = "Radiant" if event.team == 2 else "Dire"
     print(f"{team} {action}: Hero {event.hero_id}")
+```
+
+---
+
+### parse_match_info
+
+```python
+def parse_match_info(self, demo_file_path: str) -> MatchInfo
+```
+
+Parses complete match information including pro match data.
+
+**Parameters:**
+- `demo_file_path`: Path to the `.dem` replay file
+
+**Returns:** [`MatchInfo`](models#matchinfo)
+
+**Raises:**
+- `FileNotFoundError`: If the file doesn't exist
+- `ValueError`: If parsing fails
+
+**Example:**
+```python
+match = parser.parse_match_info("match.dem")
+
+print(f"Match ID: {match.match_id}")
+print(f"Game Mode: {match.game_mode}")
+print(f"Winner: {'Radiant' if match.game_winner == 2 else 'Dire'}")
+
+# Check if pro match
+if match.is_pro_match():
+    print(f"League ID: {match.league_id}")
+    print(f"{match.radiant_team_tag} vs {match.dire_team_tag}")
+
+# Player info
+for player in match.players:
+    team = "Radiant" if player.game_team == 2 else "Dire"
+    print(f"  {player.player_name} ({team}): {player.hero_name}")
 ```
 
 ---

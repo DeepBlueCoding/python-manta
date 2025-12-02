@@ -41,6 +41,53 @@ class CDotaGameInfo(BaseModel):
     error: Optional[str] = None
 
 
+class PlayerMatchInfo(BaseModel):
+    """Player information from match metadata."""
+    hero_name: str
+    player_name: str
+    is_fake_client: bool = False
+    steamid: int
+    game_team: int  # 2=Radiant, 3=Dire
+
+
+class MatchInfo(BaseModel):
+    """Complete match information including pro match data.
+
+    For pro matches, includes team IDs, team tags, and league ID.
+    For pub matches, team fields will be 0/empty.
+    """
+    # Basic match info
+    match_id: int
+    game_mode: int
+    game_winner: int  # 2=Radiant, 3=Dire
+    league_id: int = 0
+    end_time: int = 0
+
+    # Team info (pro matches only - 0/empty for pubs)
+    radiant_team_id: int = 0
+    dire_team_id: int = 0
+    radiant_team_tag: str = ""
+    dire_team_tag: str = ""
+
+    # Players
+    players: List[PlayerMatchInfo] = []
+
+    # Draft
+    picks_bans: List[CHeroSelectEvent] = []
+
+    # Playback info
+    playback_time: float = 0.0
+    playback_ticks: int = 0
+    playback_frames: int = 0
+
+    success: bool
+    error: Optional[str] = None
+
+    def is_pro_match(self) -> bool:
+        """Check if this is a pro/league match."""
+        return self.league_id > 0 or self.radiant_team_id > 0 or self.dire_team_id > 0
+
+
 # Universal Message Event for ALL Manta callbacks
 class MessageEvent(BaseModel):
     """Universal message event that can capture ANY Manta message type."""
@@ -63,6 +110,7 @@ class PlayerState(BaseModel):
     """Player state at a specific tick."""
     player_id: int
     hero_id: int = 0
+    hero_name: str = ""  # npc_dota_hero_* format (e.g., "npc_dota_hero_axe")
     team: int = 0
     last_hits: int = 0
     denies: int = 0
@@ -101,6 +149,8 @@ class EntityParseConfig(BaseModel):
     """Configuration for entity parsing."""
     interval_ticks: int = 1800  # ~1 minute at 30 ticks/sec
     max_snapshots: int = 0      # 0 = unlimited
+    target_ticks: List[int] = []  # Specific ticks to capture (overrides interval if set)
+    target_heroes: List[str] = []  # Filter by hero name (npc_dota_hero_* format)
     entity_classes: List[str] = []  # Empty = default set
     include_raw: bool = False
 
@@ -493,6 +543,10 @@ class MantaParser:
         self.lib.GetParserInfo.argtypes = [ctypes.c_char_p]
         self.lib.GetParserInfo.restype = ctypes.c_char_p
 
+        # ParseMatchInfo function: takes char* filename, returns char* JSON
+        self.lib.ParseMatchInfo.argtypes = [ctypes.c_char_p]
+        self.lib.ParseMatchInfo.restype = ctypes.c_char_p
+
         # FreeString function: takes char* to free
         self.lib.FreeString.argtypes = [ctypes.c_char_p]
         self.lib.FreeString.restype = None
@@ -595,7 +649,54 @@ class MantaParser:
             # Note: Skipping FreeString call to avoid memory issues
             # TODO: Fix memory management properly
             pass
-    
+
+    def parse_match_info(self, demo_file_path: str) -> MatchInfo:
+        """
+        Parse complete match information from a Dota 2 demo file.
+
+        This extracts comprehensive match metadata including:
+        - Match ID, game mode, winner
+        - League ID (for pro matches)
+        - Team IDs and tags (for pro matches)
+        - All player information (names, heroes, Steam IDs, teams)
+        - Draft picks and bans
+        - Playback duration info
+
+        Args:
+            demo_file_path: Path to the .dem file
+
+        Returns:
+            MatchInfo object containing all match metadata.
+            Use is_pro_match() to check if this is a league/pro match.
+
+        Raises:
+            FileNotFoundError: If demo file doesn't exist
+            ValueError: If parsing fails
+        """
+        if not os.path.exists(demo_file_path):
+            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
+
+        actual_path = self._prepare_demo_file(demo_file_path)
+        path_bytes = actual_path.encode('utf-8')
+
+        result_ptr = self.lib.ParseMatchInfo(path_bytes)
+
+        if not result_ptr:
+            raise ValueError("ParseMatchInfo returned null pointer")
+
+        try:
+            result_json = ctypes.string_at(result_ptr).decode('utf-8')
+            result_dict = json.loads(result_json)
+            match_info = MatchInfo(**result_dict)
+
+            if not match_info.success:
+                raise ValueError(f"Match info parsing failed: {match_info.error}")
+
+            return match_info
+
+        finally:
+            pass
+
     def parse_universal(self, demo_file_path: str, message_filter: str = "", max_messages: int = 0) -> UniversalParseResult:
         """
         Parse ALL Manta message types from a Dota 2 demo file universally.
@@ -653,23 +754,32 @@ class MantaParser:
         demo_file_path: str,
         interval_ticks: int = 1800,
         max_snapshots: int = 0,
+        target_ticks: Optional[List[int]] = None,
+        target_heroes: Optional[List[str]] = None,
         entity_classes: Optional[List[str]] = None,
         include_raw: bool = False
     ) -> EntityParseResult:
         """
         Parse entity state snapshots from a Dota 2 demo file.
 
-        This extracts player stats (last hits, denies, gold, etc.) at regular
-        intervals throughout the game by tracking entity state changes.
+        This extracts player stats (last hits, denies, gold, etc.) and positions
+        at regular intervals or at specific ticks throughout the game.
 
         Unlike combat log parsing, this captures data from the very start of
         the game, making it suitable for extracting per-minute statistics
-        like lh_t and dn_t arrays.
+        like lh_t and dn_t arrays, or hero positions at specific moments.
 
         Args:
             demo_file_path: Path to the .dem file
             interval_ticks: Capture snapshot every N ticks (default 1800 = ~1 min at 30 ticks/sec)
+                           Ignored if target_ticks is provided.
             max_snapshots: Maximum snapshots to capture (0 = unlimited)
+            target_ticks: Specific ticks to capture snapshots at. If provided, overrides
+                         interval_ticks. Useful for getting hero positions at exact moments
+                         (e.g., when a death occurred based on combat log tick).
+            target_heroes: Filter to only include specific heroes. Use npc_dota_hero_* format
+                          (e.g., ["npc_dota_hero_axe", "npc_dota_hero_lina"]). This is the
+                          same format as combat log target_name/attacker_name fields.
             entity_classes: List of entity class names to include raw data for
             include_raw: Whether to include raw entity data in snapshots
 
@@ -679,6 +789,18 @@ class MantaParser:
         Raises:
             FileNotFoundError: If demo file doesn't exist
             ValueError: If parsing fails
+
+        Example:
+            # Get position of a specific hero at death tick
+            death = combat_log.entries[0]  # e.g., target_name = "npc_dota_hero_axe"
+            result = parser.parse_entities(
+                "match.dem",
+                target_ticks=[death.tick],
+                target_heroes=[death.target_name]
+            )
+            if result.snapshots and result.snapshots[0].players:
+                hero = result.snapshots[0].players[0]
+                print(f"{hero.hero_name} died at ({hero.position_x}, {hero.position_y})")
         """
         if not os.path.exists(demo_file_path):
             raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
@@ -690,6 +812,8 @@ class MantaParser:
         config = EntityParseConfig(
             interval_ticks=interval_ticks,
             max_snapshots=max_snapshots,
+            target_ticks=target_ticks or [],
+            target_heroes=target_heroes or [],
             entity_classes=entity_classes or [],
             include_raw=include_raw
         )
@@ -1062,15 +1186,33 @@ def parse_demo_header(demo_file_path: str) -> HeaderInfo:
 def parse_demo_draft(demo_file_path: str) -> CDotaGameInfo:
     """
     Quick function to parse demo file draft (picks/bans).
-    
+
     Args:
         demo_file_path: Path to the .dem file
-        
+
     Returns:
         CDotaGameInfo object containing draft picks and bans
     """
     parser = MantaParser()
     return parser.parse_draft(demo_file_path)
+
+
+def parse_demo_match_info(demo_file_path: str) -> MatchInfo:
+    """
+    Quick function to parse complete match information from demo file.
+
+    This extracts comprehensive match metadata including pro match data
+    (team IDs, league ID, player names, etc.).
+
+    Args:
+        demo_file_path: Path to the .dem file
+
+    Returns:
+        MatchInfo object containing all match metadata.
+        Use is_pro_match() to check if this is a league/pro match.
+    """
+    parser = MantaParser()
+    return parser.parse_match_info(demo_file_path)
 
 
 def parse_demo_universal(demo_file_path: str, message_filter: str = "", max_messages: int = 0) -> UniversalParseResult:

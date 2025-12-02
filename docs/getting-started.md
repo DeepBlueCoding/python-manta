@@ -89,6 +89,27 @@ for event in draft.picks_bans:
     print(f"{team} {action}: Hero ID {event.hero_id}")
 ```
 
+### Parse Match Info (Pro Matches)
+
+Get complete match information including team data for pro/league matches:
+
+```python
+match = parser.parse_match_info("match.dem")
+
+print(f"Match ID: {match.match_id}")
+print(f"Winner: {'Radiant' if match.game_winner == 2 else 'Dire'}")
+
+# Pro match data (league_id, team tags, etc.)
+if match.is_pro_match():
+    print(f"League: {match.league_id}")
+    print(f"{match.radiant_team_tag} vs {match.dire_team_tag}")
+
+# Player info
+for player in match.players:
+    team = "Radiant" if player.game_team == 2 else "Dire"
+    print(f"  {player.player_name} ({team}): {player.hero_name}")
+```
+
 ### Parse Any Message Type
 
 Use `parse_universal()` to capture any of the 272 supported message types:

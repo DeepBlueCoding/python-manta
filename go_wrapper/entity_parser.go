@@ -26,6 +26,7 @@ type EntitySnapshot struct {
 type PlayerState struct {
 	PlayerID       int     `json:"player_id"`
 	HeroID         int     `json:"hero_id"`
+	HeroName       string  `json:"hero_name"`  // npc_dota_hero_* format (e.g., "npc_dota_hero_axe")
 	Team           int     `json:"team"`
 	LastHits       int     `json:"last_hits"`
 	Denies         int     `json:"denies"`
@@ -64,6 +65,8 @@ type EntityParseResult struct {
 type EntityParseConfig struct {
 	IntervalTicks  int      `json:"interval_ticks"`  // Capture every N ticks (default: 1800 = ~30 ticks/sec * 60 sec)
 	MaxSnapshots   int      `json:"max_snapshots"`   // Max snapshots to capture (0 = unlimited)
+	TargetTicks    []uint32 `json:"target_ticks"`    // Specific ticks to capture (overrides interval if set)
+	TargetHeroes   []string `json:"target_heroes"`   // Filter by hero name (npc_dota_hero_* format from combat log)
 	EntityClasses  []string `json:"entity_classes"`  // Classes to track (empty = default set)
 	IncludeRaw     bool     `json:"include_raw"`     // Include raw entity data
 }
@@ -118,7 +121,17 @@ func RunEntityParse(filePath string, config EntityParseConfig) (*EntityParseResu
 	gameStartTime := float32(0)  // When the actual game started (after pick phase)
 	gameStartTick := uint32(0)   // Tick when game started
 
-	// Entity handler to capture state at intervals
+	// Build a set of target ticks for O(1) lookup
+	targetTickSet := make(map[uint32]bool)
+	for _, t := range config.TargetTicks {
+		targetTickSet[t] = true
+	}
+	useTargetTicks := len(config.TargetTicks) > 0
+
+	// Track which target ticks we've captured (to handle tick not exactly matching)
+	capturedTargets := make(map[uint32]bool)
+
+	// Entity handler to capture state at intervals or specific ticks
 	parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
 		// Safety check
 		if e == nil {
@@ -147,8 +160,29 @@ func RunEntityParse(filePath string, config EntityParseConfig) (*EntityParseResu
 
 		currentTick := parser.Tick
 
-		// Check if we should capture based on interval
-		if config.IntervalTicks > 0 && currentTick-lastCaptureTick < uint32(config.IntervalTicks) {
+		// Determine if we should capture this tick
+		shouldCapture := false
+
+		if useTargetTicks {
+			// Target tick mode: capture at or just after each target tick
+			for targetTick := range targetTickSet {
+				if !capturedTargets[targetTick] && currentTick >= targetTick {
+					shouldCapture = true
+					capturedTargets[targetTick] = true
+					break
+				}
+			}
+		} else {
+			// Interval mode: capture every N ticks
+			if config.IntervalTicks > 0 && currentTick-lastCaptureTick >= uint32(config.IntervalTicks) {
+				shouldCapture = true
+			} else if config.IntervalTicks == 0 {
+				// If interval is 0, capture every update (not recommended for large files)
+				shouldCapture = true
+			}
+		}
+
+		if !shouldCapture {
 			return nil
 		}
 
@@ -181,6 +215,54 @@ func RunEntityParse(filePath string, config EntityParseConfig) (*EntityParseResu
 	result.TotalTicks = parser.Tick
 	result.SnapshotCount = len(result.Snapshots)
 	return result, nil
+}
+
+// entityClassToHeroName converts entity class name to npc_dota_hero_* format
+// Example: "CDOTA_Unit_Hero_Axe" -> "npc_dota_hero_axe"
+func entityClassToHeroName(className string) string {
+	// Remove prefix "CDOTA_Unit_Hero_"
+	if !strings.HasPrefix(className, "CDOTA_Unit_Hero_") {
+		return ""
+	}
+	heroName := strings.TrimPrefix(className, "CDOTA_Unit_Hero_")
+	// Convert to lowercase and add prefix
+	return "npc_dota_hero_" + strings.ToLower(heroName)
+}
+
+// heroNameMatchesClass checks if a npc_dota_hero_* name matches an entity class
+// Example: "npc_dota_hero_axe" matches "CDOTA_Unit_Hero_Axe"
+func heroNameMatchesClass(heroName, className string) bool {
+	// Extract hero part from npc_dota_hero_* format
+	if !strings.HasPrefix(heroName, "npc_dota_hero_") {
+		return false
+	}
+	heroSuffix := strings.TrimPrefix(heroName, "npc_dota_hero_")
+
+	// Extract hero part from entity class
+	if !strings.HasPrefix(className, "CDOTA_Unit_Hero_") {
+		return false
+	}
+	classSuffix := strings.TrimPrefix(className, "CDOTA_Unit_Hero_")
+
+	// Compare case-insensitively (axe vs Axe, shadow_shaman vs ShadowShaman)
+	// Also handle underscore removal for comparison
+	heroNormalized := strings.ToLower(strings.ReplaceAll(heroSuffix, "_", ""))
+	classNormalized := strings.ToLower(strings.ReplaceAll(classSuffix, "_", ""))
+
+	return heroNormalized == classNormalized
+}
+
+// shouldIncludeHero checks if a hero should be included based on target_heroes filter
+func shouldIncludeHero(heroClassName string, targetHeroes []string) bool {
+	if len(targetHeroes) == 0 {
+		return true // No filter, include all
+	}
+	for _, target := range targetHeroes {
+		if heroNameMatchesClass(target, heroClassName) {
+			return true
+		}
+	}
+	return false
 }
 
 // captureSnapshot captures current entity state
@@ -229,6 +311,23 @@ func captureSnapshot(parser *manta.Parser, gameTime float32, config EntityParseC
 		}
 	}
 
+	// Find hero entities for position data
+	heroEntities := parser.FilterEntity(func(e *manta.Entity) bool {
+		if e == nil {
+			return false
+		}
+		return strings.Contains(e.GetClassName(), "CDOTA_Unit_Hero_")
+	})
+
+	// Build a map of hero handles to hero entities for quick lookup
+	heroByHandle := make(map[uint64]*manta.Entity)
+	for _, hero := range heroEntities {
+		if hero == nil {
+			continue
+		}
+		heroByHandle[uint64(hero.GetIndex())] = hero
+	}
+
 	// Extract player data by combining PlayerResource and Data entities
 	if playerResource != nil {
 		for i := 0; i < 10; i++ {
@@ -245,6 +344,40 @@ func captureSnapshot(parser *manta.Parser, gameTime float32, config EntityParseC
 					extractPlayerStatsFromDataTeam(dataRadiant, teamSlot, &player)
 				} else if player.Team == 3 && dataDire != nil {
 					extractPlayerStatsFromDataTeam(dataDire, teamSlot, &player)
+				}
+
+				// Extract position and hero name from hero entity
+				var heroClassName string
+				// Look for hero entity by matching player index to hero handle
+				if heroHandle, ok := playerResource.GetUint64(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_hSelectedHero", i)); ok {
+					if heroEntity, found := heroByHandle[heroHandle&0x3FFF]; found {
+						extractHeroPosition(heroEntity, &player)
+						heroClassName = heroEntity.GetClassName()
+						player.HeroName = entityClassToHeroName(heroClassName)
+					}
+				}
+
+				// If hero handle lookup failed, try matching by iterating through heroes
+				if player.PositionX == 0 && player.PositionY == 0 {
+					for _, hero := range heroEntities {
+						if hero == nil {
+							continue
+						}
+						// Match hero to player by checking team and hero ID
+						if heroID, ok := hero.GetUint32("m_pEntity.m_nameStringableIndex"); ok && int(heroID) == player.HeroID {
+							extractHeroPosition(hero, &player)
+							heroClassName = hero.GetClassName()
+							player.HeroName = entityClassToHeroName(heroClassName)
+							break
+						}
+					}
+				}
+
+				// Apply target_heroes filter
+				if len(config.TargetHeroes) > 0 {
+					if !shouldIncludeHero(heroClassName, config.TargetHeroes) {
+						continue // Skip this player
+					}
 				}
 
 				snapshot.Players = append(snapshot.Players, player)
@@ -360,6 +493,46 @@ func extractPlayerStatsFromDataTeam(dataEntity *manta.Entity, teamSlot int, play
 	// Total XP
 	if xp, ok := dataEntity.GetInt32(fmt.Sprintf("m_vecDataTeam.%04d.m_iTotalEarnedXP", teamSlot)); ok {
 		player.XP = int(xp)
+	}
+}
+
+// extractHeroPosition extracts position from a hero entity using CBodyComponent
+// World coordinates formula: worldX = (cellX * 128) + vecX - 16384
+func extractHeroPosition(hero *manta.Entity, player *PlayerState) {
+	if hero == nil {
+		return
+	}
+
+	// Get cell coordinates (grid position)
+	cellX, okCellX := hero.GetUint32("CBodyComponent.m_cellX")
+	cellY, okCellY := hero.GetUint32("CBodyComponent.m_cellY")
+
+	// Get vector offsets within the cell
+	vecX, okVecX := hero.GetFloat32("CBodyComponent.m_vecX")
+	vecY, okVecY := hero.GetFloat32("CBodyComponent.m_vecY")
+
+	// Calculate world coordinates
+	// Formula: world = (cell * 128) + vec - 16384
+	// The -16384 centers the coordinate system (map is ~32768 units, center at 16384)
+	if okCellX && okVecX {
+		player.PositionX = float32(cellX)*128.0 + vecX - 16384.0
+	}
+	if okCellY && okVecY {
+		player.PositionY = float32(cellY)*128.0 + vecY - 16384.0
+	}
+
+	// Also extract health and mana while we have the hero entity
+	if health, ok := hero.GetInt32("m_iHealth"); ok {
+		player.Health = int(health)
+	}
+	if maxHealth, ok := hero.GetInt32("m_iMaxHealth"); ok {
+		player.MaxHealth = int(maxHealth)
+	}
+	if mana, ok := hero.GetFloat32("m_flMana"); ok {
+		player.Mana = mana
+	}
+	if maxMana, ok := hero.GetFloat32("m_flMaxMana"); ok {
+		player.MaxMana = maxMana
 	}
 }
 

@@ -46,3 +46,4 @@ uv.lock
 # Editor and OS files
 .DS_Store
 Thumbs.db
+go_wrapper/manta

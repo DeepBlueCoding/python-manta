@@ -2,7 +2,7 @@
 # Data Models
 
 ??? info "AI Summary"
-    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `CDotaGameInfo`/`CHeroSelectEvent` (draft), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). All have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `CDotaGameInfo`/`CHeroSelectEvent` (draft), `MatchInfo`/`PlayerMatchInfo` (pro match data with teams, league, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). All have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
 
 ---
 
@@ -78,6 +78,81 @@ dire_bans = [e for e in draft.picks_bans if not e.is_pick and e.team == 3]
 # Hero IDs: 1=Anti-Mage, 2=Axe, etc.
 for pick in radiant_picks:
     print(f"Radiant picked hero {pick.hero_id}")
+```
+
+---
+
+## Match Info Models
+
+### MatchInfo
+
+Complete match information including pro match data.
+
+```python
+class MatchInfo(BaseModel):
+    # Basic match info
+    match_id: int              # Match ID
+    game_mode: int             # Game mode ID
+    game_winner: int           # Winner (2=Radiant, 3=Dire)
+    league_id: int             # League ID (0 for pub matches)
+    end_time: int              # End time (Unix timestamp)
+
+    # Team info (pro matches only - 0/empty for pubs)
+    radiant_team_id: int       # Radiant team ID
+    dire_team_id: int          # Dire team ID
+    radiant_team_tag: str      # Radiant team tag (e.g., "OG")
+    dire_team_tag: str         # Dire team tag (e.g., "Secret")
+
+    # Players
+    players: List[PlayerMatchInfo]  # All players in match
+
+    # Draft
+    picks_bans: List[CHeroSelectEvent]  # Draft sequence
+
+    # Playback info
+    playback_time: float       # Total playback time in seconds
+    playback_ticks: int        # Total ticks
+    playback_frames: int       # Total frames
+
+    success: bool              # Parse success flag
+    error: Optional[str]       # Error message if failed
+
+    def is_pro_match(self) -> bool:
+        """Check if this is a pro/league match."""
+```
+
+### PlayerMatchInfo
+
+Player information from match metadata.
+
+```python
+class PlayerMatchInfo(BaseModel):
+    hero_name: str           # Hero internal name (e.g., "npc_dota_hero_axe")
+    player_name: str         # Player display name
+    is_fake_client: bool     # True for bots
+    steamid: int             # Player Steam ID
+    game_team: int           # Team (2=Radiant, 3=Dire)
+```
+
+**Example:**
+```python
+match = parser.parse_match_info("match.dem")
+
+# Basic match info
+print(f"Match {match.match_id}")
+print(f"Duration: {match.playback_time / 60:.1f} minutes")
+winner = "Radiant" if match.game_winner == 2 else "Dire"
+print(f"Winner: {winner}")
+
+# Pro match info
+if match.is_pro_match():
+    print(f"League: {match.league_id}")
+    print(f"{match.radiant_team_tag} vs {match.dire_team_tag}")
+
+# Players
+for player in match.players:
+    team = "Radiant" if player.game_team == 2 else "Dire"
+    print(f"  {player.player_name} ({team}): {player.hero_name}")
 ```
 
 ---

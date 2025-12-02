@@ -98,8 +98,16 @@ from python_manta import (
     HeaderInfo,            # Demo header metadata
     CHeroSelectEvent,      # Draft pick/ban event
     CDotaGameInfo,         # Draft information
+    # Pro match data
+    PlayerMatchInfo,       # Player info from match
+    MatchInfo,             # Complete match info (teams, league)
     MessageEvent,          # Universal message wrapper
     UniversalParseResult,  # Parse result container
+    # Entity snapshots (positions, stats over time)
+    PlayerState,           # Player state with position
+    TeamState,             # Team state
+    EntitySnapshot,        # Snapshot at a tick
+    EntityParseResult,     # Entity parsing result
     GameEventsResult,      # Game events result
     ModifiersResult,       # Modifiers result
     EntitiesResult,        # Entity query result
@@ -108,6 +116,7 @@ from python_manta import (
     ParserInfo,            # Parser state info
     parse_demo_header,     # Quick header parsing
     parse_demo_draft,      # Quick draft parsing
+    parse_demo_match_info, # Quick match info parsing
     parse_demo_universal,  # Quick universal parsing
 )
 ```
@@ -123,6 +132,15 @@ parser = MantaParser()
 header = parser.parse_header("match.dem")
 draft = parser.parse_draft("match.dem")
 
+# Pro match info (teams, league, players)
+match = parser.parse_match_info("match.dem")
+if match.is_pro_match():
+    print(f"League: {match.league_id}, {match.radiant_team_tag} vs {match.dire_team_tag}")
+
+# Hero positions over time (see docs/guides/entities.md for details)
+snapshots = parser.parse_entities("match.dem", interval_ticks=900, max_snapshots=100)
+# Supports target_ticks=[tick1, tick2] and target_heroes=["npc_dota_hero_axe"]
+
 # Universal message parsing
 result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 100)
 
@@ -132,7 +150,7 @@ events = parser.parse_game_events("match.dem", event_filter="dota_combatlog", ma
 # Modifiers/buffs
 modifiers = parser.parse_modifiers("match.dem", max_modifiers=100, auras_only=True)
 
-# Entity queries
+# Entity queries (end-of-game state)
 entities = parser.query_entities("match.dem", class_filter="Hero", max_entities=10)
 
 # String tables
@@ -151,11 +169,13 @@ info = parser.get_parser_info("match.dem")
 |------|--------|
 | Match metadata | `parse_header()` |
 | Draft picks/bans | `parse_draft()` |
+| Pro match info | `parse_match_info()` |
+| Hero positions | `parse_entities()` |
 | Chat messages | `parse_universal("CDOTAUserMsg_ChatMessage")` |
 | Item purchases | `parse_universal("CDOTAUserMsg_ItemPurchased")` |
 | Combat damage | `parse_combat_log(types=[0])` |
 | Buff tracking | `parse_modifiers()` |
-| Hero state | `query_entities(class_filter="Hero")` |
+| Hero state (end) | `query_entities(class_filter="Hero")` |
 | Game events | `parse_game_events()` |
 | Player info | `get_string_tables(table_names=["userinfo"])` |
 

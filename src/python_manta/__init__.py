@@ -23,6 +23,9 @@ from .manta_python import (
     HeaderInfo,
     CHeroSelectEvent,
     CDotaGameInfo,
+    # Match info (pro match data)
+    PlayerMatchInfo,
+    MatchInfo,
     # Universal parsing
     MessageEvent,
     UniversalParseResult,
@@ -57,6 +60,7 @@ from .manta_python import (
     # Convenience functions
     parse_demo_header,
     parse_demo_draft,
+    parse_demo_match_info,
     parse_demo_universal,
     parse_demo_entities,
 )
@@ -72,6 +76,9 @@ __all__ = [
     "HeaderInfo",
     "CHeroSelectEvent",
     "CDotaGameInfo",
+    # Match info (pro match data)
+    "PlayerMatchInfo",
+    "MatchInfo",
     # Universal parsing
     "MessageEvent",
     "UniversalParseResult",
@@ -106,6 +113,7 @@ __all__ = [
     # Convenience functions
     "parse_demo_header",
     "parse_demo_draft",
+    "parse_demo_match_info",
     "parse_demo_universal",
     "parse_demo_entities",
 ]

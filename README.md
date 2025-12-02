@@ -1074,12 +1074,16 @@ parser = MantaParser()
 # Basic parsing
 header = parser.parse_header("match.dem")           # Match metadata
 draft = parser.parse_draft("match.dem")             # Picks and bans
+match = parser.parse_match_info("match.dem")        # Pro match data (teams, league)
 result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 100)
+
+# Hero positions over time
+entities = parser.parse_entities("match.dem", interval_ticks=900, max_snapshots=100)
 
 # Advanced features
 events = parser.parse_game_events("match.dem", event_filter="dota_combatlog", max_events=100)
 modifiers = parser.parse_modifiers("match.dem", max_modifiers=100)
-entities = parser.query_entities("match.dem", class_filter="Hero", max_entities=10)
+hero_state = parser.query_entities("match.dem", class_filter="Hero", max_entities=10)
 combat = parser.parse_combat_log("match.dem", heroes_only=True, max_entries=100)
 info = parser.get_parser_info("match.dem")
 ```
@@ -1090,13 +1094,15 @@ info = parser.get_parser_info("match.dem")
 |------|--------|-------|
 | Match metadata | `parse_header()` | Build number, map, server |
 | Draft sequence | `parse_draft()` | Picks/bans with hero IDs |
+| Pro match info | `parse_match_info()` | Teams, league, players, winner |
+| Hero positions over time | `parse_entities()` | Position, stats at intervals |
 | Chat messages | `parse_universal("CDOTAUserMsg_ChatMessage")` | Player text chat |
 | Item purchases | `parse_universal("CDOTAUserMsg_ItemPurchased")` | Item buy events |
 | Map pings | `parse_universal("CDOTAUserMsg_LocationPing")` | Ping coordinates |
 | Combat damage | `parse_combat_log(types=[0])` | Structured damage events |
 | Hero kills | `parse_combat_log(heroes_only=True)` | Hero-related combat |
 | Buff tracking | `parse_modifiers()` | Active buffs/debuffs |
-| Hero positions | `query_entities(class_filter="Hero")` | Entity state at end of replay |
+| Hero state (end) | `query_entities(class_filter="Hero")` | Entity state at end of replay |
 | Game events | `parse_game_events()` | 364 named event types |
 | Player info | `get_string_tables(table_names=["userinfo"])` | Steam IDs, names |
 

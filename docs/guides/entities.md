@@ -420,3 +420,114 @@ item_handle = hero.properties.get("m_hItems.0000")
 | 2 | Radiant |
 | 3 | Dire |
 | 0/1 | Neutral/Spectator |
+
+---
+
+## Hero Position Tracking with parse_entities()
+
+For tracking hero positions over time (not just end of game), use `parse_entities()` instead of `query_entities()`.
+
+### Basic Position Tracking
+
+```python
+from python_manta import MantaParser
+
+parser = MantaParser()
+
+# Capture snapshots every 30 seconds (900 ticks at 30 ticks/sec)
+result = parser.parse_entities("match.dem", interval_ticks=900, max_snapshots=100)
+
+for snapshot in result.snapshots:
+    print(f"Game time: {snapshot.game_time:.1f}s")
+    for player in snapshot.players:
+        print(f"  {player.hero_name}: ({player.position_x:.0f}, {player.position_y:.0f})")
+```
+
+### Position at Specific Ticks
+
+Use `target_ticks` to capture state at exact moments:
+
+```python
+# Get hero positions at specific ticks
+result = parser.parse_entities("match.dem", target_ticks=[30000, 45000, 60000])
+
+for snapshot in result.snapshots:
+    print(f"Tick {snapshot.tick}:")
+    for player in snapshot.players:
+        print(f"  {player.hero_name}: ({player.position_x:.0f}, {player.position_y:.0f})")
+```
+
+### Filtering by Hero
+
+Use `target_heroes` to only get specific heroes. Use the `npc_dota_hero_*` format (same as combat log):
+
+```python
+# Get only specific heroes
+result = parser.parse_entities(
+    "match.dem",
+    target_ticks=[50000],
+    target_heroes=["npc_dota_hero_axe", "npc_dota_hero_lina"]
+)
+```
+
+### Getting Death Positions
+
+Combat log `location_x`/`location_y` are **always 0**. To get death positions, combine combat log with entity snapshots:
+
+```python
+# Get deaths from combat log
+combat = parser.parse_combat_log("match.dem", types=[1])  # type 1 = deaths
+
+for death in combat.entries:
+    # Get victim's position at death tick
+    result = parser.parse_entities(
+        "match.dem",
+        target_ticks=[death.tick],
+        target_heroes=[death.target_name]  # e.g., "npc_dota_hero_axe"
+    )
+
+    if result.snapshots and result.snapshots[0].players:
+        victim = result.snapshots[0].players[0]
+        print(f"{victim.hero_name} died at ({victim.position_x:.0f}, {victim.position_y:.0f})")
+```
+
+### Position Coordinate System
+
+Hero positions use world coordinates centered on the map:
+
+- **X axis**: West (Radiant, negative) to East (Dire, positive)
+- **Y axis**: South (negative) to North (positive)
+- **Origin (0,0)**: Center of the map
+- **Range**: Approximately -8000 to +8000 for both axes
+
+### PlayerState Fields
+
+Each player in a snapshot includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `player_id` | int | Player slot (0-9) |
+| `hero_id` | int | Hero ID |
+| `hero_name` | str | Hero name (`npc_dota_hero_*` format) |
+| `team` | int | 2=Radiant, 3=Dire |
+| `position_x` | float | X world coordinate |
+| `position_y` | float | Y world coordinate |
+| `health` | int | Current health |
+| `max_health` | int | Maximum health |
+| `mana` | float | Current mana |
+| `max_mana` | float | Maximum mana |
+| `last_hits` | int | Last hits |
+| `denies` | int | Denies |
+| `gold` | int | Current gold |
+| `net_worth` | int | Net worth |
+| `kills` | int | Kills |
+| `deaths` | int | Deaths |
+| `assists` | int | Assists |
+
+### Position Data Sources Comparison
+
+| Method | Use Case | Position Data |
+|--------|----------|---------------|
+| `parse_entities()` | Time-series or specific ticks | ✅ `position_x`, `position_y` |
+| `query_entities()` | End-of-game state | ✅ Raw `CBodyComponent.m_cellX/Y` |
+| `parse_combat_log()` | Combat events | ❌ `location_x/y` always 0 |
