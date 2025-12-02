@@ -940,10 +940,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#modifier-flags" class="md-nav__link">
+  <a href="#modifier-fields" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Modifier Flags
+        Modifier Fields
       
     </span>
   </a>
@@ -1106,10 +1106,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#timestamp-is-replay-time-not-game-time" class="md-nav__link">
+  <a href="#game-time-vs-replay-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Timestamp is Replay Time, Not Game Time
+        Game Time vs Replay Time
       
     </span>
   </a>
@@ -1117,10 +1117,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#quick-timing-check" class="md-nav__link">
+  <a href="#pre-game-events-negative-game-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Timing Check
+        Pre-Game Events (Negative Game Time)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#game-start-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Game Start Time
       
     </span>
   </a>
@@ -1804,10 +1815,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#modifier-flags" class="md-nav__link">
+  <a href="#modifier-fields" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Modifier Flags
+        Modifier Fields
       
     </span>
   </a>
@@ -1970,10 +1981,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#timestamp-is-replay-time-not-game-time" class="md-nav__link">
+  <a href="#game-time-vs-replay-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Timestamp is Replay Time, Not Game Time
+        Game Time vs Replay Time
       
     </span>
   </a>
@@ -1981,10 +1992,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#quick-timing-check" class="md-nav__link">
+  <a href="#pre-game-events-negative-game-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Timing Check
+        Pre-Game Events (Negative Game Time)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#game-start-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Game Start Time
       
     </span>
   </a>
@@ -2080,7 +2102,7 @@
 <h1 id="combat-log-guide">Combat Log Guide<a class="headerlink" href="#combat-log-guide" title="Permanent link">&para;</a></h1>
 <details class="info">
 <summary>AI Summary</summary>
-<p>Parse structured combat log entries with <code>parse_combat_log()</code>. Filter by 45 log types including DAMAGE (0), HEAL (1), MODIFIER_ADD (2), DEATH (4), ABILITY (5), ITEM (6), FIRST_BLOOD (18). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use <code>heroes_only=True</code> for hero-related entries. Ideal for fight reconstruction and damage analysis. Note: <code>timestamp</code> is replay time (includes draft), not game clock - convert using <code>m_pGameRules.m_flPreGameStartTime</code>.</p>
+<p>Parse structured combat log entries with <code>parse_combat_log()</code>. Filter by 45 log types including DAMAGE (0), HEAL (1), MODIFIER_ADD (2), DEATH (4), ABILITY (5), ITEM (6), PURCHASE (11), FIRST_BLOOD (18). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use <code>heroes_only=True</code> for hero-related entries. The <code>game_time</code> field provides accurate in-game clock time (can be negative for pre-game events). The <code>value_name</code> field resolves item names for PURCHASE events.</p>
 </details>
 <hr />
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
@@ -2424,12 +2446,17 @@
 <tr>
 <td><code>timestamp</code></td>
 <td>float</td>
-<td>Game time in seconds</td>
+<td>Replay time in seconds (includes draft/pre-game)</td>
 </tr>
 <tr>
 <td><code>timestamp_raw</code></td>
 <td>float</td>
 <td>Raw timestamp value</td>
+</tr>
+<tr>
+<td><code>game_time</code></td>
+<td>float</td>
+<td><strong>In-game clock time</strong> (0:00 = creep spawn, can be negative for pre-game)</td>
 </tr>
 </tbody>
 </table>
@@ -2520,7 +2547,12 @@
 <tr>
 <td><code>value</code></td>
 <td>int</td>
-<td>Damage/heal amount</td>
+<td>Damage/heal amount (or string table index for PURCHASE events)</td>
+</tr>
+<tr>
+<td><code>value_name</code></td>
+<td>str</td>
+<td>Resolved name from CombatLogNames (e.g., item name for PURCHASE)</td>
 </tr>
 <tr>
 <td><code>health</code></td>
@@ -2630,7 +2662,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="modifier-flags">Modifier Flags<a class="headerlink" href="#modifier-flags" title="Permanent link">&para;</a></h3>
+<h3 id="modifier-fields">Modifier Fields<a class="headerlink" href="#modifier-fields" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -2689,6 +2721,36 @@
 <td><code>no_physical_damage_modifier</code></td>
 <td>bool</td>
 <td>Blocks physical damage</td>
+</tr>
+<tr>
+<td><code>modifier_ability</code></td>
+<td>int</td>
+<td>Ability index in CombatLogNames</td>
+</tr>
+<tr>
+<td><code>modifier_ability_name</code></td>
+<td>str</td>
+<td>Resolved ability name that applied this modifier</td>
+</tr>
+<tr>
+<td><code>modifier_purge_ability</code></td>
+<td>int</td>
+<td>Ability index that purged this modifier</td>
+</tr>
+<tr>
+<td><code>modifier_purge_ability_name</code></td>
+<td>str</td>
+<td>Resolved ability name that purged this modifier</td>
+</tr>
+<tr>
+<td><code>modifier_purge_npc</code></td>
+<td>int</td>
+<td>NPC index that purged this modifier</td>
+</tr>
+<tr>
+<td><code>modifier_purge_npc_name</code></td>
+<td>str</td>
+<td>Resolved NPC name that purged this modifier</td>
 </tr>
 </tbody>
 </table>
@@ -3018,50 +3080,82 @@
 </code></pre></div>
 <hr />
 <h2 id="important-notes">Important Notes<a class="headerlink" href="#important-notes" title="Permanent link">&para;</a></h2>
-<h3 id="timestamp-is-replay-time-not-game-time">Timestamp is Replay Time, Not Game Time<a class="headerlink" href="#timestamp-is-replay-time-not-game-time" title="Permanent link">&para;</a></h3>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The <code>timestamp</code> field in combat log entries is <strong>replay time</strong> (from recording start), NOT game clock time. Replay time includes draft and pre-game phases, so early game events may appear to have timestamps of 10-15+ minutes.</p>
+<h3 id="game-time-vs-replay-time">Game Time vs Replay Time<a class="headerlink" href="#game-time-vs-replay-time" title="Permanent link">&para;</a></h3>
+<p>The combat log provides two timing fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>timestamp</code></td>
+<td><strong>Replay time</strong> - seconds since replay recording started (includes draft/pre-game)</td>
+</tr>
+<tr>
+<td><code>game_time</code></td>
+<td><strong>In-game clock time</strong> - what you see on the game clock (0:00 = creep spawn)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Use <code>game_time</code> for game clock</p>
+<p>The <code>game_time</code> field automatically calculates the in-game clock time. It detects when the game transitions to <code>GAME_IN_PROGRESS</code> state and computes the offset.</p>
 </div>
-<p>To convert to actual game time:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
 <a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1"># Get pre-game start time from game rules</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">rules</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;GamerulesProxy&quot;</span><span class="p">,</span> <span class="n">at_tick</span><span class="o">=</span><span class="mi">30000</span><span class="p">)</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">pre_game_start</span> <span class="o">=</span> <span class="n">rules</span><span class="o">.</span><span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;m_pGameRules.m_flPreGameStartTime&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
-<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="c1"># Convert replay timestamp to game time</span>
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="c1"># Pre-game phase is 90 seconds before 0:00 (creep spawn)</span>
-<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">replay_to_game_time</span><span class="p">(</span><span class="n">replay_timestamp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>    <span class="k">return</span> <span class="n">replay_timestamp</span> <span class="o">-</span> <span class="n">pre_game_start</span> <span class="o">-</span> <span class="mi">90</span>
-<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>
-<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="c1"># Example: First blood at replay timestamp 1011.6s</span>
-<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="c1"># With pre_game_start = 910.77s</span>
-<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="c1"># Game time = 1011.6 - 910.77 - 90 = 10.83s (0:10)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>  <span class="c1"># PURCHASE events</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="c1"># game_time is already the in-game clock time</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">mins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">)</span> <span class="o">//</span> <span class="mi">60</span><span class="p">)</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="n">secs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">))</span> <span class="o">%</span> <span class="mi">60</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="n">sign</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span> <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">game_time</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sign</span><span class="si">}{</span><span class="n">mins</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">secs</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="quick-timing-check">Quick Timing Check<a class="headerlink" href="#quick-timing-check" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">18</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># First blood</span>
+<h3 id="pre-game-events-negative-game-time">Pre-Game Events (Negative Game Time)<a class="headerlink" href="#pre-game-events-negative-game-time" title="Permanent link">&para;</a></h3>
+<p>Events during the 90-second pre-game countdown have <strong>negative</strong> <code>game_time</code> values:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>  <span class="c1"># PURCHASE</span>
 <a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">entry</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="n">game_time</span> <span class="o">=</span> <span class="n">replay_to_game_time</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
-<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>    <span class="n">mins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">game_time</span> <span class="o">//</span> <span class="mi">60</span><span class="p">)</span>
-<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    <span class="n">secs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">game_time</span> <span class="o">%</span> <span class="mi">60</span><span class="p">)</span>
-<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First blood at game time: </span><span class="si">{</span><span class="n">mins</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">secs</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="c1"># Pre-game purchases (during countdown)</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">pregame</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">game_time</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pre-game purchases: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pregame</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">pregame</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="n">mins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">)</span> <span class="o">//</span> <span class="mi">60</span><span class="p">)</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="n">secs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">))</span> <span class="o">%</span> <span class="mi">60</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="n">hero</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;npc_dota_hero_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>    <span class="n">item</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;item_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">mins</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">secs</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">hero</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="c1"># Output:</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="c1"># -01:29 - antimage: ward_observer</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="c1"># -01:28 - troll_warlord: tango</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="c1"># -01:27 - crystal_maiden: blood_grenade</span>
+</code></pre></div>
+<h3 id="game-start-time">Game Start Time<a class="headerlink" href="#game-start-time" title="Permanent link">&para;</a></h3>
+<p>The <code>CombatLogResult</code> includes <code>game_start_time</code> which is the replay timestamp when the game clock hit 0:00:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">18</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># First blood</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Game started at replay time: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">game_start_time</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="n">entry</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First blood at </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s game time&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="illusion-filtering">Illusion Filtering<a class="headerlink" href="#illusion-filtering" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Filter out illusion damage for accurate stats</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">real_damage</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">entry</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span>
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_attacker_illusion</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_target_illusion</span>
-<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="p">]</span>
-<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
-<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total entries: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Real damage entries (no illusions): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">real_damage</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Filter out illusion damage for accurate stats</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">real_damage</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">entry</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_attacker_illusion</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_target_illusion</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="p">]</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total entries: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Real damage entries (no illusions): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">real_damage</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="combat-log-vs-game-events">Combat Log vs Game Events<a class="headerlink" href="#combat-log-vs-game-events" title="Permanent link">&para;</a></h2>
@@ -3136,6 +3230,11 @@
 <td>Internal name (e.g., "pugna_nether_blast")</td>
 </tr>
 <tr>
+<td>Item name (PURCHASE)</td>
+<td><code>value_name</code></td>
+<td>Resolved item name for PURCHASE events</td>
+</tr>
+<tr>
 <td>Ability level</td>
 <td><code>ability_level</code></td>
 <td>1-4+</td>
@@ -3191,9 +3290,14 @@
 <td>Map coordinates</td>
 </tr>
 <tr>
-<td>Timestamp</td>
+<td>Game time</td>
+<td><code>game_time</code></td>
+<td>In-game clock time (can be negative for pre-game)</td>
+</tr>
+<tr>
+<td>Replay timestamp</td>
 <td><code>timestamp</code></td>
-<td>Game time in seconds</td>
+<td>Replay time in seconds</td>
 </tr>
 </tbody>
 </table>
@@ -3231,44 +3335,44 @@
 <div class="admonition tip">
 <p class="admonition-title">Getting Item Charges</p>
 <p>The combat log <code>stack_count</code> field is NOT populated by Valve. To get actual item charges (e.g., Magic Stick/Wand), use entity queries instead:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_magic_stick_charges</span><span class="p">(</span><span class="n">demo_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">at_tick</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="sd">    Get magic stick/wand charges for all players at a specific game tick.</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="sd">    Args:</span>
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="sd">        demo_path: Path to the .dem file</span>
-<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="sd">        at_tick: Game tick to query (0 = end of game)</span>
-<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>
-<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="sd">        Dict mapping player_id -&gt; charges</span>
-<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span>
-<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>        <span class="n">demo_path</span><span class="p">,</span>
-<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>        <span class="n">class_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CDOTA_Item_MagicStick&#39;</span><span class="p">,</span> <span class="s1">&#39;CDOTA_Item_MagicWand&#39;</span><span class="p">],</span>
-<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>        <span class="n">property_filter</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;m_iCurrentCharges&#39;</span><span class="p">,</span> <span class="s1">&#39;m_iPlayerOwnerID&#39;</span><span class="p">],</span>
-<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>        <span class="n">at_tick</span><span class="o">=</span><span class="n">at_tick</span>
-<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>    <span class="p">)</span>
-<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>
-<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>    <span class="n">player_charges</span> <span class="o">=</span> <span class="p">{}</span>
-<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>    <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span><span class="p">:</span>
-<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>        <span class="n">owner</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iPlayerOwnerID&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>        <span class="n">charges</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iCurrentCharges&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>        <span class="k">if</span> <span class="n">owner</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a>            <span class="n">player_charges</span><span class="p">[</span><span class="n">owner</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">player_charges</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">charges</span><span class="p">)</span>
-<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a>
-<a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a>    <span class="k">return</span> <span class="n">player_charges</span>
-<a id="__codelineno-15-31" name="__codelineno-15-31" href="#__codelineno-15-31"></a>
-<a id="__codelineno-15-32" name="__codelineno-15-32" href="#__codelineno-15-32"></a><span class="c1"># Get charges at a specific tick</span>
-<a id="__codelineno-15-33" name="__codelineno-15-33" href="#__codelineno-15-33"></a><span class="n">charges</span> <span class="o">=</span> <span class="n">get_magic_stick_charges</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">at_tick</span><span class="o">=</span><span class="mi">50000</span><span class="p">)</span>
-<a id="__codelineno-15-34" name="__codelineno-15-34" href="#__codelineno-15-34"></a><span class="c1"># {0: 6, 2: 18, 4: 7, 6: 6, 8: 1, 10: 15, 12: 4, 14: 20, 16: 0, 18: 5}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_magic_stick_charges</span><span class="p">(</span><span class="n">demo_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">at_tick</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="sd">    Get magic stick/wand charges for all players at a specific game tick.</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="sd">    Args:</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="sd">        demo_path: Path to the .dem file</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="sd">        at_tick: Game tick to query (0 = end of game)</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="sd">        Dict mapping player_id -&gt; charges</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>        <span class="n">demo_path</span><span class="p">,</span>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>        <span class="n">class_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CDOTA_Item_MagicStick&#39;</span><span class="p">,</span> <span class="s1">&#39;CDOTA_Item_MagicWand&#39;</span><span class="p">],</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>        <span class="n">property_filter</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;m_iCurrentCharges&#39;</span><span class="p">,</span> <span class="s1">&#39;m_iPlayerOwnerID&#39;</span><span class="p">],</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>        <span class="n">at_tick</span><span class="o">=</span><span class="n">at_tick</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a>    <span class="p">)</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a>    <span class="n">player_charges</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a>    <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span><span class="p">:</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a>        <span class="n">owner</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iPlayerOwnerID&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a>        <span class="n">charges</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iCurrentCharges&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a>        <span class="k">if</span> <span class="n">owner</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a>            <span class="n">player_charges</span><span class="p">[</span><span class="n">owner</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">player_charges</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">charges</span><span class="p">)</span>
+<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a>
+<a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a>    <span class="k">return</span> <span class="n">player_charges</span>
+<a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a>
+<a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a><span class="c1"># Get charges at a specific tick</span>
+<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a><span class="n">charges</span> <span class="o">=</span> <span class="n">get_magic_stick_charges</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">at_tick</span><span class="o">=</span><span class="mi">50000</span><span class="p">)</span>
+<a id="__codelineno-16-34" name="__codelineno-16-34" href="#__codelineno-16-34"></a><span class="c1"># {0: 6, 2: 18, 4: 7, 6: 6, 8: 1, 10: 15, 12: 4, 14: 20, 16: 0, 18: 5}</span>
 </code></pre></div>
 <p><strong>Alternative</strong>: Calculate charges from HEAL event value (Magic Stick/Wand heal 15 HP per charge):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># From a combat log HEAL entry with inflictor_name containing &quot;magic_stick&quot; or &quot;magic_wand&quot;</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">charges_used</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span> <span class="o">//</span> <span class="mi">15</span>  <span class="c1"># e.g., 150 HP healed = 10 charges</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># From a combat log HEAL entry with inflictor_name containing &quot;magic_stick&quot; or &quot;magic_wand&quot;</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">charges_used</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span> <span class="o">//</span> <span class="mi">15</span>  <span class="c1"># e.g., 150 HP healed = 10 charges</span>
 </code></pre></div>
 </div>
 
