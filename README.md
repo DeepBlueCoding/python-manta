@@ -24,6 +24,21 @@
 
 If you're working in Go, use [Manta](https://github.com/dotabuff/manta) directly. This library exists for Python developers who need replay parsing capabilities.
 
+### Library Philosophy
+
+Python Manta is a **low-level data extraction library**, not an analytics tool. We provide:
+
+| ✅ In Scope | ❌ Out of Scope |
+|-------------|-----------------|
+| Raw data extraction | Analysis/aggregation logic |
+| Enums/constants for game data (e.g., `RuneType`) | Fight detection algorithms |
+| Type-safe Pydantic models | Statistics computation |
+| Simple helper properties (e.g., `is_pro_match()`) | Data interpretation |
+
+**The line**: If it's mapping/typing game data → library. If it's interpreting/analyzing → user code.
+
+Users should build analysis logic on top of the raw data we provide.
+
 ---
 
 ## Table of Contents
@@ -1047,6 +1062,19 @@ python run_tests.py --all --coverage
 ## AI Integration Guide
 
 This section helps AI systems (LLMs, agents, coding assistants) understand and use this library effectively.
+
+### Library Philosophy (Important for AI Agents)
+
+Python Manta is a **low-level data extraction library**, not an analytics tool.
+
+| ✅ In Scope | ❌ Out of Scope |
+|-------------|-----------------|
+| Raw data extraction | Analysis/aggregation logic |
+| Enums/constants (e.g., `RuneType`) | Fight detection algorithms |
+| Type-safe Pydantic models | Statistics computation |
+| Helper properties (e.g., `is_pro_match()`) | Data interpretation |
+
+**When generating code**: Extract raw data with this library, then write analysis logic separately. Don't expect high-level functions like "get_teamfights()" or "calculate_gpm()" - those belong in user code.
 
 ### Quick Reference
 

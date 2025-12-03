@@ -8,6 +8,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Important**: This is a wrapper library. The actual parsing is done by [dotabuff/manta](https://github.com/dotabuff/manta) - we just provide Python bindings.
 
+## Library Philosophy
+
+Python Manta is a **low-level data extraction library**, not an analytics tool.
+
+**✅ In Scope:**
+- Raw data extraction from replay files
+- Enums/constants for game data (e.g., `RuneType`, hero IDs)
+- Type-safe Pydantic models
+- Simple helper properties (e.g., `is_pro_match()`)
+
+**❌ Out of Scope:**
+- Analysis/aggregation logic (e.g., fight detection)
+- Statistics computation
+- Data interpretation
+- High-level game understanding
+
+**The rule**: If it's mapping/typing game data → add to library. If it's interpreting/analyzing → belongs in user code.
+
+When adding new features, ask: "Is this raw data access or analysis?" Only raw data access belongs here.
+
 ## Architecture
 
 ```
