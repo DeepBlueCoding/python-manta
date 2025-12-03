@@ -167,6 +167,791 @@ class EntityType(str, Enum):
         return self in (EntityType.BUILDING, EntityType.WARD)
 
 
+class CombatLogType(int, Enum):
+    """Dota 2 combat log event types.
+
+    Usage:
+        # Check combat log entry type
+        if entry.type == CombatLogType.DAMAGE:
+            print(f"{entry.attacker_name} dealt {entry.value} damage")
+
+        # Filter by type
+        result = parser.parse_combat_log(demo_path, types=[CombatLogType.PURCHASE])
+    """
+    DAMAGE = 0
+    HEAL = 1
+    MODIFIER_ADD = 2
+    MODIFIER_REMOVE = 3
+    DEATH = 4
+    ABILITY = 5
+    ITEM = 6
+    LOCATION = 7
+    GOLD = 8
+    GAME_STATE = 9
+    XP = 10
+    PURCHASE = 11
+    BUYBACK = 12
+    ABILITY_TRIGGER = 13
+    PLAYERSTATS = 14
+    MULTIKILL = 15
+    KILLSTREAK = 16
+    TEAM_BUILDING_KILL = 17
+    FIRST_BLOOD = 18
+    MODIFIER_REFRESH = 19
+    NEUTRAL_CAMP_STACK = 20
+    PICKUP_RUNE = 21
+    REVEALED_INVISIBLE = 22
+    HERO_SAVED = 23
+    MANA_RESTORED = 24
+    HERO_LEVELUP = 25
+    BOTTLE_HEAL_ALLY = 26
+    ENDGAME_STATS = 27
+    INTERRUPT_CHANNEL = 28
+    ALLIED_GOLD = 29
+    AEGIS_TAKEN = 30
+    MANA_DAMAGE = 31
+    PHYSICAL_DAMAGE_PREVENTED = 32
+    UNIT_SUMMONED = 33
+    ATTACK_EVADE = 34
+    TREE_CUT = 35
+    SUCCESSFUL_SCAN = 36
+    END_KILLSTREAK = 37
+    BLOODSTONE_CHARGE = 38
+    CRITICAL_DAMAGE = 39
+    SPELL_ABSORB = 40
+    UNIT_TELEPORTED = 41
+    KILL_EATER_EVENT = 42
+    NEUTRAL_ITEM_EARNED = 43
+    TELEPORT_INTERRUPTED = 44
+    MODIFIER_STACK_EVENT = 45
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable combat log type name."""
+        return self.name.replace("_", " ").title()
+
+    @classmethod
+    def from_value(cls, value: int) -> Optional["CombatLogType"]:
+        """Get CombatLogType from integer value."""
+        for t in cls:
+            if t.value == value:
+                return t
+        return None
+
+    @property
+    def is_damage_related(self) -> bool:
+        """True if this type is related to damage/healing."""
+        return self in (
+            CombatLogType.DAMAGE, CombatLogType.HEAL, CombatLogType.CRITICAL_DAMAGE,
+            CombatLogType.MANA_DAMAGE, CombatLogType.PHYSICAL_DAMAGE_PREVENTED
+        )
+
+    @property
+    def is_modifier_related(self) -> bool:
+        """True if this type is related to buffs/debuffs."""
+        return self in (
+            CombatLogType.MODIFIER_ADD, CombatLogType.MODIFIER_REMOVE,
+            CombatLogType.MODIFIER_REFRESH, CombatLogType.MODIFIER_STACK_EVENT
+        )
+
+    @property
+    def is_economy_related(self) -> bool:
+        """True if this type is related to gold/XP/items."""
+        return self in (
+            CombatLogType.GOLD, CombatLogType.XP, CombatLogType.PURCHASE,
+            CombatLogType.ALLIED_GOLD, CombatLogType.NEUTRAL_ITEM_EARNED
+        )
+
+
+class DamageType(int, Enum):
+    """Dota 2 damage types.
+
+    Usage:
+        if entry.damage_type == DamageType.PURE:
+            print("Pure damage - ignores armor and magic resistance")
+    """
+    PHYSICAL = 0
+    MAGICAL = 1
+    PURE = 2
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable damage type name."""
+        return self.name.title()
+
+    @classmethod
+    def from_value(cls, value: int) -> Optional["DamageType"]:
+        """Get DamageType from integer value."""
+        for t in cls:
+            if t.value == value:
+                return t
+        return None
+
+
+class Team(int, Enum):
+    """Dota 2 team identifiers.
+
+    Usage:
+        if entry.attacker_team == Team.RADIANT:
+            print("Radiant team attacked")
+    """
+    SPECTATOR = 0
+    UNASSIGNED = 1
+    RADIANT = 2
+    DIRE = 3
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable team name."""
+        return self.name.title()
+
+    @property
+    def is_playing(self) -> bool:
+        """True if this is an actual playing team (not spectator/unassigned)."""
+        return self in (Team.RADIANT, Team.DIRE)
+
+    @classmethod
+    def from_value(cls, value: int) -> Optional["Team"]:
+        """Get Team from integer value."""
+        for t in cls:
+            if t.value == value:
+                return t
+        return None
+
+    @property
+    def opposite(self) -> Optional["Team"]:
+        """Get the opposing team. Returns None for non-playing teams."""
+        if self == Team.RADIANT:
+            return Team.DIRE
+        elif self == Team.DIRE:
+            return Team.RADIANT
+        return None
+
+
+class NeutralItemTier(int, Enum):
+    """Neutral item tier classification.
+
+    Tiers unlock at specific game times:
+    - Tier 1: 5:00 (was 7:00 before 7.39d)
+    - Tier 2: 15:00 (was 17:00)
+    - Tier 3: 25:00 (was 27:00)
+    - Tier 4: 35:00 (was 37:00)
+    - Tier 5: 55:00 (was 60:00)
+    """
+    TIER_1 = 0
+    TIER_2 = 1
+    TIER_3 = 2
+    TIER_4 = 3
+    TIER_5 = 4
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable tier name."""
+        return f"Tier {self.value + 1}"
+
+    @property
+    def unlock_time_minutes(self) -> int:
+        """Game time in minutes when this tier unlocks (patch 7.39d+)."""
+        times = {0: 5, 1: 15, 2: 25, 3: 35, 4: 55}
+        return times[self.value]
+
+    @classmethod
+    def from_value(cls, value: int) -> Optional["NeutralItemTier"]:
+        """Get NeutralItemTier from integer value (0-4)."""
+        for t in cls:
+            if t.value == value:
+                return t
+        return None
+
+
+# All neutral items with their internal names and tiers
+# Includes both active items and retired/rotated items from previous patches
+_NEUTRAL_ITEMS_DATA = {
+    # === TIER 1 (Current 7.38+) ===
+    "item_chipped_vest": (0, "Chipped Vest"),
+    "item_dormant_curio": (0, "Dormant Curio"),
+    "item_kobold_cup": (0, "Kobold Cup"),
+    "item_occult_bracelet": (0, "Occult Bracelet"),
+    "item_pollywog_charm": (0, "Pollywog Charm"),
+    "item_rippers_lash": (0, "Ripper's Lash"),
+    "item_sisters_shroud": (0, "Sister's Shroud"),
+    "item_spark_of_courage": (0, "Spark of Courage"),
+    # Tier 1 - Retired/Rotated
+    "item_arcane_ring": (0, "Arcane Ring"),
+    "item_broom_handle": (0, "Broom Handle"),
+    "item_duelist_gloves": (0, "Duelist Gloves"),
+    "item_faded_broach": (0, "Faded Broach"),
+    "item_fairys_trinket": (0, "Fairy's Trinket"),
+    "item_ironwood_tree": (0, "Ironwood Tree"),
+    "item_keen_optic": (0, "Keen Optic"),
+    "item_lance_of_pursuit": (0, "Lance of Pursuit"),
+    "item_mango_tree": (0, "Mango Tree"),
+    "item_ocean_heart": (0, "Ocean Heart"),
+    "item_pig_pole": (0, "Pig Pole"),
+    "item_possessed_mask": (0, "Possessed Mask"),
+    "item_royal_jelly": (0, "Royal Jelly"),
+    "item_safety_bubble": (0, "Safety Bubble"),
+    "item_seeds_of_serenity": (0, "Seeds of Serenity"),
+    "item_trusty_shovel": (0, "Trusty Shovel"),
+
+    # === TIER 2 (Current 7.38+) ===
+    "item_brigands_blade": (1, "Brigand's Blade"),
+    "item_essence_ring": (1, "Essence Ring"),
+    "item_mana_draught": (1, "Mana Draught"),
+    "item_poor_mans_shield": (1, "Poor Man's Shield"),
+    "item_searing_signet": (1, "Searing Signet"),
+    "item_tumblers_toy": (1, "Tumbler's Toy"),
+    # Tier 2 - Retired/Rotated
+    "item_bullwhip": (1, "Bullwhip"),
+    "item_clumsy_net": (1, "Clumsy Net"),
+    "item_dagger_of_ristul": (1, "Dagger of Ristul"),
+    "item_dragon_scale": (1, "Dragon Scale"),
+    "item_eye_of_the_vizier": (1, "Eye of the Vizier"),
+    "item_fae_grenade": (1, "Fae Grenade"),
+    "item_gossamer_cape": (1, "Gossamer Cape"),
+    "item_grove_bow": (1, "Grove Bow"),
+    "item_imp_claw": (1, "Imp Claw"),
+    "item_iron_talon": (1, "Iron Talon"),
+    "item_light_collector": (1, "Light Collector"),
+    "item_nether_shawl": (1, "Nether Shawl"),
+    "item_orb_of_destruction": (1, "Orb of Destruction"),
+    "item_philosophers_stone": (1, "Philosopher's Stone"),
+    "item_pupils_gift": (1, "Pupil's Gift"),
+    "item_quicksilver_amulet": (1, "Quicksilver Amulet"),
+    "item_ring_of_aquila": (1, "Ring of Aquila"),
+    "item_specialists_array": (1, "Specialist's Array"),
+    "item_vambrace": (1, "Vambrace"),
+    "item_vampire_fangs": (1, "Vampire Fangs"),
+
+    # === TIER 3 (Current 7.38+) ===
+    "item_gale_guard": (2, "Gale Guard"),
+    "item_gunpowder_gauntlet": (2, "Gunpowder Gauntlet"),
+    "item_jidi_pollen_bag": (2, "Jidi Pollen Bag"),
+    "item_psychic_headband": (2, "Psychic Headband"),
+    "item_serrated_shiv": (2, "Serrated Shiv"),
+    "item_whisper_of_the_dread": (2, "Whisper of the Dread"),
+    # Tier 3 - Retired/Rotated
+    "item_ceremonial_robe": (2, "Ceremonial Robe"),
+    "item_cloak_of_flames": (2, "Cloak of Flames"),
+    "item_craggy_coat": (2, "Craggy Coat"),
+    "item_dandelion_amulet": (2, "Dandelion Amulet"),
+    "item_defiant_shell": (2, "Defiant Shell"),
+    "item_doubloon": (2, "Doubloon"),
+    "item_elven_tunic": (2, "Elven Tunic"),
+    "item_enchanted_quiver": (2, "Enchanted Quiver"),
+    "item_nemesis_curse": (2, "Nemesis Curse"),
+    "item_ogre_seal_totem": (2, "Ogre Seal Totem"),
+    "item_paladin_sword": (2, "Paladin Sword"),
+    "item_quickening_charm": (2, "Quickening Charm"),
+    "item_spider_legs": (2, "Spider Legs"),
+    "item_titan_sliver": (2, "Titan Sliver"),
+    "item_tome_of_aghanim": (2, "Tome of Aghanim"),
+    "item_vindicators_axe": (2, "Vindicator's Axe"),
+
+    # === TIER 4 (Current 7.38+) ===
+    "item_crippling_crossbow": (3, "Crippling Crossbow"),
+    "item_dezun_bloodrite": (3, "Dezun Bloodrite"),
+    "item_giants_maul": (3, "Giant's Maul"),
+    "item_magnifying_monocle": (3, "Magnifying Monocle"),
+    "item_outworld_staff": (3, "Outworld Staff"),
+    "item_pyrrhic_cloak": (3, "Pyrrhic Cloak"),
+    # Tier 4 - Retired/Rotated
+    "item_ancient_guardian": (3, "Ancient Guardian"),
+    "item_ascetics_cap": (3, "Ascetic's Cap"),
+    "item_avianas_feather": (3, "Aviana's Feather"),
+    "item_flicker": (3, "Flicker"),
+    "item_havoc_hammer": (3, "Havoc Hammer"),
+    "item_illusionists_cape": (3, "Illusionist's Cape"),
+    "item_martyrs_plate": (3, "Martyr's Plate"),
+    "item_mind_breaker": (3, "Mind Breaker"),
+    "item_ninja_gear": (3, "Ninja Gear"),
+    "item_penta_edged_sword": (3, "Penta-edged Sword"),
+    "item_princes_knife": (3, "Prince's Knife"),
+    "item_rattlecage": (3, "Rattlecage"),
+    "item_spell_prism": (3, "Spell Prism"),
+    "item_stormcrafter": (3, "Stormcrafter"),
+    "item_telescope": (3, "Telescope"),
+    "item_timeless_relic": (3, "Timeless Relic"),
+    "item_trickster_cloak": (3, "Trickster Cloak"),
+    "item_witchbane": (3, "Witchbane"),
+
+    # === TIER 5 (Current 7.38+) ===
+    "item_book_of_the_dead": (4, "Book of the Dead"),
+    "item_divine_regalia": (4, "Divine Regalia"),
+    "item_fallen_sky": (4, "Fallen Sky"),
+    "item_helm_of_the_undying": (4, "Helm of the Undying"),
+    "item_minotaur_horn": (4, "Minotaur Horn"),
+    "item_spider_legs_tier5": (4, "Spider Legs"),
+    "item_stygian_desolator": (4, "Stygian Desolator"),
+    "item_unrelenting_eye": (4, "Unrelenting Eye"),
+    # Tier 5 - Retired/Rotated
+    "item_apex": (4, "Apex"),
+    "item_arcanists_armor": (4, "Arcanist's Armor"),
+    "item_ballista": (4, "Ballista"),
+    "item_book_of_shadows": (4, "Book of Shadows"),
+    "item_demonicon": (4, "Demonicon"),
+    "item_ex_machina": (4, "Ex Machina"),
+    "item_force_boots": (4, "Force Boots"),
+    "item_fusion_rune": (4, "Fusion Rune"),
+    "item_giants_ring": (4, "Giant's Ring"),
+    "item_magic_lamp": (4, "Magic Lamp"),
+    "item_mirror_shield": (4, "Mirror Shield"),
+    "item_phoenix_ash": (4, "Phoenix Ash"),
+    "item_pirate_hat": (4, "Pirate Hat"),
+    "item_seer_stone": (4, "Seer Stone"),
+    "item_the_leveller": (4, "The Leveller"),
+    "item_trident": (4, "Trident"),
+    "item_unwavering_condition": (4, "Unwavering Condition"),
+    "item_witless_shako": (4, "Witless Shako"),
+    "item_woodland_striders": (4, "Woodland Striders"),
+
+    # === SPECIAL / CRAFTING SYSTEM ===
+    "item_madstone_bundle": (None, "Madstone Bundle"),  # Crafting currency
+}
+
+
+class NeutralItem(str, Enum):
+    """All Dota 2 neutral items (active and retired).
+
+    Usage:
+        # Check if an item is a neutral item
+        if NeutralItem.is_neutral_item(entry.inflictor_name):
+            item = NeutralItem.from_item_name(entry.inflictor_name)
+            print(f"Neutral item: {item.display_name} (Tier {item.tier + 1})")
+
+        # Get all tier 1 items
+        tier1 = NeutralItem.items_by_tier(0)
+    """
+    # Tier 1 - Current
+    CHIPPED_VEST = "item_chipped_vest"
+    DORMANT_CURIO = "item_dormant_curio"
+    KOBOLD_CUP = "item_kobold_cup"
+    OCCULT_BRACELET = "item_occult_bracelet"
+    POLLYWOG_CHARM = "item_pollywog_charm"
+    RIPPERS_LASH = "item_rippers_lash"
+    SISTERS_SHROUD = "item_sisters_shroud"
+    SPARK_OF_COURAGE = "item_spark_of_courage"
+    # Tier 1 - Retired
+    ARCANE_RING = "item_arcane_ring"
+    BROOM_HANDLE = "item_broom_handle"
+    DUELIST_GLOVES = "item_duelist_gloves"
+    FADED_BROACH = "item_faded_broach"
+    FAIRYS_TRINKET = "item_fairys_trinket"
+    IRONWOOD_TREE = "item_ironwood_tree"
+    KEEN_OPTIC = "item_keen_optic"
+    LANCE_OF_PURSUIT = "item_lance_of_pursuit"
+    MANGO_TREE = "item_mango_tree"
+    OCEAN_HEART = "item_ocean_heart"
+    PIG_POLE = "item_pig_pole"
+    POSSESSED_MASK = "item_possessed_mask"
+    ROYAL_JELLY = "item_royal_jelly"
+    SAFETY_BUBBLE = "item_safety_bubble"
+    SEEDS_OF_SERENITY = "item_seeds_of_serenity"
+    TRUSTY_SHOVEL = "item_trusty_shovel"
+
+    # Tier 2 - Current
+    BRIGANDS_BLADE = "item_brigands_blade"
+    ESSENCE_RING = "item_essence_ring"
+    MANA_DRAUGHT = "item_mana_draught"
+    POOR_MANS_SHIELD = "item_poor_mans_shield"
+    SEARING_SIGNET = "item_searing_signet"
+    TUMBLERS_TOY = "item_tumblers_toy"
+    # Tier 2 - Retired
+    BULLWHIP = "item_bullwhip"
+    CLUMSY_NET = "item_clumsy_net"
+    DAGGER_OF_RISTUL = "item_dagger_of_ristul"
+    DRAGON_SCALE = "item_dragon_scale"
+    EYE_OF_THE_VIZIER = "item_eye_of_the_vizier"
+    FAE_GRENADE = "item_fae_grenade"
+    GOSSAMER_CAPE = "item_gossamer_cape"
+    GROVE_BOW = "item_grove_bow"
+    IMP_CLAW = "item_imp_claw"
+    IRON_TALON = "item_iron_talon"
+    LIGHT_COLLECTOR = "item_light_collector"
+    NETHER_SHAWL = "item_nether_shawl"
+    ORB_OF_DESTRUCTION = "item_orb_of_destruction"
+    PHILOSOPHERS_STONE = "item_philosophers_stone"
+    PUPILS_GIFT = "item_pupils_gift"
+    QUICKSILVER_AMULET = "item_quicksilver_amulet"
+    RING_OF_AQUILA = "item_ring_of_aquila"
+    SPECIALISTS_ARRAY = "item_specialists_array"
+    VAMBRACE = "item_vambrace"
+    VAMPIRE_FANGS = "item_vampire_fangs"
+
+    # Tier 3 - Current
+    GALE_GUARD = "item_gale_guard"
+    GUNPOWDER_GAUNTLET = "item_gunpowder_gauntlet"
+    JIDI_POLLEN_BAG = "item_jidi_pollen_bag"
+    PSYCHIC_HEADBAND = "item_psychic_headband"
+    SERRATED_SHIV = "item_serrated_shiv"
+    WHISPER_OF_THE_DREAD = "item_whisper_of_the_dread"
+    # Tier 3 - Retired
+    CEREMONIAL_ROBE = "item_ceremonial_robe"
+    CLOAK_OF_FLAMES = "item_cloak_of_flames"
+    CRAGGY_COAT = "item_craggy_coat"
+    DANDELION_AMULET = "item_dandelion_amulet"
+    DEFIANT_SHELL = "item_defiant_shell"
+    DOUBLOON = "item_doubloon"
+    ELVEN_TUNIC = "item_elven_tunic"
+    ENCHANTED_QUIVER = "item_enchanted_quiver"
+    NEMESIS_CURSE = "item_nemesis_curse"
+    OGRE_SEAL_TOTEM = "item_ogre_seal_totem"
+    PALADIN_SWORD = "item_paladin_sword"
+    QUICKENING_CHARM = "item_quickening_charm"
+    SPIDER_LEGS = "item_spider_legs"
+    TITAN_SLIVER = "item_titan_sliver"
+    TOME_OF_AGHANIM = "item_tome_of_aghanim"
+    VINDICATORS_AXE = "item_vindicators_axe"
+
+    # Tier 4 - Current
+    CRIPPLING_CROSSBOW = "item_crippling_crossbow"
+    DEZUN_BLOODRITE = "item_dezun_bloodrite"
+    GIANTS_MAUL = "item_giants_maul"
+    MAGNIFYING_MONOCLE = "item_magnifying_monocle"
+    OUTWORLD_STAFF = "item_outworld_staff"
+    PYRRHIC_CLOAK = "item_pyrrhic_cloak"
+    # Tier 4 - Retired
+    ANCIENT_GUARDIAN = "item_ancient_guardian"
+    ASCETICS_CAP = "item_ascetics_cap"
+    AVIANAS_FEATHER = "item_avianas_feather"
+    FLICKER = "item_flicker"
+    HAVOC_HAMMER = "item_havoc_hammer"
+    ILLUSIONISTS_CAPE = "item_illusionists_cape"
+    MARTYRS_PLATE = "item_martyrs_plate"
+    MIND_BREAKER = "item_mind_breaker"
+    NINJA_GEAR = "item_ninja_gear"
+    PENTA_EDGED_SWORD = "item_penta_edged_sword"
+    PRINCES_KNIFE = "item_princes_knife"
+    RATTLECAGE = "item_rattlecage"
+    SPELL_PRISM = "item_spell_prism"
+    STORMCRAFTER = "item_stormcrafter"
+    TELESCOPE = "item_telescope"
+    TIMELESS_RELIC = "item_timeless_relic"
+    TRICKSTER_CLOAK = "item_trickster_cloak"
+    WITCHBANE = "item_witchbane"
+
+    # Tier 5 - Current
+    BOOK_OF_THE_DEAD = "item_book_of_the_dead"
+    DIVINE_REGALIA = "item_divine_regalia"
+    FALLEN_SKY = "item_fallen_sky"
+    HELM_OF_THE_UNDYING = "item_helm_of_the_undying"
+    MINOTAUR_HORN = "item_minotaur_horn"
+    SPIDER_LEGS_T5 = "item_spider_legs_tier5"
+    STYGIAN_DESOLATOR = "item_stygian_desolator"
+    UNRELENTING_EYE = "item_unrelenting_eye"
+    # Tier 5 - Retired
+    APEX = "item_apex"
+    ARCANISTS_ARMOR = "item_arcanists_armor"
+    BALLISTA = "item_ballista"
+    BOOK_OF_SHADOWS = "item_book_of_shadows"
+    DEMONICON = "item_demonicon"
+    EX_MACHINA = "item_ex_machina"
+    FORCE_BOOTS = "item_force_boots"
+    FUSION_RUNE = "item_fusion_rune"
+    GIANTS_RING = "item_giants_ring"
+    MAGIC_LAMP = "item_magic_lamp"
+    MIRROR_SHIELD = "item_mirror_shield"
+    PHOENIX_ASH = "item_phoenix_ash"
+    PIRATE_HAT = "item_pirate_hat"
+    SEER_STONE = "item_seer_stone"
+    THE_LEVELLER = "item_the_leveller"
+    TRIDENT = "item_trident"
+    UNWAVERING_CONDITION = "item_unwavering_condition"
+    WITLESS_SHAKO = "item_witless_shako"
+    WOODLAND_STRIDERS = "item_woodland_striders"
+
+    # Special
+    MADSTONE_BUNDLE = "item_madstone_bundle"
+
+    @property
+    def item_name(self) -> str:
+        """Internal item name (e.g., 'item_kobold_cup')."""
+        return self.value
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable item name."""
+        data = _NEUTRAL_ITEMS_DATA.get(self.value)
+        return data[1] if data else self.name.replace("_", " ").title()
+
+    @property
+    def tier(self) -> Optional[int]:
+        """Item tier (0-4) or None for special items like Madstone."""
+        data = _NEUTRAL_ITEMS_DATA.get(self.value)
+        return data[0] if data else None
+
+    @property
+    def tier_enum(self) -> Optional[NeutralItemTier]:
+        """Item tier as NeutralItemTier enum."""
+        t = self.tier
+        return NeutralItemTier.from_value(t) if t is not None else None
+
+    @classmethod
+    def from_item_name(cls, item_name: str) -> Optional["NeutralItem"]:
+        """Get NeutralItem from internal item name."""
+        for item in cls:
+            if item.value == item_name:
+                return item
+        return None
+
+    @classmethod
+    def is_neutral_item(cls, item_name: str) -> bool:
+        """Check if an item name is a neutral item."""
+        return item_name in _NEUTRAL_ITEMS_DATA
+
+    @classmethod
+    def items_by_tier(cls, tier: int) -> List["NeutralItem"]:
+        """Get all neutral items of a specific tier."""
+        return [
+            item for item in cls
+            if _NEUTRAL_ITEMS_DATA.get(item.value, (None,))[0] == tier
+        ]
+
+    @classmethod
+    def all_item_names(cls) -> List[str]:
+        """Get all neutral item internal names."""
+        return list(_NEUTRAL_ITEMS_DATA.keys())
+
+
+class ChatWheelMessage(int, Enum):
+    """Dota 2 chat wheel message IDs.
+
+    Standard phrases (IDs 0-232) are available to all players.
+    IDs 11000+ are Dota Plus hero voice lines.
+    IDs 120000+ are TI Battle Pass voice lines.
+    IDs 401000+ are TI talent/team voice lines.
+
+    Usage:
+        msg = ChatWheelMessage.from_id(chat_message_id)
+        if msg:
+            print(f"Voice line: {msg.display_name}")
+    """
+    # Basic phrases
+    OK = 0
+    CAREFUL = 1
+    GET_BACK = 2
+    NEED_WARDS = 3
+    STUN_NOW = 4
+    HELP = 5
+    PUSH_NOW = 6
+    WELL_PLAYED = 7
+    MISSING = 8
+    MISSING_TOP = 9
+    MISSING_MID = 10
+    MISSING_BOTTOM = 11
+    GO = 12
+    INITIATE = 13
+    FOLLOW_ME = 14
+    GROUP_UP = 15
+    SPREAD_OUT = 16
+    SPLIT_FARM = 17
+    ATTACK_NOW = 18
+    # Combat/Cooldowns
+    ON_MY_WAY = 22
+    HEAL = 24
+    MANA = 25
+    OUT_OF_MANA = 26
+    COOLDOWN = 27
+    # Enemy/Lane info
+    ENEMY_RETURNED = 30
+    ALL_MISSING = 31
+    ENEMY_INCOMING = 32
+    ENEMY_INVIS = 33
+    # Items/Neutral
+    CHECK_RUNES = 40
+    ROSHAN = 41
+    AFFIRMATIVE = 54
+    WAIT = 55
+    DIVE = 56
+    ENEMY_HAS_RUNE = 57
+    SPLIT_PUSH = 58
+    COMING_TO_GANK = 59
+    REQUESTING_GANK = 60
+    # Misc
+    THANKS = 62
+    SORRY = 63
+    DONT_GIVE_UP = 64
+    THAT_JUST_HAPPENED = 65
+    NICE = 66
+    NEW_META = 67
+    MY_BAD = 68
+    REGRET = 69
+    RELAX = 70
+    SPACE_CREATED = 71
+    GGWP = 72
+    GAME_IS_HARD = 73
+    # Additional
+    IM_RETREATING = 78
+    GOOD_LUCK = 79
+    UH_OH = 82
+    WOW = 86
+    PATIENCE = 224
+    CRYBABY = 229
+    BRUTAL_SAVAGE_REKT = 230
+    NOT_YET = 232
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable message text."""
+        names = {
+            0: "Okay", 1: "Careful!", 2: "Get Back!", 3: "We need wards",
+            4: "Stun now!", 5: "Help!", 6: "Push now", 7: "Well played!",
+            8: "Missing!", 9: "Missing top!", 10: "Missing mid!", 11: "Missing bottom!",
+            12: "Go!", 13: "Initiate!", 14: "Follow me", 15: "Group up",
+            16: "Spread out", 17: "Split up and farm", 18: "Attack now!",
+            22: "On my way", 24: "Heal", 25: "Mana", 26: "Out of mana",
+            27: "Cooldown", 30: "Enemy returned", 31: "All enemy heroes missing!",
+            32: "Enemy incoming!", 33: "Invisible enemy nearby!",
+            40: "Check runes", 41: "Roshan", 54: "Affirmative", 55: "Wait",
+            56: "Dive!", 57: "Enemy has rune", 58: "Split push",
+            59: "Coming to gank", 60: "Requesting a gank", 62: "Thanks!",
+            63: "Sorry", 64: "Don't give up!", 65: "That just happened",
+            66: "Nice", 67: "New Meta", 68: "My bad", 69: "I immediately regret my decision",
+            70: "Relax, you're doing fine", 71: "> Space created",
+            72: "GG, well played", 73: "Game is hard", 78: "I'm retreating",
+            79: "Good luck, have fun", 82: "Uh oh", 86: "Wow",
+            224: "Patience from Zhou", 229: "Crybaby", 230: "Brutal. Savage. Rekt.",
+            232: "Not yet"
+        }
+        return names.get(self.value, f"Voice Line #{self.value}")
+
+    @classmethod
+    def from_id(cls, message_id: int) -> Optional["ChatWheelMessage"]:
+        """Get ChatWheelMessage from message ID. Returns None for unmapped IDs."""
+        for msg in cls:
+            if msg.value == message_id:
+                return msg
+        return None
+
+    @classmethod
+    def describe_id(cls, message_id: int) -> str:
+        """Get description for any message ID, including unmapped ones."""
+        msg = cls.from_id(message_id)
+        if msg:
+            return msg.display_name
+        if 11000 <= message_id < 12000:
+            return f"Dota Plus Hero Voice Line #{message_id}"
+        if 120000 <= message_id < 130000:
+            return f"TI Battle Pass Voice Line #{message_id}"
+        if 401000 <= message_id < 402000:
+            return f"TI Talent/Team Voice Line #{message_id}"
+        return f"Voice Line #{message_id}"
+
+
+class GameActivity(int, Enum):
+    """Dota 2 unit animation activity codes.
+
+    These are used in CDOTAUserMsg_TE_UnitAnimation messages to identify
+    what animation a unit is playing. Useful for detecting taunts.
+
+    Usage:
+        if animation_data['activity'] == GameActivity.TAUNT:
+            print("Unit is taunting!")
+
+    Source: https://docs.moddota.com/lua_server_enums/
+    """
+    # Basic states
+    IDLE = 1500
+    IDLE_RARE = 1501
+    RUN = 1502
+    ATTACK = 1503
+    ATTACK2 = 1504
+    ATTACK_EVENT = 1505
+    DIE = 1506
+    FLINCH = 1507
+    FLAIL = 1508
+    DISABLED = 1509
+    # Ability casting
+    CAST_ABILITY_1 = 1510
+    CAST_ABILITY_2 = 1511
+    CAST_ABILITY_3 = 1512
+    CAST_ABILITY_4 = 1513
+    CAST_ABILITY_5 = 1514
+    CAST_ABILITY_6 = 1515
+    # Override abilities
+    OVERRIDE_ABILITY_1 = 1516
+    OVERRIDE_ABILITY_2 = 1517
+    OVERRIDE_ABILITY_3 = 1518
+    OVERRIDE_ABILITY_4 = 1519
+    # Channeling
+    CHANNEL_ABILITY_1 = 1520
+    CHANNEL_ABILITY_2 = 1521
+    CHANNEL_ABILITY_3 = 1522
+    CHANNEL_ABILITY_4 = 1523
+    CHANNEL_ABILITY_5 = 1524
+    CHANNEL_ABILITY_6 = 1525
+    CHANNEL_END_ABILITY_1 = 1526
+    CHANNEL_END_ABILITY_2 = 1527
+    CHANNEL_END_ABILITY_3 = 1528
+    CHANNEL_END_ABILITY_4 = 1529
+    CHANNEL_END_ABILITY_5 = 1530
+    # Victory/Defeat
+    CONSTANT_LAYER = 1531
+    CAPTURE = 1532
+    SPAWN = 1533
+    KILLTAUNT = 1535
+    TAUNT = 1536
+    # Generic abilities
+    CAST_ABILITY_ROT = 1537
+    CAST_ABILITY_2_ES_ROLL_START = 1538
+    CAST_ABILITY_2_ES_ROLL = 1539
+    CAST_ABILITY_2_ES_ROLL_END = 1540
+    RUN_ANIM = 1541
+    CAST_ABILITY_4_END = 1543
+    LOADOUT = 1559
+    FORCESTAFF_END = 1560
+    LOADOUT_RARE = 1561
+    # Teleport
+    TELEPORT = 1563
+    TELEPORT_END = 1564
+    # Special taunts
+    TAUNT_SNIPER = 1641
+    TAUNT_SPECIAL = 1752
+    CUSTOM_TOWER_TAUNT = 1756
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable activity name."""
+        return self.name.replace("_", " ").title()
+
+    @property
+    def is_taunt(self) -> bool:
+        """True if this activity is a taunt animation."""
+        return self in (
+            GameActivity.TAUNT, GameActivity.KILLTAUNT,
+            GameActivity.TAUNT_SNIPER, GameActivity.TAUNT_SPECIAL,
+            GameActivity.CUSTOM_TOWER_TAUNT
+        )
+
+    @property
+    def is_attack(self) -> bool:
+        """True if this activity is an attack animation."""
+        return self in (GameActivity.ATTACK, GameActivity.ATTACK2, GameActivity.ATTACK_EVENT)
+
+    @property
+    def is_ability_cast(self) -> bool:
+        """True if this activity is an ability cast."""
+        return 1510 <= self.value <= 1519
+
+    @property
+    def is_channeling(self) -> bool:
+        """True if this activity is a channeling animation."""
+        return 1520 <= self.value <= 1530
+
+    @classmethod
+    def from_value(cls, value: int) -> Optional["GameActivity"]:
+        """Get GameActivity from integer value."""
+        for activity in cls:
+            if activity.value == value:
+                return activity
+        return None
+
+    @classmethod
+    def get_taunt_activities(cls) -> List["GameActivity"]:
+        """Get all taunt-related activities."""
+        return [a for a in cls if a.is_taunt]
+
+
 class HeaderInfo(BaseModel):
     """Pydantic model for demo file header information."""
     map_name: str

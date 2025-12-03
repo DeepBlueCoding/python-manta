@@ -115,6 +115,15 @@ python simple_example.py
 ```python
 from python_manta import (
     MantaParser,           # Main parser class
+    # Enums for type-safe filtering
+    RuneType,              # Rune types (DOUBLE_DAMAGE, HASTE, etc.)
+    EntityType,            # Entity types (HERO, LANE_CREEP, BUILDING, etc.)
+    CombatLogType,         # Combat log types (DAMAGE, HEAL, PURCHASE, etc.)
+    DamageType,            # Damage types (PHYSICAL, MAGICAL, PURE)
+    Team,                  # Team identifiers (RADIANT, DIRE)
+    NeutralItemTier,       # Neutral item tiers (TIER_1 through TIER_5)
+    NeutralItem,           # All neutral items (100+ including retired)
+    # Data models
     HeaderInfo,            # Demo header metadata
     DraftEvent,            # Draft pick/ban event
     PlayerInfo,            # Player info from match

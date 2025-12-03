@@ -31,7 +31,7 @@ Python Manta is a **low-level data extraction library**, not an analytics tool. 
 | ✅ In Scope | ❌ Out of Scope |
 |-------------|-----------------|
 | Raw data extraction | Analysis/aggregation logic |
-| Enums/constants for game data (e.g., `RuneType`) | Fight detection algorithms |
+| Enums/constants for game data (`RuneType`, `EntityType`, `CombatLogType`, `DamageType`, `Team`, `NeutralItemTier`, `NeutralItem`) | Fight detection algorithms |
 | Type-safe Pydantic models | Statistics computation |
 | Simple helper properties (e.g., `is_pro_match()`) | Data interpretation |
 
@@ -1070,7 +1070,7 @@ Python Manta is a **low-level data extraction library**, not an analytics tool.
 | ✅ In Scope | ❌ Out of Scope |
 |-------------|-----------------|
 | Raw data extraction | Analysis/aggregation logic |
-| Enums/constants (e.g., `RuneType`) | Fight detection algorithms |
+| Enums/constants (`RuneType`, `EntityType`, `CombatLogType`, `DamageType`, `Team`) | Fight detection algorithms |
 | Type-safe Pydantic models | Statistics computation |
 | Helper properties (e.g., `is_pro_match()`) | Data interpretation |
 

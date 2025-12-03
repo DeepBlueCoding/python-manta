@@ -18,6 +18,13 @@ from .manta_python import (
     # Enums
     RuneType,
     EntityType,
+    CombatLogType,
+    DamageType,
+    Team,
+    NeutralItemTier,
+    NeutralItem,
+    ChatWheelMessage,
+    GameActivity,
     # Header model
     HeaderInfo,
     # Game info models
@@ -57,7 +64,7 @@ from .manta_python import (
     ParserInfo,
 )
 
-__version__ = "0.1.0"
+__version__ = "1.4.5.1"
 __author__ = "Equilibrium Coach Team"
 __description__ = "Python interface for Manta Dota 2 replay parser"
 
@@ -67,6 +74,13 @@ __all__ = [
     # Enums
     "RuneType",
     "EntityType",
+    "CombatLogType",
+    "DamageType",
+    "Team",
+    "NeutralItemTier",
+    "NeutralItem",
+    "ChatWheelMessage",
+    "GameActivity",
     # Header model
     "HeaderInfo",
     # Game info models

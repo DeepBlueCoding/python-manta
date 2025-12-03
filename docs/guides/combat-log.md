@@ -2,7 +2,7 @@
 # Combat Log Guide
 
 ??? info "AI Summary"
-    Parse structured combat log entries with `parse_combat_log()`. Filter by 45 log types including DAMAGE (0), HEAL (1), MODIFIER_ADD (2), DEATH (4), ABILITY (5), ITEM (6), PURCHASE (11), FIRST_BLOOD (18). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use `heroes_only=True` for hero-related entries. The `game_time` field provides accurate in-game clock time (can be negative for pre-game events). The `value_name` field resolves item names for PURCHASE events.
+    Parse structured combat log entries with `parse_combat_log()`. Use `CombatLogType` enum for filtering (DAMAGE, HEAL, MODIFIER_ADD, DEATH, ABILITY, ITEM, PURCHASE, etc.). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use `heroes_only=True` for hero-related entries. Additional enums: `DamageType` (PHYSICAL, MAGICAL, PURE), `Team` (RADIANT, DIRE). The `game_time` field provides accurate in-game clock time (can be negative for pre-game events). The `value_name` field resolves item names for PURCHASE events.
 
 ---
 

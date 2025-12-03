@@ -2,7 +2,7 @@
 # Data Models
 
 ??? info "AI Summary"
-    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` for rune tracking and `EntityType` for classifying entity types (hero, creep, summon, building, etc.). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` (rune tracking), `EntityType` (hero, creep, summon, building), `CombatLogType` (45 combat log event types), `DamageType` (physical/magical/pure), `Team` (Radiant/Dire), `NeutralItemTier` (tier unlock times), `NeutralItem` (100+ neutral items), `ChatWheelMessage` (voice line IDs), and `GameActivity` (animation/taunt detection). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
 
 ---
 
@@ -115,6 +115,430 @@ for entry in result.entries:
     # Building damage
     if target_type == EntityType.BUILDING:
         print(f"Structure damage: {entry.target_name}")
+```
+
+---
+
+### CombatLogType
+
+Enum for all 45+ combat log event types. Use this instead of magic numbers when filtering combat log entries.
+
+```python
+class CombatLogType(int, Enum):
+    DAMAGE = 0
+    HEAL = 1
+    MODIFIER_ADD = 2
+    MODIFIER_REMOVE = 3
+    DEATH = 4
+    ABILITY = 5
+    ITEM = 6
+    LOCATION = 7
+    GOLD = 8
+    GAME_STATE = 9
+    XP = 10
+    PURCHASE = 11
+    BUYBACK = 12
+    ABILITY_TRIGGER = 13
+    PLAYERSTATS = 14
+    MULTIKILL = 15
+    KILLSTREAK = 16
+    TEAM_BUILDING_KILL = 17
+    FIRST_BLOOD = 18
+    MODIFIER_REFRESH = 19
+    NEUTRAL_CAMP_STACK = 20
+    PICKUP_RUNE = 21
+    REVEALED_INVISIBLE = 22
+    HERO_SAVED = 23
+    MANA_RESTORED = 24
+    HERO_LEVELUP = 25
+    BOTTLE_HEAL_ALLY = 26
+    ENDGAME_STATS = 27
+    INTERRUPT_CHANNEL = 28
+    ALLIED_GOLD = 29
+    AEGIS_TAKEN = 30
+    MANA_DAMAGE = 31
+    PHYSICAL_DAMAGE_PREVENTED = 32
+    UNIT_SUMMONED = 33
+    ATTACK_EVADE = 34
+    TREE_CUT = 35
+    SUCCESSFUL_SCAN = 36
+    END_KILLSTREAK = 37
+    BLOODSTONE_CHARGE = 38
+    CRITICAL_DAMAGE = 39
+    SPELL_ABSORB = 40
+    UNIT_TELEPORTED = 41
+    KILL_EATER_EVENT = 42
+    NEUTRAL_ITEM_EARNED = 43
+    TELEPORT_INTERRUPTED = 44
+    MODIFIER_STACK_EVENT = 45
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `display_name` | str | Human-readable name (e.g., "Purchase") |
+| `is_damage_related` | bool | True if type is damage/heal related |
+| `is_modifier_related` | bool | True if type is buff/debuff related |
+| `is_economy_related` | bool | True if type is gold/XP/item related |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_value(int)` | `CombatLogType \| None` | Get CombatLogType from integer value |
+
+**Example:**
+```python
+from python_manta import MantaParser, CombatLogType
+
+parser = MantaParser()
+
+# Use enum instead of magic numbers
+result = parser.parse_combat_log(
+    demo_path,
+    types=[CombatLogType.PURCHASE, CombatLogType.ITEM],
+    max_entries=100
+)
+
+for entry in result.entries:
+    log_type = CombatLogType.from_value(entry.type)
+    if log_type == CombatLogType.PURCHASE:
+        print(f"{entry.target_name} bought {entry.value_name}")
+    elif log_type == CombatLogType.ITEM:
+        print(f"{entry.attacker_name} used {entry.inflictor_name}")
+
+# Check type categories
+if log_type.is_economy_related:
+    print("Economy event")
+```
+
+---
+
+### DamageType
+
+Enum for Dota 2 damage types.
+
+```python
+class DamageType(int, Enum):
+    PHYSICAL = 0
+    MAGICAL = 1
+    PURE = 2
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `display_name` | str | Human-readable name (e.g., "Physical") |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_value(int)` | `DamageType \| None` | Get DamageType from integer value |
+
+**Example:**
+```python
+from python_manta import MantaParser, DamageType, CombatLogType
+
+parser = MantaParser()
+result = parser.parse_combat_log(demo_path, types=[CombatLogType.DAMAGE], max_entries=100)
+
+for entry in result.entries:
+    dmg_type = DamageType.from_value(entry.damage_type)
+    if dmg_type == DamageType.PURE:
+        print(f"Pure damage: {entry.value} from {entry.inflictor_name}")
+```
+
+---
+
+### Team
+
+Enum for Dota 2 team identifiers.
+
+```python
+class Team(int, Enum):
+    SPECTATOR = 0
+    UNASSIGNED = 1
+    RADIANT = 2
+    DIRE = 3
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `display_name` | str | Human-readable name (e.g., "Radiant") |
+| `is_playing` | bool | True if this is an actual playing team |
+| `opposite` | `Team \| None` | The opposing team (None for non-playing) |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_value(int)` | `Team \| None` | Get Team from integer value |
+
+**Example:**
+```python
+from python_manta import MantaParser, Team, CombatLogType
+
+parser = MantaParser()
+result = parser.parse_combat_log(demo_path, types=[CombatLogType.DEATH], heroes_only=True)
+
+for entry in result.entries:
+    attacker_team = Team.from_value(entry.attacker_team)
+    target_team = Team.from_value(entry.target_team)
+
+    if attacker_team and target_team and attacker_team != target_team:
+        print(f"{attacker_team.display_name} killed {target_team.display_name} hero")
+
+    # Use opposite property
+    if attacker_team == Team.RADIANT:
+        enemy = attacker_team.opposite  # Team.DIRE
+```
+
+---
+
+### NeutralItemTier
+
+Enum for neutral item tier classification. Tiers unlock at specific game times.
+
+```python
+class NeutralItemTier(int, Enum):
+    TIER_1 = 0  # Unlocks at 5:00
+    TIER_2 = 1  # Unlocks at 15:00
+    TIER_3 = 2  # Unlocks at 25:00
+    TIER_4 = 3  # Unlocks at 35:00
+    TIER_5 = 4  # Unlocks at 55:00
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `display_name` | str | Human-readable name (e.g., "Tier 1") |
+| `unlock_time_minutes` | int | Game time in minutes when tier unlocks |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_value(int)` | `NeutralItemTier \| None` | Get tier from integer value (0-4) |
+
+**Example:**
+```python
+from python_manta import NeutralItemTier
+
+tier = NeutralItemTier.TIER_3
+print(f"{tier.display_name} unlocks at {tier.unlock_time_minutes} minutes")
+# Output: Tier 3 unlocks at 25 minutes
+```
+
+---
+
+### NeutralItem
+
+Comprehensive enum of all Dota 2 neutral items (100+ items), including both active items and retired/rotated items from previous patches. Useful for tracking neutral item pickups and usage.
+
+```python
+class NeutralItem(str, Enum):
+    # Tier 1 - Current (7.38+)
+    CHIPPED_VEST = "item_chipped_vest"
+    DORMANT_CURIO = "item_dormant_curio"
+    KOBOLD_CUP = "item_kobold_cup"
+    # ... 100+ items including retired ones
+
+    # Tier 5 - Retired
+    APEX = "item_apex"
+    PIRATE_HAT = "item_pirate_hat"
+    # etc.
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `item_name` | str | Internal item name (e.g., "item_kobold_cup") |
+| `display_name` | str | Human-readable name (e.g., "Kobold Cup") |
+| `tier` | int \| None | Item tier (0-4) or None for special items |
+| `tier_enum` | NeutralItemTier \| None | Tier as enum |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_item_name(name)` | `NeutralItem \| None` | Get NeutralItem from internal name |
+| `is_neutral_item(name)` | `bool` | Check if item name is a neutral item |
+| `items_by_tier(tier)` | `List[NeutralItem]` | Get all items of a specific tier |
+| `all_item_names()` | `List[str]` | Get all neutral item internal names |
+
+**Example:**
+```python
+from python_manta import MantaParser, NeutralItem, NeutralItemTier, CombatLogType
+
+parser = MantaParser()
+
+# Track neutral item usage in combat log
+result = parser.parse_combat_log(demo_path, types=[CombatLogType.ITEM], max_entries=1000)
+
+for entry in result.entries:
+    if NeutralItem.is_neutral_item(entry.inflictor_name):
+        item = NeutralItem.from_item_name(entry.inflictor_name)
+        print(f"{entry.attacker_name} used {item.display_name} (Tier {item.tier + 1})")
+
+# Get all Tier 1 items
+tier1_items = NeutralItem.items_by_tier(0)
+print(f"Tier 1 has {len(tier1_items)} items")
+
+# Check unlock times
+tier = NeutralItemTier.TIER_3
+print(f"{tier.display_name} items unlock at {tier.unlock_time_minutes} minutes")
+```
+
+**Tracking Neutral Item Drops:**
+```python
+# Use CDOTAUserMsg_FoundNeutralItem for neutral item pickups
+result = parser.parse_universal(demo_path, "FoundNeutralItem", max_messages=100)
+
+for msg in result.messages:
+    player_id = msg.data.get('player_id')
+    item_tier = msg.data.get('item_tier')  # 0-4
+    tier = NeutralItemTier.from_value(item_tier)
+    print(f"Player {player_id} found a {tier.display_name} neutral item")
+```
+
+---
+
+### ChatWheelMessage
+
+Enum for Dota 2 chat wheel message IDs. Maps voice line IDs to human-readable text.
+
+```python
+class ChatWheelMessage(int, Enum):
+    # Standard phrases (0-232)
+    OK = 0
+    CAREFUL = 1
+    GET_BACK = 2
+    NEED_WARDS = 3
+    STUN_NOW = 4
+    HELP = 5
+    PUSH_NOW = 6
+    WELL_PLAYED = 7
+    # ... many more standard phrases
+    MY_BAD = 68
+    SPACE_CREATED = 71
+    BRUTAL_SAVAGE_REKT = 230
+    # Dota Plus lines: 11000+
+    # TI Battle Pass lines: 120000+
+    # TI talent/team lines: 401000+
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `display_name` | str | Human-readable message text |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_id(id)` | `ChatWheelMessage \| None` | Get enum from message ID |
+| `describe_id(id)` | `str` | Get description for any ID (including unmapped) |
+
+**Example:**
+```python
+from python_manta import MantaParser, ChatWheelMessage
+
+parser = MantaParser()
+game_info = parser.parse_game_info("match.dem")
+players = {i: p.player_name for i, p in enumerate(game_info.players)}
+
+result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatWheel", 100)
+
+for msg in result.messages:
+    player_id = msg.data.get('player_id', -1)
+    player_name = players.get(player_id, f'Player {player_id}')
+    msg_id = msg.data.get('chat_message_id', 0)
+
+    # Use enum for known IDs, describe_id for all
+    text = ChatWheelMessage.describe_id(msg_id)
+    print(f"{player_name}: {text}")
+
+# Output:
+# Malr1ne: TI Battle Pass Voice Line #120009
+# AMMAR_THE_F: > Space created
+# Malr1ne: My bad
+```
+
+---
+
+### GameActivity
+
+Enum for Dota 2 unit animation activity codes. Used in `CDOTAUserMsg_TE_UnitAnimation` messages to identify what animation a unit is playing. Useful for detecting taunts.
+
+```python
+class GameActivity(int, Enum):
+    # Basic states
+    IDLE = 1500
+    IDLE_RARE = 1501
+    RUN = 1502
+    ATTACK = 1503
+    ATTACK2 = 1504
+    DIE = 1506
+    DISABLED = 1509
+    # Ability casting
+    CAST_ABILITY_1 = 1510
+    CAST_ABILITY_2 = 1511
+    # ... through CAST_ABILITY_6
+    # Channeling
+    CHANNEL_ABILITY_1 = 1520
+    # ... through CHANNEL_ABILITY_6
+    # Taunts
+    KILLTAUNT = 1535
+    TAUNT = 1536
+    TAUNT_SNIPER = 1641
+    TAUNT_SPECIAL = 1752
+    CUSTOM_TOWER_TAUNT = 1756
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `display_name` | str | Human-readable activity name |
+| `is_taunt` | bool | True if this is a taunt animation |
+| `is_attack` | bool | True if this is an attack animation |
+| `is_ability_cast` | bool | True if this is an ability cast |
+| `is_channeling` | bool | True if this is a channeling animation |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_value(int)` | `GameActivity \| None` | Get activity from integer value |
+| `get_taunt_activities()` | `List[GameActivity]` | Get all taunt-related activities |
+
+**Example:**
+```python
+from python_manta import MantaParser, GameActivity
+
+parser = MantaParser()
+result = parser.parse_universal("match.dem", "CDOTAUserMsg_TE_UnitAnimation", 10000)
+
+# Find taunts
+for msg in result.messages:
+    activity_code = msg.data.get('activity', 0)
+    activity = GameActivity.from_value(activity_code)
+
+    if activity and activity.is_taunt:
+        print(f"Taunt detected at tick {msg.tick}: {activity.display_name}")
+
+# Check activity types
+activity = GameActivity.ATTACK
+print(activity.is_attack)      # True
+print(activity.is_ability_cast) # False
 ```
 
 ---
