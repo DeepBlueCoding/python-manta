@@ -2102,7 +2102,7 @@
 <h1 id="combat-log-guide">Combat Log Guide<a class="headerlink" href="#combat-log-guide" title="Permanent link">&para;</a></h1>
 <details class="info">
 <summary>AI Summary</summary>
-<p>Parse structured combat log entries with <code>parse_combat_log()</code>. Filter by 45 log types including DAMAGE (0), HEAL (1), MODIFIER_ADD (2), DEATH (4), ABILITY (5), ITEM (6), PURCHASE (11), FIRST_BLOOD (18). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use <code>heroes_only=True</code> for hero-related entries. The <code>game_time</code> field provides accurate in-game clock time (can be negative for pre-game events). The <code>value_name</code> field resolves item names for PURCHASE events.</p>
+<p>Parse structured combat log entries with <code>parse_combat_log()</code>. Use <code>CombatLogType</code> enum for filtering (DAMAGE, HEAL, MODIFIER_ADD, DEATH, ABILITY, ITEM, PURCHASE, etc.). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use <code>heroes_only=True</code> for hero-related entries. Additional enums: <code>DamageType</code> (PHYSICAL, MAGICAL, PURE), <code>Team</code> (RADIANT, DIRE). The <code>game_time</code> field provides accurate in-game clock time (can be negative for pre-game events). The <code>value_name</code> field resolves item names for PURCHASE events.</p>
 </details>
 <hr />
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
