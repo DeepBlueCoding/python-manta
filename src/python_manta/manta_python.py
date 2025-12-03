@@ -76,6 +76,97 @@ class RuneType(str, Enum):
         return modifier_name.startswith("modifier_rune_")
 
 
+_SUMMON_PATTERNS = (
+    "lycan_wolf", "lone_druid_bear", "beastmaster_boar", "beastmaster_hawk",
+    "enigma_eidolon", "nature_prophet_treant", "undying_zombie", "venomancer_plague_ward",
+    "witch_doctor_death_ward", "shadow_shaman_ward", "pugna_nether_ward",
+    "templar_assassin_psionic_trap", "techies_mine", "invoker_forge_spirit",
+    "warlock_golem", "visage_familiar", "brewmaster_", "phoenix_sun",
+    "grimstroke_ink_creature", "hoodwink_sharpshooter",
+)
+
+
+class EntityType(str, Enum):
+    """Dota 2 entity types identified from entity names.
+
+    Usage:
+        # Identify entity type from combat log
+        attacker_type = EntityType.from_name(entry.attacker_name)
+        if attacker_type == EntityType.HERO:
+            print("Hero attacked")
+
+        # Check if target is a creep
+        if EntityType.from_name(entry.target_name).is_creep:
+            print("Creep was targeted")
+    """
+    HERO = "hero"
+    LANE_CREEP = "lane_creep"
+    NEUTRAL_CREEP = "neutral_creep"
+    SUMMON = "summon"
+    BUILDING = "building"
+    WARD = "ward"
+    COURIER = "courier"
+    ROSHAN = "roshan"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def from_name(cls, entity_name: str) -> "EntityType":
+        """Get EntityType from an entity name string.
+
+        Args:
+            entity_name: Raw entity name from combat log (e.g., "npc_dota_hero_axe")
+
+        Returns:
+            EntityType enum value
+        """
+        if not entity_name:
+            return cls.UNKNOWN
+
+        name = entity_name.lower()
+
+        if "npc_dota_hero_" in name:
+            return cls.HERO
+        if "npc_dota_roshan" in name:
+            return cls.ROSHAN
+        if "npc_dota_creep_goodguys" in name or "npc_dota_creep_badguys" in name:
+            return cls.LANE_CREEP
+        if "npc_dota_neutral_" in name:
+            return cls.NEUTRAL_CREEP
+        if any(x in name for x in ["tower", "barracks", "fort", "filler", "effigy"]):
+            return cls.BUILDING
+        if "ward" in name and "reward" not in name:
+            return cls.WARD
+        if "courier" in name:
+            return cls.COURIER
+        if any(pattern in name for pattern in _SUMMON_PATTERNS):
+            return cls.SUMMON
+
+        return cls.UNKNOWN
+
+    @property
+    def is_hero(self) -> bool:
+        """True if this is a hero."""
+        return self == EntityType.HERO
+
+    @property
+    def is_creep(self) -> bool:
+        """True if this is any type of creep (lane or neutral)."""
+        return self in (EntityType.LANE_CREEP, EntityType.NEUTRAL_CREEP)
+
+    @property
+    def is_unit(self) -> bool:
+        """True if this is a controllable unit (not building/ward)."""
+        return self in (
+            EntityType.HERO, EntityType.LANE_CREEP, EntityType.NEUTRAL_CREEP,
+            EntityType.SUMMON, EntityType.COURIER, EntityType.ROSHAN
+        )
+
+    @property
+    def is_structure(self) -> bool:
+        """True if this is a building or ward."""
+        return self in (EntityType.BUILDING, EntityType.WARD)
+
+
 class HeaderInfo(BaseModel):
     """Pydantic model for demo file header information."""
     map_name: str

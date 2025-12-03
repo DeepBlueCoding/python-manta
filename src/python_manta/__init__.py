@@ -17,6 +17,7 @@ from .manta_python import (
     MantaParser,
     # Enums
     RuneType,
+    EntityType,
     # Header model
     HeaderInfo,
     # Game info models
@@ -65,6 +66,7 @@ __all__ = [
     "MantaParser",
     # Enums
     "RuneType",
+    "EntityType",
     # Header model
     "HeaderInfo",
     # Game info models

@@ -2,7 +2,7 @@
 # Data Models
 
 ??? info "AI Summary"
-    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` for rune tracking. All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` for rune tracking and `EntityType` for classifying entity types (hero, creep, summon, building, etc.). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
 
 ---
 
@@ -54,6 +54,67 @@ print(RuneType.HASTE.modifier_name)  # "modifier_rune_haste"
 
 # Get all rune modifiers for filtering
 rune_modifiers = RuneType.all_modifiers()
+```
+
+---
+
+### EntityType
+
+Enum for classifying Dota 2 entity types from entity name strings. Useful for filtering combat log entries by attacker/target type.
+
+```python
+class EntityType(str, Enum):
+    HERO = "hero"
+    LANE_CREEP = "lane_creep"
+    NEUTRAL_CREEP = "neutral_creep"
+    SUMMON = "summon"
+    BUILDING = "building"
+    WARD = "ward"
+    COURIER = "courier"
+    ROSHAN = "roshan"
+    UNKNOWN = "unknown"
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `is_hero` | bool | True if this is a hero |
+| `is_creep` | bool | True if lane or neutral creep |
+| `is_unit` | bool | True if controllable unit (not building/ward) |
+| `is_structure` | bool | True if building or ward |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_name(entity_name)` | `EntityType` | Get EntityType from entity name string |
+
+**Example:**
+```python
+from python_manta import MantaParser, EntityType
+
+parser = MantaParser()
+result = parser.parse_combat_log(demo_path, types=[0], max_entries=1000)
+
+for entry in result.entries:
+    attacker_type = EntityType.from_name(entry.attacker_name)
+    target_type = EntityType.from_name(entry.target_name)
+
+    # Self-buff detection
+    is_self = entry.attacker_name == entry.target_name
+
+    # Hero vs hero combat
+    if attacker_type.is_hero and target_type.is_hero and not is_self:
+        print(f"Hero combat: {entry.attacker_name} -> {entry.target_name}")
+
+    # Hero farming creeps
+    if attacker_type.is_hero and target_type.is_creep:
+        print(f"Farming: {entry.attacker_name} hit {entry.target_name}")
+
+    # Building damage
+    if target_type == EntityType.BUILDING:
+        print(f"Structure damage: {entry.target_name}")
 ```
 
 ---
