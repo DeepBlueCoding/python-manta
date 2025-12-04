@@ -113,6 +113,61 @@ class TestV2ParserCollectorConfigs:
         assert result.game_events is not None
 
 
+class TestV2ParserPlayerInfo:
+    """Test v2 Parser game_info.players functionality."""
+
+    def test_game_info_players_count(self):
+        """Test game_info returns exactly 10 players."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+
+        assert result.success is True
+        assert result.game_info is not None
+        assert len(result.game_info.players) == 10
+
+    def test_game_info_players_have_required_fields(self):
+        """Test all players have required fields populated."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+
+        for player in result.game_info.players:
+            assert player.player_name != ""
+            assert player.hero_name != ""
+            assert player.steam_id > 0
+            assert player.team in [2, 3]  # Radiant=2, Dire=3
+
+    def test_game_info_players_team_distribution(self):
+        """Test players are correctly distributed between teams."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+
+        radiant_players = [p for p in result.game_info.players if p.team == 2]
+        dire_players = [p for p in result.game_info.players if p.team == 3]
+
+        assert len(radiant_players) == 5
+        assert len(dire_players) == 5
+
+    def test_game_info_players_known_values(self):
+        """Test specific known player values from demo file."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+
+        # Find Yatoro (known player in this match)
+        yatoro = next((p for p in result.game_info.players if p.player_name == "Yatoro"), None)
+        assert yatoro is not None
+        assert yatoro.hero_name == "npc_dota_hero_troll_warlord"
+        assert yatoro.team == 2  # Radiant
+        assert yatoro.steam_id == 76561198281846390
+
+    def test_game_info_players_hero_names_format(self):
+        """Test hero names are in npc_dota_hero_* format."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+
+        for player in result.game_info.players:
+            assert player.hero_name.startswith("npc_dota_hero_")
+
+
 class TestV2ParserDataConsistency:
     """Test v2 Parser data consistency with real values."""
 

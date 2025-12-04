@@ -162,6 +162,11 @@ game_info = result.game_info
 print(f"Match ID: {game_info.match_id}")
 print(f"Winner: {'Radiant' if game_info.game_winner == 2 else 'Dire'}")
 
+# Players (10 players: 5 Radiant + 5 Dire)
+for player in game_info.players:
+    team = "Radiant" if player.team == 2 else "Dire"
+    print(f"  {player.player_name} ({team}): {player.hero_name}")
+
 # Draft
 for event in game_info.picks_bans:
     action = "PICK" if event.is_pick else "BAN"
@@ -200,9 +205,28 @@ Information about a player in the match.
 ```python
 class PlayerInfo(BaseModel):
     player_name: str = ""
-    hero_name: str = ""
-    team: int = 0
+    hero_name: str = ""       # npc_dota_hero_* format
+    is_fake_client: bool = False
     steam_id: int = 0
+    team: int = 0             # 2=Radiant, 3=Dire
+```
+
+**Fields:**
+- `player_name`: Player's display name
+- `hero_name`: Hero in `npc_dota_hero_*` format (e.g., "npc_dota_hero_axe")
+- `is_fake_client`: True for bots
+- `steam_id`: Player's Steam ID (64-bit)
+- `team`: 2 for Radiant, 3 for Dire
+
+**Example:**
+```python
+result = parser.parse(game_info=True)
+
+# List all players with their heroes
+for player in result.game_info.players:
+    team = "Radiant" if player.team == 2 else "Dire"
+    print(f"{player.player_name} ({team}): {player.hero_name}")
+    print(f"  Steam ID: {player.steam_id}")
 ```
 
 ---
