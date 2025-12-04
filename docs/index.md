@@ -31,6 +31,20 @@ pip install python-manta
 
 Pre-built wheels available for Linux, macOS (Intel + Apple Silicon), and Windows.
 
+### Version Pinning
+
+Always use the latest release for your target Manta version:
+
+```bash
+# Latest release for Manta 1.4.5.x (recommended)
+pip install "python-manta>=1.4.5,<1.4.6"
+
+# Or use compatible release operator
+pip install "python-manta~=1.4.5"
+```
+
+See [Getting Started](getting-started.md#version-pinning) for version format details.
+
 ## Quick Example
 
 ```python
@@ -68,9 +82,8 @@ for msg in result.messages.messages:
 
 - [Getting Started](getting-started.md) - Installation and first steps
 - [API Reference](api/index.md) - Complete API documentation
-- [Guides](guides/index.md) - In-depth feature guides
 - [Examples](examples.md) - Real-world code examples
-- [Callbacks Reference](reference/callbacks.md) - All 272 supported callbacks
+- [Reference](reference/index.md) - Callbacks, game events, combat log
 
 ## Links
 
