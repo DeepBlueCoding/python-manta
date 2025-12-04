@@ -2,13 +2,17 @@
 
 Tests all combat log event types and validates field resolution against known data.
 Uses match 8447659831 (Team Spirit vs Tundra) as reference.
+Uses v2 Parser API exclusively.
 
 The game_time field is automatically computed from the GAME_IN_PROGRESS state event,
 so we don't need manual timestamp calculations.
 """
 
 import pytest
-from python_manta import MantaParser
+
+# Module-level markers: slow integration tests (~5min)
+pytestmark = [pytest.mark.slow, pytest.mark.integration]
+from python_manta import Parser
 
 # Test data from OpenDota API for match 8447659831
 DEMO_PATH = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
@@ -38,15 +42,15 @@ TROLL_WARLORD_EXPECTED_KILLS = [
 
 @pytest.fixture(scope="module")
 def parser():
-    return MantaParser()
+    return Parser(DEMO_PATH)
 
 
 @pytest.fixture(scope="module")
 def combat_log(parser):
     """Parse all combat log entries once for all tests."""
-    result = parser.parse_combat_log(DEMO_PATH, max_entries=0)
+    result = parser.parse(combat_log={"max_entries": 0})
     assert result.success, f"Failed to parse combat log: {result.error}"
-    return result
+    return result.combat_log
 
 
 class TestCombatLogTypes:

@@ -5,22 +5,38 @@ This package provides a Python wrapper for the dotabuff/manta Go library,
 enabling parsing of modern Dota 2 replay files (.dem) from Python applications.
 
 Usage:
-    from python_manta import MantaParser
+    from python_manta import Parser
 
-    parser = MantaParser()
-    header = parser.parse_header("replay.dem")
-    print(f"Map: {header.map_name}, Build: {header.build_num}")
+    parser = Parser("replay.dem")
+    result = parser.parse(header=True)
+    print(f"Map: {result.header.map_name}, Build: {result.header.build_num}")
 """
 
 from .manta_python import (
     # Main parser class
-    MantaParser,
+    Parser,
+    # V2 config/result types
+    ParseConfig,
+    ParseResult,
+    # V2 streaming types
+    StreamConfig,
+    StreamEvent,
+    StreamResult,
+    # V2 index/seek types
+    Keyframe,
+    DemoIndex,
+    HeroSnapshot,
+    EntityStateSnapshot,
+    RangeParseConfig,
+    RangeParseResult,
+    KeyframeResult,
     # Enums
     RuneType,
     EntityType,
     CombatLogType,
     DamageType,
     Team,
+    Hero,
     NeutralItemTier,
     NeutralItem,
     ChatWheelMessage,
@@ -31,8 +47,9 @@ from .manta_python import (
     DraftEvent,
     PlayerInfo,
     GameInfo,
-    # Universal parsing (low-level API)
+    # Universal parsing (low-level API) / Messages collector
     MessageEvent,
+    MessagesResult,
     UniversalParseResult,
     # Entity state snapshots
     PlayerState,
@@ -70,13 +87,29 @@ __description__ = "Python interface for Manta Dota 2 replay parser"
 
 __all__ = [
     # Main parser class
-    "MantaParser",
+    "Parser",
+    # V2 config/result types
+    "ParseConfig",
+    "ParseResult",
+    # V2 streaming types
+    "StreamConfig",
+    "StreamEvent",
+    "StreamResult",
+    # V2 index/seek types
+    "Keyframe",
+    "DemoIndex",
+    "HeroSnapshot",
+    "EntityStateSnapshot",
+    "RangeParseConfig",
+    "RangeParseResult",
+    "KeyframeResult",
     # Enums
     "RuneType",
     "EntityType",
     "CombatLogType",
     "DamageType",
     "Team",
+    "Hero",
     "NeutralItemTier",
     "NeutralItem",
     "ChatWheelMessage",
@@ -87,8 +120,9 @@ __all__ = [
     "DraftEvent",
     "PlayerInfo",
     "GameInfo",
-    # Universal parsing (low-level API)
+    # Universal parsing (low-level API) / Messages collector
     "MessageEvent",
+    "MessagesResult",
     "UniversalParseResult",
     # Entity state snapshots
     "PlayerState",

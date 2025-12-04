@@ -16,7 +16,7 @@ All examples in this documentation use **The International 2025 Grand Finals Gam
 | **Event** | The International 2025 Grand Finals |
 | **Teams** | Xtreme Gaming (XG) vs Team Falcons (FLCN) |
 | **Winner** | Falcons (Dire) |
-| **Duration** | 77.9 minutes |
+| **Duration** | 1:17:54 (4674 seconds) |
 | **Server** | Valve TI14 Server (Hamburg) |
 
 **XG (Radiant):**
@@ -40,7 +40,7 @@ All examples in this documentation use **The International 2025 Grand Finals Gam
 Extract a complete match summary with draft, players, and final scores.
 
 ```python
-from python_manta import MantaParser
+from python_manta import MantaParser, Hero
 
 def generate_match_summary(demo_path: str):
     parser = MantaParser()
@@ -62,10 +62,12 @@ def generate_match_summary(demo_path: str):
     dire_picks = []
     for event in game_info.picks_bans:
         if event.is_pick:
+            hero = Hero.from_id(event.hero_id)
+            hero_name = hero.display_name if hero else f"Unknown({event.hero_id})"
             if event.team == 2:
-                radiant_picks.append(event.hero_id)
+                radiant_picks.append(hero_name)
             else:
-                dire_picks.append(event.hero_id)
+                dire_picks.append(hero_name)
 
     print(f"Radiant picks: {radiant_picks}")
     print(f"Dire picks: {dire_picks}")
@@ -121,7 +123,7 @@ Build: 10512
 Server: Valve TI14 Server (srcds427-fra2.Hamburg.5)
 
 Match ID: 8461956309
-Duration: 77.9 minutes
+Duration: 1:17:54
 Winner: Dire
 
 Teams:
@@ -129,8 +131,8 @@ Teams:
   Dire: FLCN (ID: 9247354)
 
 Draft:
-  Radiant picks: [7, 79, 11, 45, 8]  # Juggernaut, Shadow Fiend, Shadow Demon, Pugna, Earthshaker
-  Dire picks: [89, 120, 87, 94, 97]  # Naga Siren, Pangolier, Disruptor, Medusa, Magnus
+  Radiant picks: ['Earthshaker', 'Shadow Demon', 'Shadow Fiend', 'Pugna', 'Juggernaut']
+  Dire picks: ['Naga Siren', 'Pangolier', 'Disruptor', 'Medusa', 'Magnus']
 
 Players:
   [Radiant] Ame: juggernaut
@@ -149,46 +151,71 @@ Players:
 
 ## Kill Timeline
 
-Build a chronological kill feed with timestamps.
+Build a chronological kill feed with timestamps using combat log.
 
 ```python
-from python_manta import MantaParser
+from python_manta import MantaParser, CombatLogType
 
 def build_kill_timeline(demo_path: str):
     parser = MantaParser()
 
-    # Use game events for kills
-    result = parser.parse_game_events(
+    # Use combat log DEATH type for kills
+    result = parser.parse_combat_log(
         demo_path,
-        event_filter="dota_player_kill",
-        max_events=500
+        types=[CombatLogType.DEATH],
+        max_entries=5000
     )
+
+    # Filter for hero deaths only
+    hero_deaths = [e for e in result.entries if "npc_dota_hero_" in e.target_name]
 
     print("Kill Timeline")
     print("=" * 60)
 
-    for event in result.events:
-        tick = event.tick
-        fields = event.fields
+    for entry in hero_deaths:
+        mins = int(entry.game_time // 60)
+        secs = int(entry.game_time % 60)
+        victim = entry.target_name.replace("npc_dota_hero_", "")
+        killer = entry.attacker_name.replace("npc_dota_hero_", "")
+        print(f"[{mins:02d}:{secs:02d}] {killer} killed {victim}")
 
-        victim = fields.get("victim_userid", "?")
-        killer = fields.get("killer1_userid", "?")
-
-        # Collect assisters
-        assisters = []
-        for i in range(2, 6):
-            a = fields.get(f"killer{i}_userid")
-            if a:
-                assisters.append(str(a))
-
-        # Format output
-        assist_str = f" + {', '.join(assisters)}" if assisters else ""
-        print(f"[Tick {tick:>7}] Player {killer}{assist_str} killed Player {victim}")
-
-    print(f"\nTotal kills: {len(result.events)}")
+    print(f"\nTotal hero deaths: {len(hero_deaths)}")
 
 # Usage
 build_kill_timeline("match.dem")
+```
+
+**Expected Output (TI 2025 Grand Finals):**
+```
+Kill Timeline
+============================================================
+[04:48] disruptor killed earthshaker
+[05:28] naga_siren killed shadow_demon
+[06:06] nevermore killed pangolier
+[06:13] shadow_demon killed disruptor
+[09:11] juggernaut killed magnataur
+[11:08] magnataur killed juggernaut
+[11:12] pangolier killed shadow_demon
+[13:39] juggernaut killed magnataur
+[14:49] pangolier killed pugna
+[15:27] juggernaut killed disruptor
+[18:20] disruptor killed pugna
+[18:35] pangolier killed earthshaker
+[27:04] magnataur killed pugna
+[27:19] medusa killed shadow_demon
+[32:30] shadow_demon killed pangolier
+[34:06] nevermore killed pangolier
+[34:17] medusa killed shadow_demon
+[35:53] medusa killed pugna
+[38:03] disruptor killed pugna
+[38:27] nevermore killed magnataur
+[53:21] pangolier killed pugna
+[64:13] pangolier killed juggernaut
+[76:25] pangolier killed juggernaut
+[76:38] medusa killed earthshaker
+[76:51] medusa killed nevermore
+
+Total hero deaths: 25
 ```
 
 ---
@@ -400,21 +427,21 @@ generate_damage_report("match.dem")
 Damage Report
 ============================================================
 
-Total Hero vs Hero Damage:
+Total Damage Dealt:
 ----------------------------------------
-  medusa                              :    157,175
-  juggernaut                          :    120,374
-  earthshaker                         :    120,136
-  nevermore                           :     78,853
-  pugna                               :     46,453
-  disruptor                           :     27,317
-  magnataur                           :     24,803
-  shadow_demon                        :     22,983
-  pangolier                           :     22,755
-  naga_siren                          :     20,433
+  medusa                           :    923,091
+  juggernaut                       :    878,418
+  nevermore                        :    629,762
+  earthshaker                      :    507,264
+  pangolier                        :    421,043
+  magnataur                        :    273,972
+  naga_siren                       :    265,125
+  pugna                            :    150,655
+  shadow_demon                     :     60,697
+  disruptor                        :     45,610
 ```
 
-Note: skiter's Medusa dealt the most hero damage (157k), while Ame's Juggernaut (120k) and Xxs's Earthshaker (120k) were the top damage dealers for XG.
+Note: skiter's Medusa dealt the most damage overall (923k), while Ame's Juggernaut (878k) was the second highest. This includes all damage to heroes, not just hero-vs-hero.
 
 ---
 
@@ -535,21 +562,25 @@ extract_chat_log("match.dem")
 ```
 Chat Log
 ============================================================
-[ 27298] [ ALL] Player 0: gl hf
-[ 27330] [ ALL] Player 5: hf
-[ 27338] [ ALL] Player 1: gl
-[ 27346] [ ALL] Player 6: glhf
-[ 28882] [ ALL] Player 3: the lights are too much
-[ 29194] [ ALL] Player 7: its fine
-[ 29330] [ ALL] Player 0: g
-[ 29378] [ ALL] Player 7: g
-[ 29394] [ ALL] Player 9: G
-[ 65954] [ ALL] Player 5: teamspeak delay
-[ 66538] [ ALL] Player 0: g
-[ 66618] [ ALL] Player 5: g
-[ 66858] [ ALL] Player 9: g
-[139170] [ ALL] Player 5: gg
-[139250] [ ALL] Player 3: gg
+[  28528] Player 1: gl hf
+[  28534] Player 9: hf
+[  28590] Player 0: gl
+[  28624] Player 4: glhf
+[  29624] Player 5: the lights are too much
+[  29760] Player 7: its fine
+[  29784] Player 7: g
+[  29864] Player 4: g
+[  29898] Player 1: G
+[  65276] Player 5: teamspeak delay
+[  67360] Player 9: g
+[  67368] Player 6: g
+[  67464] Player 3: g
+[ 138941] Player 1: gg
+[ 138991] Player 0: gg
+[ 138997] Player 4: gg
+[ 139019] Player 8: gg
+
+Total chat messages: 17
 ```
 
 Note: The TI Grand Finals captured the pre-game "gl hf" exchanges, a technical pause for "teamspeak delay", and the final "gg" at match end.
@@ -640,13 +671,23 @@ Rune Pickup Timeline:
 [41:24] pugna                picked up Shield
 [44:55] pangolier            picked up Regeneration
 [45:57] naga_siren           picked up Haste
+[49:02] pangolier            picked up Arcane
+[51:25] medusa               picked up Arcane
+[53:40] medusa               picked up Double Damage
+[58:01] pangolier            picked up Shield
+[59:24] magnataur            picked up Invisibility
+[63:44] pangolier            picked up Regeneration
+[67:22] magnataur            picked up Shield
+[71:20] magnataur            picked up Invisibility
+[73:34] medusa               picked up Arcane
 
 Runes by Hero:
 ----------------------------------------
-  naga_siren: 4 runes (Arcane, Double Damage, Haste, Arcane)
-  pangolier: 8 runes (Invisibility, Haste, Double Damage, ...)
-  pugna: 3 runes (Shield, Shield, Shield)
-  ...
+  magnataur: 3 runes (Invisibility, Shield, Invisibility)
+  medusa: 3 runes (Arcane, Double Damage, Arcane)
+  naga_siren: 3 runes (Arcane, Double Damage, Haste)
+  pangolier: 9 runes (Invisibility, Haste, Double Damage, Regeneration, Invisibility, Regeneration, Arcane, Shield, Regeneration)
+  pugna: 1 runes (Shield)
 ```
 
 ---

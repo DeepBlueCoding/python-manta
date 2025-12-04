@@ -9,7 +9,7 @@ import os
 import tempfile
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Iterator
 from pydantic import BaseModel
 
 
@@ -326,6 +326,148 @@ class Team(int, Enum):
         elif self == Team.DIRE:
             return Team.RADIANT
         return None
+
+
+class Hero(int, Enum):
+    """Dota 2 hero IDs."""
+    ANTI_MAGE = 1
+    AXE = 2
+    BANE = 3
+    BLOODSEEKER = 4
+    CRYSTAL_MAIDEN = 5
+    DROW_RANGER = 6
+    EARTHSHAKER = 7
+    JUGGERNAUT = 8
+    MIRANA = 9
+    MORPHLING = 10
+    SHADOW_FIEND = 11
+    PHANTOM_LANCER = 12
+    PUCK = 13
+    PUDGE = 14
+    RAZOR = 15
+    SAND_KING = 16
+    STORM_SPIRIT = 17
+    SVEN = 18
+    TINY = 19
+    VENGEFUL_SPIRIT = 20
+    WINDRANGER = 21
+    ZEUS = 22
+    KUNKKA = 23
+    LINA = 25
+    LION = 26
+    SHADOW_SHAMAN = 27
+    SLARDAR = 28
+    TIDEHUNTER = 29
+    WITCH_DOCTOR = 30
+    LICH = 31
+    RIKI = 32
+    ENIGMA = 33
+    TINKER = 34
+    SNIPER = 35
+    NECROPHOS = 36
+    WARLOCK = 37
+    BEASTMASTER = 38
+    QUEEN_OF_PAIN = 39
+    VENOMANCER = 40
+    FACELESS_VOID = 41
+    WRAITH_KING = 42
+    DEATH_PROPHET = 43
+    PHANTOM_ASSASSIN = 44
+    PUGNA = 45
+    TEMPLAR_ASSASSIN = 46
+    VIPER = 47
+    LUNA = 48
+    DRAGON_KNIGHT = 49
+    DAZZLE = 50
+    CLOCKWERK = 51
+    LESHRAC = 52
+    NATURES_PROPHET = 53
+    LIFESTEALER = 54
+    DARK_SEER = 55
+    CLINKZ = 56
+    OMNIKNIGHT = 57
+    ENCHANTRESS = 58
+    HUSKAR = 59
+    NIGHT_STALKER = 60
+    BROODMOTHER = 61
+    BOUNTY_HUNTER = 62
+    WEAVER = 63
+    JAKIRO = 64
+    BATRIDER = 65
+    CHEN = 66
+    SPECTRE = 67
+    ANCIENT_APPARITION = 68
+    DOOM = 69
+    URSA = 70
+    SPIRIT_BREAKER = 71
+    GYROCOPTER = 72
+    ALCHEMIST = 73
+    INVOKER = 74
+    SILENCER = 75
+    OUTWORLD_DESTROYER = 76
+    LYCAN = 77
+    BREWMASTER = 78
+    SHADOW_DEMON = 79
+    LONE_DRUID = 80
+    CHAOS_KNIGHT = 81
+    MEEPO = 82
+    TREANT_PROTECTOR = 83
+    OGRE_MAGI = 84
+    UNDYING = 85
+    RUBICK = 86
+    DISRUPTOR = 87
+    NYX_ASSASSIN = 88
+    NAGA_SIREN = 89
+    KEEPER_OF_THE_LIGHT = 90
+    IO = 91
+    VISAGE = 92
+    SLARK = 93
+    MEDUSA = 94
+    TROLL_WARLORD = 95
+    CENTAUR_WARRUNNER = 96
+    MAGNUS = 97
+    TIMBERSAW = 98
+    BRISTLEBACK = 99
+    TUSK = 100
+    SKYWRATH_MAGE = 101
+    ABADDON = 102
+    ELDER_TITAN = 103
+    LEGION_COMMANDER = 104
+    TECHIES = 105
+    EMBER_SPIRIT = 106
+    EARTH_SPIRIT = 107
+    UNDERLORD = 108
+    TERRORBLADE = 109
+    PHOENIX = 110
+    ORACLE = 111
+    WINTER_WYVERN = 112
+    ARC_WARDEN = 113
+    MONKEY_KING = 114
+    DARK_WILLOW = 119
+    PANGOLIER = 120
+    GRIMSTROKE = 121
+    HOODWINK = 123
+    VOID_SPIRIT = 126
+    SNAPFIRE = 128
+    MARS = 129
+    DAWNBREAKER = 135
+    MARCI = 136
+    PRIMAL_BEAST = 137
+    MUERTA = 138
+    RINGMASTER = 145
+
+    @classmethod
+    def from_id(cls, hero_id: int) -> Optional["Hero"]:
+        """Get Hero from integer ID."""
+        for hero in cls:
+            if hero.value == hero_id:
+                return hero
+        return None
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable hero name."""
+        return self.name.replace("_", " ").title()
 
 
 class NeutralItemTier(int, Enum):
@@ -1369,734 +1511,517 @@ class ParserInfo(BaseModel):
     error: Optional[str] = None
 
 
-class MantaParser:
-    """Python wrapper for Manta Dota 2 replay parser."""
+# ============================================================================
+# V2 PARSER TYPES AND CLASS - UNIFIED SINGLE-PASS API
+# ============================================================================
 
-    # BZ2 magic bytes
+
+class HeaderCollectorConfig(BaseModel):
+    """Config for header collection."""
+    enabled: bool = True
+
+
+class GameInfoCollectorConfig(BaseModel):
+    """Config for game info collection."""
+    enabled: bool = True
+
+
+class MessagesCollectorConfig(BaseModel):
+    """Config for universal messages collection."""
+    filter: str = ""
+    max_messages: int = 0
+
+
+class ParserInfoCollectorConfig(BaseModel):
+    """Config for parser info collection."""
+    enabled: bool = True
+
+
+class ParseConfig(BaseModel):
+    """Configuration for single-pass parsing with multiple collectors."""
+    header: Optional[HeaderCollectorConfig] = None
+    game_info: Optional[GameInfoCollectorConfig] = None
+    combat_log: Optional[CombatLogConfig] = None
+    entities: Optional[EntityParseConfig] = None
+    game_events: Optional[GameEventsConfig] = None
+    modifiers: Optional[ModifiersConfig] = None
+    string_tables: Optional[StringTablesConfig] = None
+    messages: Optional[MessagesCollectorConfig] = None
+    parser_info: Optional[ParserInfoCollectorConfig] = None
+
+
+class MessagesResult(BaseModel):
+    """Result from messages collector."""
+    messages: List[MessageEvent] = []
+    success: bool = True
+    error: Optional[str] = None
+    total_messages: int = 0
+    filtered_count: int = 0
+    callbacks_used: List[str] = []
+
+
+class ParseResult(BaseModel):
+    """Result from single-pass parsing with all collected data."""
+    success: bool = True
+    error: Optional[str] = None
+
+    header: Optional[HeaderInfo] = None
+    game_info: Optional[GameInfo] = None
+    combat_log: Optional[CombatLogResult] = None
+    entities: Optional[EntityParseResult] = None
+    game_events: Optional[GameEventsResult] = None
+    modifiers: Optional[ModifiersResult] = None
+    string_tables: Optional[StringTablesResult] = None
+    messages: Optional[MessagesResult] = None
+    parser_info: Optional[ParserInfo] = None
+
+
+class StreamConfig(BaseModel):
+    """Configuration for streaming parse."""
+    combat_log: bool = False
+    messages: bool = False
+    game_events: bool = False
+    max_events: int = 1000
+
+
+class StreamEvent(BaseModel):
+    """A single event from streaming parse."""
+    kind: str = ""
+    tick: int = 0
+    type: str = ""
+    data: Dict[str, Any] = {}
+
+
+class StreamResult(BaseModel):
+    """Result from streaming parse open."""
+    success: bool = True
+    handle_id: int = 0
+    error: Optional[str] = None
+
+
+class Keyframe(BaseModel):
+    """A seekable keyframe in the demo."""
+    tick: int = 0
+    offset: int = 0
+    game_time: float = 0.0
+
+
+class DemoIndex(BaseModel):
+    """Index of keyframes for seeking."""
+    keyframes: List[Keyframe] = []
+    total_ticks: int = 0
+    game_started: int = 0
+    success: bool = True
+    error: Optional[str] = None
+
+
+class HeroSnapshot(BaseModel):
+    """Hero state at a specific tick."""
+    hero_name: str = ""
+    hero_id: int = 0
+    player_id: int = 0
+    team: int = 0
+    x: float = 0.0
+    y: float = 0.0
+    z: float = 0.0
+    health: int = 0
+    max_health: int = 0
+    mana: float = 0.0
+    max_mana: float = 0.0
+    level: int = 0
+    is_alive: bool = True
+    is_illusion: bool = False
+    is_clone: bool = False
+
+
+class EntityStateSnapshot(BaseModel):
+    """Entity state snapshot at a specific tick."""
+    tick: int = 0
+    game_time: float = 0.0
+    heroes: List[HeroSnapshot] = []
+    success: bool = True
+    error: Optional[str] = None
+
+
+class RangeParseConfig(BaseModel):
+    """Configuration for range parsing."""
+    start_tick: int = 0
+    end_tick: int = 0
+    combat_log: bool = False
+    messages: bool = False
+    game_events: bool = False
+
+
+class RangeParseResult(BaseModel):
+    """Result from parsing a specific tick range."""
+    start_tick: int = 0
+    end_tick: int = 0
+    actual_start: int = 0
+    actual_end: int = 0
+    combat_log: List[Dict[str, Any]] = []
+    messages: List[Dict[str, Any]] = []
+    success: bool = True
+    error: Optional[str] = None
+
+
+class KeyframeResult(BaseModel):
+    """Result from finding a keyframe."""
+    success: bool = True
+    keyframe: Optional[Keyframe] = None
+    exact: bool = False
+    error: Optional[str] = None
+
+
+class Parser:
+    """V2 Parser with unified single-pass parsing.
+
+    This is the recommended API that parses the file once and collects
+    all requested data in a single pass.
+
+    Usage:
+        parser = Parser("match.dem")
+        result = parser.parse(
+            header=True,
+            game_info=True,
+            combat_log={"types": [4], "heroes_only": True},
+            entities={"interval_ticks": 900},
+        )
+
+        print(result.header.map_name)
+        print(result.game_info.match_id)
+        print(len(result.combat_log.entries))
+    """
+
     _BZ2_MAGIC = b'BZh'
 
-    def __init__(self, library_path: Optional[str] = None):
-        """Initialize the Manta parser with the shared library."""
+    def __init__(self, demo_path: str, library_path: Optional[str] = None):
+        """Initialize parser for a specific demo file."""
+        self._demo_path = demo_path
+        self._decompressed_cache: Dict[str, str] = {}
+
         if library_path is None:
-            # Default to library in same directory
             library_path = Path(__file__).parent / "libmanta_wrapper.so"
 
         if not os.path.exists(library_path):
             raise FileNotFoundError(f"Shared library not found: {library_path}")
 
-        # Load the shared library
-        self.lib = ctypes.CDLL(str(library_path))
-
-        # Configure function signatures
+        self._lib = ctypes.CDLL(str(library_path))
         self._setup_function_signatures()
 
-        # Cache for decompressed files
-        self._decompressed_cache: Dict[str, str] = {}
+    def _setup_function_signatures(self):
+        """Configure ctypes function signatures."""
+        self._lib.Parse.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self._lib.Parse.restype = ctypes.c_char_p
+
+        self._lib.FreeString.argtypes = [ctypes.c_char_p]
+        self._lib.FreeString.restype = None
+
+        self._lib.StreamOpen.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self._lib.StreamOpen.restype = ctypes.c_char_p
+
+        self._lib.StreamNext.argtypes = [ctypes.c_longlong]
+        self._lib.StreamNext.restype = ctypes.c_char_p
+
+        self._lib.StreamClose.argtypes = [ctypes.c_longlong]
+        self._lib.StreamClose.restype = ctypes.c_char_p
+
+        self._lib.BuildIndex.argtypes = [ctypes.c_char_p, ctypes.c_int]
+        self._lib.BuildIndex.restype = ctypes.c_char_p
+
+        self._lib.GetSnapshot.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self._lib.GetSnapshot.restype = ctypes.c_char_p
+
+        self._lib.ParseRange.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+        self._lib.ParseRange.restype = ctypes.c_char_p
+
+        self._lib.FindKeyframe.argtypes = [ctypes.c_char_p, ctypes.c_int]
+        self._lib.FindKeyframe.restype = ctypes.c_char_p
 
     def _prepare_demo_file(self, demo_file_path: str) -> str:
-        """
-        Prepare a demo file for parsing, decompressing if necessary.
-
-        Supports:
-        - Raw .dem files (PBDEMS2 format)
-        - BZ2 compressed .dem files (downloaded from Valve servers)
-
-        Args:
-            demo_file_path: Path to the .dem file (possibly compressed)
-
-        Returns:
-            Path to the uncompressed demo file (may be a temp file)
-        """
-        # Check cache first
+        """Prepare demo file, decompressing if needed."""
         if demo_file_path in self._decompressed_cache:
             cached_path = self._decompressed_cache[demo_file_path]
             if os.path.exists(cached_path):
                 return cached_path
 
-        # Check if file is bz2 compressed by reading magic bytes
+        if os.path.isdir(demo_file_path):
+            raise ValueError(f"Parsing failed: '{demo_file_path}' is a directory, not a file")
+
         with open(demo_file_path, 'rb') as f:
             magic = f.read(3)
 
         if magic == self._BZ2_MAGIC:
-            # Decompress to temp file
             temp_fd, temp_path = tempfile.mkstemp(suffix='.dem')
             try:
                 with bz2.open(demo_file_path, 'rb') as f_in:
                     with os.fdopen(temp_fd, 'wb') as f_out:
-                        # Read and write in chunks to handle large files
                         while True:
-                            chunk = f_in.read(1024 * 1024)  # 1MB chunks
+                            chunk = f_in.read(1024 * 1024)
                             if not chunk:
                                 break
                             f_out.write(chunk)
 
-                # Cache the decompressed path
                 self._decompressed_cache[demo_file_path] = temp_path
                 return temp_path
             except Exception as e:
-                # Clean up temp file on error
                 if os.path.exists(temp_path):
                     os.unlink(temp_path)
                 raise ValueError(f"Failed to decompress bz2 file: {e}")
 
-        # File is not compressed, use as-is
         return demo_file_path
-    
-    def _setup_function_signatures(self):
-        """Configure ctypes function signatures for the shared library."""
-        # ParseHeader function: takes char* filename, returns char* JSON
-        self.lib.ParseHeader.argtypes = [ctypes.c_char_p]
-        self.lib.ParseHeader.restype = ctypes.c_char_p
 
-        # ParseMatchInfo function: takes char* filename, returns char* JSON (CDotaGameInfo)
-        self.lib.ParseMatchInfo.argtypes = [ctypes.c_char_p]
-        self.lib.ParseMatchInfo.restype = ctypes.c_char_p
-
-        # ParseUniversal function: takes char* filename, char* filter, int maxMessages, returns char* JSON
-        self.lib.ParseUniversal.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-        self.lib.ParseUniversal.restype = ctypes.c_char_p
-
-        # ParseEntities function: takes char* filename, char* configJSON, returns char* JSON
-        self.lib.ParseEntities.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-        self.lib.ParseEntities.restype = ctypes.c_char_p
-
-        # ParseGameEvents function: takes char* filename, char* configJSON, returns char* JSON
-        self.lib.ParseGameEvents.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-        self.lib.ParseGameEvents.restype = ctypes.c_char_p
-
-        # ParseModifiers function: takes char* filename, char* configJSON, returns char* JSON
-        self.lib.ParseModifiers.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-        self.lib.ParseModifiers.restype = ctypes.c_char_p
-
-        # QueryEntities function: takes char* filename, char* configJSON, returns char* JSON
-        self.lib.QueryEntities.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-        self.lib.QueryEntities.restype = ctypes.c_char_p
-
-        # GetStringTables function: takes char* filename, char* configJSON, returns char* JSON
-        self.lib.GetStringTables.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-        self.lib.GetStringTables.restype = ctypes.c_char_p
-
-        # ParseCombatLog function: takes char* filename, char* configJSON, returns char* JSON
-        self.lib.ParseCombatLog.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-        self.lib.ParseCombatLog.restype = ctypes.c_char_p
-
-        # GetParserInfo function: takes char* filename, returns char* JSON
-        self.lib.GetParserInfo.argtypes = [ctypes.c_char_p]
-        self.lib.GetParserInfo.restype = ctypes.c_char_p
-
-        # ParseMatchInfo function: takes char* filename, returns char* JSON
-        self.lib.ParseMatchInfo.argtypes = [ctypes.c_char_p]
-        self.lib.ParseMatchInfo.restype = ctypes.c_char_p
-
-        # FreeString function: takes char* to free
-        self.lib.FreeString.argtypes = [ctypes.c_char_p]
-        self.lib.FreeString.restype = None
-    
-    def parse_header(self, demo_file_path: str) -> HeaderInfo:
-        """
-        Parse the header of a Dota 2 demo file.
-
-        Args:
-            demo_file_path: Path to the .dem file (supports bz2 compressed)
-
-        Returns:
-            HeaderInfo object containing parsed header data
-
-        Raises:
-            FileNotFoundError: If demo file doesn't exist
-            ValueError: If parsing fails
-        """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-
-        # Handle bz2 compression if needed
-        actual_path = self._prepare_demo_file(demo_file_path)
-
-        # Convert path to bytes for C function
-        path_bytes = actual_path.encode('utf-8')
-        
-        # Call the Go function
-        result_ptr = self.lib.ParseHeader(path_bytes)
-        
-        if not result_ptr:
-            raise ValueError("ParseHeader returned null pointer")
-            
-        try:
-            # Convert C string result to Python string
-            result_json = ctypes.string_at(result_ptr).decode('utf-8')
-            
-            # Parse JSON response
-            result_dict = json.loads(result_json)
-            
-            # Convert to Pydantic model
-            header_info = HeaderInfo(**result_dict)
-            
-            if not header_info.success:
-                raise ValueError(f"Parsing failed: {header_info.error}")
-            
-            return header_info
-            
-        finally:
-            # Note: Skipping FreeString call to avoid memory issues
-            # Go's GC should handle this, but this creates a small memory leak
-            # TODO: Fix memory management properly
-            pass
-    
-    def parse_game_info(self, demo_file_path: str) -> GameInfo:
-        """
-        Parse game information from a Dota 2 demo file.
-
-        Extracts match metadata including:
-        - Match ID, game mode, winner
-        - League ID (for pro matches)
-        - Team IDs and tags (for pro matches)
-        - All player information (names, heroes, Steam IDs, teams)
-        - Draft picks and bans
-        - Playback duration info
-
-        Args:
-            demo_file_path: Path to the .dem file
-
-        Returns:
-            GameInfo object with match metadata.
-            Use is_pro_match() to check if this is a league/pro match.
-
-        Raises:
-            FileNotFoundError: If demo file doesn't exist
-            ValueError: If parsing fails
-        """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-
-        actual_path = self._prepare_demo_file(demo_file_path)
-        path_bytes = actual_path.encode('utf-8')
-
-        result_ptr = self.lib.ParseMatchInfo(path_bytes)
-
-        if not result_ptr:
-            raise ValueError("ParseMatchInfo returned null pointer")
-
-        try:
-            result_json = ctypes.string_at(result_ptr).decode('utf-8')
-            result_dict = json.loads(result_json)
-
-            # Map Go field names to Pythonic names
-            players = [
-                PlayerInfo(
-                    hero_name=p["hero_name"],
-                    player_name=p["player_name"],
-                    is_fake_client=p.get("is_fake_client", False),
-                    steam_id=p["steamid"],
-                    team=p["game_team"]
-                )
-                for p in result_dict.get("player_info", [])
-            ]
-
-            picks_bans = [
-                DraftEvent(
-                    is_pick=pb["is_pick"],
-                    team=pb["team"],
-                    hero_id=pb["hero_id"]
-                )
-                for pb in result_dict.get("picks_bans", [])
-            ]
-
-            game_info = GameInfo(
-                match_id=result_dict["match_id"],
-                game_mode=result_dict["game_mode"],
-                game_winner=result_dict["game_winner"],
-                league_id=result_dict.get("leagueid", 0),
-                end_time=result_dict.get("end_time", 0),
-                radiant_team_id=result_dict.get("radiant_team_id", 0),
-                dire_team_id=result_dict.get("dire_team_id", 0),
-                radiant_team_tag=result_dict.get("radiant_team_tag", ""),
-                dire_team_tag=result_dict.get("dire_team_tag", ""),
-                players=players,
-                picks_bans=picks_bans,
-                playback_time=result_dict.get("playback_time", 0.0),
-                playback_ticks=result_dict.get("playback_ticks", 0),
-                playback_frames=result_dict.get("playback_frames", 0),
-                success=result_dict["success"],
-                error=result_dict.get("error")
-            )
-
-            if not game_info.success:
-                raise ValueError(f"Game info parsing failed: {game_info.error}")
-
-            return game_info
-
-        finally:
-            pass
-
-    def parse_universal(self, demo_file_path: str, message_filter: str = "", max_messages: int = 0) -> UniversalParseResult:
-        """
-        Parse ALL Manta message types from a Dota 2 demo file universally.
-        
-        Args:
-            demo_file_path: Path to the .dem file
-            message_filter: Optional filter for specific message type (e.g., "CDOTAUserMsg_ChatEvent")
-            max_messages: Maximum number of messages to return (0 = no limit)
-            
-        Returns:
-            UniversalParseResult containing all captured messages
-            
-        Raises:
-            FileNotFoundError: If demo file doesn't exist
-            ValueError: If parsing fails
-        """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-
-        # Handle bz2 compression if needed
-        actual_path = self._prepare_demo_file(demo_file_path)
-
-        # Convert parameters to bytes for C function
-        path_bytes = actual_path.encode('utf-8')
-        filter_bytes = message_filter.encode('utf-8')
-
-        # Call the Go function
-        result_ptr = self.lib.ParseUniversal(path_bytes, filter_bytes, max_messages)
-        
-        if not result_ptr:
-            raise ValueError("ParseUniversal returned null pointer")
-            
-        try:
-            # Convert C string result to Python string
-            result_json = ctypes.string_at(result_ptr).decode('utf-8')
-            
-            # Parse JSON response
-            result_dict = json.loads(result_json)
-            
-            # Convert to Pydantic model
-            universal_result = UniversalParseResult(**result_dict)
-            
-            if not universal_result.success:
-                raise ValueError(f"Universal parsing failed: {universal_result.error}")
-            
-            return universal_result
-            
-        finally:
-            # Note: Skipping FreeString call to avoid memory issues
-            # TODO: Fix memory management properly
-            pass
-
-    def parse_entities(
+    def parse(
         self,
-        demo_file_path: str,
-        interval_ticks: int = 1800,
-        max_snapshots: int = 0,
-        target_ticks: Optional[List[int]] = None,
-        target_heroes: Optional[List[str]] = None,
-        entity_classes: Optional[List[str]] = None,
-        include_raw: bool = False
-    ) -> EntityParseResult:
-        """
-        Parse entity state snapshots from a Dota 2 demo file.
+        header: bool = False,
+        game_info: bool = False,
+        combat_log: Optional[Dict[str, Any]] = None,
+        entities: Optional[Dict[str, Any]] = None,
+        game_events: Optional[Dict[str, Any]] = None,
+        modifiers: Optional[Dict[str, Any]] = None,
+        string_tables: Optional[Dict[str, Any]] = None,
+        messages: Optional[Dict[str, Any]] = None,
+        parser_info: bool = False,
+    ) -> ParseResult:
+        """Parse the demo file with specified collectors.
 
-        This extracts player stats (last hits, denies, gold, etc.) and positions
-        at regular intervals or at specific ticks throughout the game.
-
-        Unlike combat log parsing, this captures data from the very start of
-        the game, making it suitable for extracting per-minute statistics
-        like lh_t and dn_t arrays, or hero positions at specific moments.
+        This method parses the file ONCE, collecting all requested data
+        in a single pass. Much more efficient than multiple parse_* calls.
 
         Args:
-            demo_file_path: Path to the .dem file
-            interval_ticks: Capture snapshot every N ticks (default 1800 = ~1 min at 30 ticks/sec)
-                           Ignored if target_ticks is provided.
-            max_snapshots: Maximum snapshots to capture (0 = unlimited)
-            target_ticks: Specific ticks to capture snapshots at. If provided, overrides
-                         interval_ticks. Useful for getting hero positions at exact moments
-                         (e.g., when a death occurred based on combat log tick).
-            target_heroes: Filter to only include specific heroes. Use npc_dota_hero_* format
-                          (e.g., ["npc_dota_hero_axe", "npc_dota_hero_lina"]). This is the
-                          same format as combat log target_name/attacker_name fields.
-            entity_classes: List of entity class names to include raw data for
-            include_raw: Whether to include raw entity data in snapshots
+            header: Collect header info
+            game_info: Collect game info (match, players, draft)
+            combat_log: Combat log config dict (types, max_entries, heroes_only)
+            entities: Entity snapshot config (interval_ticks, max_snapshots, etc.)
+            game_events: Game events config (event_filter, max_events, etc.)
+            modifiers: Modifiers config (max_modifiers, auras_only, etc.)
+            string_tables: String tables config (table_names, max_entries, etc.)
+            messages: Universal messages config (filter, max_messages)
+            parser_info: Collect parser state info
 
         Returns:
-            EntityParseResult containing player/team state snapshots over time
-
-        Raises:
-            FileNotFoundError: If demo file doesn't exist
-            ValueError: If parsing fails
-
-        Example:
-            # Get position of a specific hero at death tick
-            death = combat_log.entries[0]  # e.g., target_name = "npc_dota_hero_axe"
-            result = parser.parse_entities(
-                "match.dem",
-                target_ticks=[death.tick],
-                target_heroes=[death.target_name]
-            )
-            if result.snapshots and result.snapshots[0].players:
-                hero = result.snapshots[0].players[0]
-                print(f"{hero.hero_name} died at ({hero.position_x}, {hero.position_y})")
+            ParseResult with all requested data
         """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
+        if not os.path.exists(self._demo_path):
+            raise FileNotFoundError(f"Demo file not found: {self._demo_path}")
 
-        # Handle bz2 compression if needed
-        actual_path = self._prepare_demo_file(demo_file_path)
+        actual_path = self._prepare_demo_file(self._demo_path)
 
-        # Build config
-        config = EntityParseConfig(
-            interval_ticks=interval_ticks,
-            max_snapshots=max_snapshots,
-            target_ticks=target_ticks or [],
-            target_heroes=target_heroes or [],
-            entity_classes=entity_classes or [],
-            include_raw=include_raw
-        )
+        config = ParseConfig()
 
-        # Convert parameters to bytes for C function
+        if header:
+            config.header = HeaderCollectorConfig(enabled=True)
+
+        if game_info:
+            config.game_info = GameInfoCollectorConfig(enabled=True)
+
+        if combat_log is not None:
+            config.combat_log = CombatLogConfig(**combat_log)
+
+        if entities is not None:
+            config.entities = EntityParseConfig(**entities)
+
+        if game_events is not None:
+            config.game_events = GameEventsConfig(**game_events)
+
+        if modifiers is not None:
+            config.modifiers = ModifiersConfig(**modifiers)
+
+        if string_tables is not None:
+            config.string_tables = StringTablesConfig(**string_tables)
+
+        if messages is not None:
+            config.messages = MessagesCollectorConfig(**messages)
+
+        if parser_info:
+            config.parser_info = ParserInfoCollectorConfig(enabled=True)
+
         path_bytes = actual_path.encode('utf-8')
-        config_json = config.model_dump_json().encode('utf-8')
+        config_json = config.model_dump_json(exclude_none=True).encode('utf-8')
 
-        # Call the Go function
-        result_ptr = self.lib.ParseEntities(path_bytes, config_json)
+        result_ptr = self._lib.Parse(path_bytes, config_json)
 
         if not result_ptr:
-            raise ValueError("ParseEntities returned null pointer")
+            raise ValueError("Parse returned null pointer")
 
         try:
-            # Convert C string result to Python string
             result_json = ctypes.string_at(result_ptr).decode('utf-8')
-
-            # Parse JSON response
             result_dict = json.loads(result_json)
+            result = ParseResult(**result_dict)
 
-            # Convert to Pydantic model
-            entity_result = EntityParseResult(**result_dict)
+            if not result.success:
+                raise ValueError(f"Parsing failed: {result.error}")
 
-            if not entity_result.success:
-                raise ValueError(f"Entity parsing failed: {entity_result.error}")
-
-            return entity_result
-
+            return result
         finally:
-            # Note: Skipping FreeString call to avoid memory issues
-            # TODO: Fix memory management properly
             pass
 
-    def parse_game_events(
+    def stream(
         self,
-        demo_file_path: str,
-        event_filter: str = "",
-        event_names: Optional[List[str]] = None,
-        max_events: int = 0,
-        capture_types: bool = True
-    ) -> GameEventsResult:
-        """
-        Parse game events from a Dota 2 demo file.
+        combat_log: bool = False,
+        messages: bool = False,
+        game_events: bool = False,
+        max_events: int = 1000,
+    ) -> Iterator[StreamEvent]:
+        """Stream events from the demo file."""
+        if not os.path.exists(self._demo_path):
+            raise FileNotFoundError(f"Demo file not found: {self._demo_path}")
 
-        Game events are named events like "dota_combatlog", "player_death",
-        "dota_tower_kill", etc. There are 364+ event types available.
+        actual_path = self._prepare_demo_file(self._demo_path)
 
-        Args:
-            demo_file_path: Path to the .dem file
-            event_filter: Filter events by name (substring match)
-            event_names: List of specific event names to capture
-            max_events: Max events to capture (0 = unlimited)
-            capture_types: Whether to capture event type definitions
-
-        Returns:
-            GameEventsResult containing parsed game events
-        """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-
-        # Handle bz2 compression if needed
-        actual_path = self._prepare_demo_file(demo_file_path)
-
-        config = GameEventsConfig(
-            event_filter=event_filter,
-            event_names=event_names or [],
+        config = StreamConfig(
+            combat_log=combat_log,
+            messages=messages,
+            game_events=game_events,
             max_events=max_events,
-            capture_types=capture_types
         )
 
         path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json().encode('utf-8')
 
-        result_ptr = self.lib.ParseGameEvents(path_bytes, config_json)
+        open_result_ptr = self._lib.StreamOpen(path_bytes, config_json)
+        if not open_result_ptr:
+            raise ValueError("StreamOpen returned null pointer")
 
-        if not result_ptr:
-            raise ValueError("ParseGameEvents returned null pointer")
+        open_result_json = ctypes.string_at(open_result_ptr).decode('utf-8')
+        open_result = json.loads(open_result_json)
+
+        if not open_result.get('success', False):
+            raise ValueError(f"StreamOpen failed: {open_result.get('error', 'Unknown error')}")
+
+        handle_id = open_result['handle_id']
 
         try:
-            result_json = ctypes.string_at(result_ptr).decode('utf-8')
-            result_dict = json.loads(result_json)
-            result = GameEventsResult(**result_dict)
+            import time
+            while True:
+                next_result_ptr = self._lib.StreamNext(handle_id)
+                if not next_result_ptr:
+                    break
 
-            if not result.success:
-                raise ValueError(f"Game events parsing failed: {result.error}")
+                next_result_json = ctypes.string_at(next_result_ptr).decode('utf-8')
+                next_result = json.loads(next_result_json)
 
-            return result
+                if not next_result.get('success', False):
+                    error = next_result.get('error', 'Unknown error')
+                    if error:
+                        raise ValueError(f"StreamNext failed: {error}")
+                    break
+
+                if next_result.get('done', False):
+                    break
+
+                if next_result.get('event'):
+                    yield StreamEvent(**next_result['event'])
+                else:
+                    time.sleep(0.001)
+
         finally:
-            pass
+            self._lib.StreamClose(handle_id)
 
-    def parse_modifiers(
+    def build_index(self, interval_ticks: int = 1800) -> DemoIndex:
+        """Build an index of keyframes for seeking within the demo."""
+        if not os.path.exists(self._demo_path):
+            raise FileNotFoundError(f"Demo file not found: {self._demo_path}")
+
+        actual_path = self._prepare_demo_file(self._demo_path)
+        path_bytes = actual_path.encode('utf-8')
+
+        result_ptr = self._lib.BuildIndex(path_bytes, interval_ticks)
+
+        if not result_ptr:
+            raise ValueError("BuildIndex returned null pointer")
+
+        result_json = ctypes.string_at(result_ptr).decode('utf-8')
+        result_dict = json.loads(result_json)
+        result = DemoIndex(**result_dict)
+
+        if not result.success:
+            raise ValueError(f"Index building failed: {result.error}")
+
+        return result
+
+    def snapshot(self, target_tick: int, include_illusions: bool = False) -> EntityStateSnapshot:
+        """Get entity state snapshot at a specific tick."""
+        if not os.path.exists(self._demo_path):
+            raise FileNotFoundError(f"Demo file not found: {self._demo_path}")
+
+        actual_path = self._prepare_demo_file(self._demo_path)
+        path_bytes = actual_path.encode('utf-8')
+
+        config = {"target_tick": target_tick, "include_illusions": include_illusions}
+        config_json = json.dumps(config).encode('utf-8')
+
+        result_ptr = self._lib.GetSnapshot(path_bytes, config_json)
+
+        if not result_ptr:
+            raise ValueError("GetSnapshot returned null pointer")
+
+        result_json = ctypes.string_at(result_ptr).decode('utf-8')
+        result_dict = json.loads(result_json)
+        result = EntityStateSnapshot(**result_dict)
+
+        if not result.success:
+            raise ValueError(f"Snapshot failed: {result.error}")
+
+        return result
+
+    def parse_range(
         self,
-        demo_file_path: str,
-        max_modifiers: int = 0,
-        debuffs_only: bool = False,
-        auras_only: bool = False
-    ) -> ModifiersResult:
-        """
-        Parse modifier/buff entries from a Dota 2 demo file.
+        start_tick: int,
+        end_tick: int,
+        combat_log: bool = False,
+        messages: bool = False,
+        game_events: bool = False,
+    ) -> RangeParseResult:
+        """Parse events within a specific tick range."""
+        if not os.path.exists(self._demo_path):
+            raise FileNotFoundError(f"Demo file not found: {self._demo_path}")
 
-        Modifiers are buffs and debuffs applied to units. This tracks
-        modifier creation, duration, stack counts, and more.
+        actual_path = self._prepare_demo_file(self._demo_path)
 
-        Args:
-            demo_file_path: Path to the .dem file
-            max_modifiers: Max modifiers to capture (0 = unlimited)
-            debuffs_only: Only capture debuffs
-            auras_only: Only capture auras
-
-        Returns:
-            ModifiersResult containing modifier entries
-        """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-
-        # Handle bz2 compression if needed
-        actual_path = self._prepare_demo_file(demo_file_path)
-
-        config = ModifiersConfig(
-            max_modifiers=max_modifiers,
-            debuffs_only=debuffs_only,
-            auras_only=auras_only
+        config = RangeParseConfig(
+            start_tick=start_tick,
+            end_tick=end_tick,
+            combat_log=combat_log,
+            messages=messages,
+            game_events=game_events,
         )
 
         path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json().encode('utf-8')
 
-        result_ptr = self.lib.ParseModifiers(path_bytes, config_json)
+        result_ptr = self._lib.ParseRange(path_bytes, config_json)
 
         if not result_ptr:
-            raise ValueError("ParseModifiers returned null pointer")
+            raise ValueError("ParseRange returned null pointer")
 
-        try:
-            result_json = ctypes.string_at(result_ptr).decode('utf-8')
-            result_dict = json.loads(result_json)
-            result = ModifiersResult(**result_dict)
+        result_json = ctypes.string_at(result_ptr).decode('utf-8')
+        result_dict = json.loads(result_json)
+        result = RangeParseResult(**result_dict)
 
-            if not result.success:
-                raise ValueError(f"Modifier parsing failed: {result.error}")
+        if not result.success:
+            raise ValueError(f"Range parsing failed: {result.error}")
 
-            return result
-        finally:
-            pass
+        return result
 
-    def query_entities(
-        self,
-        demo_file_path: str,
-        class_filter: str = "",
-        class_names: Optional[List[str]] = None,
-        property_filter: Optional[List[str]] = None,
-        at_tick: int = 0,
-        max_entities: int = 0
-    ) -> EntitiesResult:
-        """
-        Query entity states from a Dota 2 demo file.
+    def find_keyframe(self, index: DemoIndex, target_tick: int) -> KeyframeResult:
+        """Find the nearest keyframe at or before a target tick."""
+        index_json = index.model_dump_json().encode('utf-8')
 
-        This provides full access to any entity in the game: heroes, buildings,
-        wards, couriers, creeps, neutrals, etc.
-
-        Args:
-            demo_file_path: Path to the .dem file
-            class_filter: Filter by class name (substring match)
-            class_names: List of specific class names to capture
-            property_filter: Only include these properties (empty = all)
-            at_tick: Capture entities at this tick (0 = end of file)
-            max_entities: Max entities to return (0 = unlimited)
-
-        Returns:
-            EntitiesResult containing entity data
-        """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-
-        # Handle bz2 compression if needed
-        actual_path = self._prepare_demo_file(demo_file_path)
-
-        config = EntitiesConfig(
-            class_filter=class_filter,
-            class_names=class_names or [],
-            property_filter=property_filter or [],
-            at_tick=at_tick,
-            max_entities=max_entities
-        )
-
-        path_bytes = actual_path.encode('utf-8')
-        config_json = config.model_dump_json().encode('utf-8')
-
-        result_ptr = self.lib.QueryEntities(path_bytes, config_json)
+        result_ptr = self._lib.FindKeyframe(index_json, target_tick)
 
         if not result_ptr:
-            raise ValueError("QueryEntities returned null pointer")
+            raise ValueError("FindKeyframe returned null pointer")
 
-        try:
-            result_json = ctypes.string_at(result_ptr).decode('utf-8')
-            result_dict = json.loads(result_json)
-            result = EntitiesResult(**result_dict)
+        result_json = ctypes.string_at(result_ptr).decode('utf-8')
+        result_dict = json.loads(result_json)
+        result = KeyframeResult(**result_dict)
 
-            if not result.success:
-                raise ValueError(f"Entity querying failed: {result.error}")
+        if not result.success:
+            raise ValueError(f"Keyframe search failed: {result.error}")
 
-            return result
-        finally:
-            pass
+        return result
 
-    def get_string_tables(
-        self,
-        demo_file_path: str,
-        table_names: Optional[List[str]] = None,
-        include_values: bool = False,
-        max_entries: int = 100
-    ) -> StringTablesResult:
-        """
-        Extract string table data from a Dota 2 demo file.
 
-        String tables contain mappings for hero names, ability names,
-        item names, and other game data.
-
-        Args:
-            demo_file_path: Path to the .dem file
-            table_names: Tables to extract (empty = all)
-            include_values: Include value data (can be large)
-            max_entries: Max entries per table
-
-        Returns:
-            StringTablesResult containing string table data
-        """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-
-        # Handle bz2 compression if needed
-        actual_path = self._prepare_demo_file(demo_file_path)
-
-        config = StringTablesConfig(
-            table_names=table_names or [],
-            include_values=include_values,
-            max_entries=max_entries
-        )
-
-        path_bytes = actual_path.encode('utf-8')
-        config_json = config.model_dump_json().encode('utf-8')
-
-        result_ptr = self.lib.GetStringTables(path_bytes, config_json)
-
-        if not result_ptr:
-            raise ValueError("GetStringTables returned null pointer")
-
-        try:
-            result_json = ctypes.string_at(result_ptr).decode('utf-8')
-            result_dict = json.loads(result_json)
-            result = StringTablesResult(**result_dict)
-
-            if not result.success:
-                raise ValueError(f"String table extraction failed: {result.error}")
-
-            return result
-        finally:
-            pass
-
-    def parse_combat_log(
-        self,
-        demo_file_path: str,
-        types: Optional[List[int]] = None,
-        max_entries: int = 0,
-        heroes_only: bool = False
-    ) -> CombatLogResult:
-        """
-        Parse structured combat log entries from a Dota 2 demo file.
-
-        Combat log contains damage, healing, kills, ability usage, item
-        purchases, and more. Note: Combat log data may be missing for the
-        first ~12 minutes of SourceTV replays - use parse_entities() for
-        early game stats.
-
-        Args:
-            demo_file_path: Path to the .dem file
-            types: Filter by combat log type (empty = all)
-            max_entries: Max entries (0 = unlimited)
-            heroes_only: Only hero-related entries
-
-        Returns:
-            CombatLogResult containing structured combat log entries
-        """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-
-        # Handle bz2 compression if needed
-        actual_path = self._prepare_demo_file(demo_file_path)
-
-        config = CombatLogConfig(
-            types=types or [],
-            max_entries=max_entries,
-            heroes_only=heroes_only
-        )
-
-        path_bytes = actual_path.encode('utf-8')
-        config_json = config.model_dump_json().encode('utf-8')
-
-        result_ptr = self.lib.ParseCombatLog(path_bytes, config_json)
-
-        if not result_ptr:
-            raise ValueError("ParseCombatLog returned null pointer")
-
-        try:
-            result_json = ctypes.string_at(result_ptr).decode('utf-8')
-            result_dict = json.loads(result_json)
-            result = CombatLogResult(**result_dict)
-
-            if not result.success:
-                raise ValueError(f"Combat log parsing failed: {result.error}")
-
-            return result
-        finally:
-            pass
-
-    def get_parser_info(self, demo_file_path: str) -> ParserInfo:
-        """
-        Get parser state information from a Dota 2 demo file.
-
-        This includes game build, tick counts, available string tables,
-        and entity counts.
-
-        Args:
-            demo_file_path: Path to the .dem file
-
-        Returns:
-            ParserInfo containing parser state information
-        """
-        if not os.path.exists(demo_file_path):
-            raise FileNotFoundError(f"Demo file not found: {demo_file_path}")
-
-        # Handle bz2 compression if needed
-        actual_path = self._prepare_demo_file(demo_file_path)
-
-        path_bytes = actual_path.encode('utf-8')
-
-        result_ptr = self.lib.GetParserInfo(path_bytes)
-
-        if not result_ptr:
-            raise ValueError("GetParserInfo returned null pointer")
-
-        try:
-            result_json = ctypes.string_at(result_ptr).decode('utf-8')
-            result_dict = json.loads(result_json)
-            result = ParserInfo(**result_dict)
-
-            if not result.success:
-                raise ValueError(f"Parser info extraction failed: {result.error}")
-
-            return result
-        finally:
-            pass
 
 def _run_cli(argv=None):
     """Run the CLI interface. Separated for testing."""
@@ -2112,8 +2037,9 @@ def _run_cli(argv=None):
     demo_file = argv[1]
 
     try:
-        parser = MantaParser()
-        header = parser.parse_header(demo_file)
+        parser = Parser(demo_file)
+        result = parser.parse(header=True)
+        header = result.header
         print(f"Success! Parsed header from: {demo_file}")
         print(f"  Map: {header.map_name}")
         print(f"  Server: {header.server_name}")
@@ -2124,7 +2050,7 @@ def _run_cli(argv=None):
         print(f"  Build Num: {header.build_num}")
         print(f"  Game: {header.game}")
         print(f"  Server Start Tick: {header.server_start_tick}")
-        
+
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)

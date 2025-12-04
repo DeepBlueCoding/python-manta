@@ -647,7 +647,11 @@ game_info = parser.parse_game_info("match.dem")
 
 # Basic match info
 print(f"Match {game_info.match_id}")
-print(f"Duration: {game_info.playback_time / 60:.1f} minutes")
+# Convert to proper time format (H:MM:SS)
+hours = int(game_info.playback_time // 3600)
+mins = int((game_info.playback_time % 3600) // 60)
+secs = int(game_info.playback_time % 60)
+print(f"Duration: {hours}:{mins:02d}:{secs:02d}")
 winner = "Radiant" if game_info.game_winner == 2 else "Dire"
 print(f"Winner: {winner}")
 

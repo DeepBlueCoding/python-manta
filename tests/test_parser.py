@@ -1,269 +1,254 @@
 """
-Test MantaParser class business logic with REAL VALUES.
+Test Parser class business logic with REAL VALUES.
 Focus on parser behavior, business rules, and data consistency.
+Uses v2 Parser API exclusively.
 """
 
 import pytest
-from python_manta import MantaParser, HeaderInfo, GameInfo, UniversalParseResult
+
+# Module-level marker: core functionality tests (~30s)
+pytestmark = pytest.mark.core
+from python_manta import Parser, HeaderInfo, GameInfo, ParseResult
 
 # Real demo file path
 DEMO_FILE = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
 
 
-@pytest.mark.unit
-class TestMantaParserBusinessLogic:
-    """Test MantaParser business logic with real demo file."""
+class TestParserBusinessLogic:
+    """Test Parser business logic with real demo file."""
 
     def test_parser_produces_consistent_header_values(self):
         """Test parser consistently produces same header values across calls."""
-        parser = MantaParser()
-        
+        parser = Parser(DEMO_FILE)
+
         # Parse multiple times - should be identical
-        result1 = parser.parse_header(DEMO_FILE)
-        result2 = parser.parse_header(DEMO_FILE)
-        result3 = parser.parse_header(DEMO_FILE)
-        
+        result1 = parser.parse(header=True)
+        result2 = parser.parse(header=True)
+        result3 = parser.parse(header=True)
+
         # All results must be identical
-        assert result1.map_name == result2.map_name == result3.map_name == "start"
-        assert result1.build_num == result2.build_num == result3.build_num == 10512
-        assert result1.server_name == result2.server_name == result3.server_name
+        assert result1.header.map_name == result2.header.map_name == result3.header.map_name == "start"
+        assert result1.header.build_num == result2.header.build_num == result3.header.build_num == 10512
+        assert result1.header.server_name == result2.header.server_name == result3.header.server_name
         assert result1.success == result2.success == result3.success == True
 
     def test_parser_draft_business_rules(self):
         """Test draft parsing follows Dota 2 business rules."""
-        parser = MantaParser()
-        result = parser.parse_game_info(DEMO_FILE)
-        
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+
         # Business rule: Must have exactly 10 picks in 5v5 game
-        picks = [e for e in result.picks_bans if e.is_pick]
+        picks = [e for e in result.game_info.picks_bans if e.is_pick]
         assert len(picks) == 10
-        
+
         # Business rule: Each team gets exactly 5 picks
         radiant_picks = [e for e in picks if e.team == 2]
         dire_picks = [e for e in picks if e.team == 3]
         assert len(radiant_picks) == 5
         assert len(dire_picks) == 5
-        
+
         # Business rule: All hero IDs must be positive
-        for event in result.picks_bans:
+        for event in result.game_info.picks_bans:
             assert event.hero_id > 0
-            
+
         # Business rule: Team IDs must be 2 (Radiant) or 3 (Dire)
-        for event in result.picks_bans:
+        for event in result.game_info.picks_bans:
             assert event.team in [2, 3]
 
-    def test_parser_universal_message_ordering(self):
-        """Test universal parsing maintains correct message ordering."""
-        parser = MantaParser()
-        result = parser.parse_universal(DEMO_FILE, max_messages=20)
-        
+    def test_parser_messages_ordering(self):
+        """Test message parsing maintains correct ordering."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(messages={"max_messages": 20})
+
         # Business rule: Messages must be ordered by tick
-        ticks = [msg.tick for msg in result.messages]
+        ticks = [msg.tick for msg in result.messages.messages]
         assert ticks == sorted(ticks), "Messages must be in tick order"
-        
+
         # Business rule: First message should always be CDemoFileHeader
-        assert result.messages[0].type == "CDemoFileHeader"
-        assert result.messages[0].tick == 0
-        
+        assert result.messages.messages[0].type == "CDemoFileHeader"
+        assert result.messages.messages[0].tick == 0
+
         # Business rule: All net_ticks must be non-negative
-        for msg in result.messages:
+        for msg in result.messages.messages:
             assert msg.net_tick >= 0
 
     def test_multiple_parser_instances_independence(self):
         """Test multiple parser instances work independently with same results."""
-        parser1 = MantaParser()
-        parser2 = MantaParser()
-        parser3 = MantaParser()
-        
+        parser1 = Parser(DEMO_FILE)
+        parser2 = Parser(DEMO_FILE)
+        parser3 = Parser(DEMO_FILE)
+
         # All parsers should produce identical results for same file
-        header1 = parser1.parse_header(DEMO_FILE)
-        header2 = parser2.parse_header(DEMO_FILE)
-        header3 = parser3.parse_header(DEMO_FILE)
-        
-        assert header1.map_name == header2.map_name == header3.map_name == "start"
-        assert header1.build_num == header2.build_num == header3.build_num == 10512
-        
-        # Test with draft parsing
-        game_info1 = parser1.parse_game_info(DEMO_FILE)
-        game_info2 = parser2.parse_game_info(DEMO_FILE)
-        
-        assert len(game_info1.picks_bans) == len(game_info2.picks_bans) == 24
-        
+        result1 = parser1.parse(header=True)
+        result2 = parser2.parse(header=True)
+        result3 = parser3.parse(header=True)
+
+        assert result1.header.map_name == result2.header.map_name == result3.header.map_name == "start"
+        assert result1.header.build_num == result2.header.build_num == result3.header.build_num == 10512
+
+        # Test with game_info parsing
+        result1 = parser1.parse(game_info=True)
+        result2 = parser2.parse(game_info=True)
+
+        assert len(result1.game_info.picks_bans) == len(result2.game_info.picks_bans) == 24
+
         # Pick sequences must be identical
-        picks1 = [e.hero_id for e in game_info1.picks_bans if e.is_pick and e.team == 2]
-        picks2 = [e.hero_id for e in game_info2.picks_bans if e.is_pick and e.team == 2]
+        picks1 = [e.hero_id for e in result1.game_info.picks_bans if e.is_pick and e.team == 2]
+        picks2 = [e.hero_id for e in result2.game_info.picks_bans if e.is_pick and e.team == 2]
         assert picks1 == picks2 == [99, 123, 66, 114, 95]
 
-    def test_parser_mixed_operations_consistency(self):
-        """Test parser maintains consistency across different operation types."""
-        parser = MantaParser()
-        
-        # Parse all types on same parser instance
-        header = parser.parse_header(DEMO_FILE)
-        game_info = parser.parse_game_info(DEMO_FILE)
-        universal = parser.parse_universal(DEMO_FILE, max_messages=5)
-        
-        # All operations must succeed
-        assert header.success is True
-        assert game_info.success is True  
-        assert universal.success is True
-        
-        # Verify consistent data across operations
-        assert header.map_name == "start"
-        assert len(game_info.picks_bans) == 24
-        assert len(universal.messages) == 5
-        assert universal.messages[0].type == "CDemoFileHeader"
+    def test_parser_single_pass_all_collectors(self):
+        """Test parser collects all data in single pass."""
+        parser = Parser(DEMO_FILE)
+
+        # Parse all types in single pass
+        result = parser.parse(
+            header=True,
+            game_info=True,
+            messages={"max_messages": 5},
+        )
+
+        # All collectors must succeed
+        assert result.success is True
+        assert result.header is not None
+        assert result.game_info is not None
+        assert result.messages is not None
+
+        # Verify data from each collector
+        assert result.header.map_name == "start"
+        assert len(result.game_info.picks_bans) == 24
+        assert len(result.messages.messages) == 5
+        assert result.messages.messages[0].type == "CDemoFileHeader"
 
 
-@pytest.mark.unit
-class TestMantaParserDataIntegrity:
+class TestParserDataIntegrity:
     """Test parser data integrity and validation rules."""
 
     def test_draft_data_relationships(self):
         """Test draft data maintains proper relationships."""
-        parser = MantaParser()
-        result = parser.parse_game_info(DEMO_FILE)
-        
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+
         # Data integrity: Total events = picks + bans
-        picks = [e for e in result.picks_bans if e.is_pick]
-        bans = [e for e in result.picks_bans if not e.is_pick]
-        assert len(picks) + len(bans) == len(result.picks_bans) == 24
-        
+        picks = [e for e in result.game_info.picks_bans if e.is_pick]
+        bans = [e for e in result.game_info.picks_bans if not e.is_pick]
+        assert len(picks) + len(bans) == len(result.game_info.picks_bans) == 24
+
         # Data integrity: No duplicate picks within same team
         radiant_picks = [e.hero_id for e in picks if e.team == 2]
         dire_picks = [e.hero_id for e in picks if e.team == 3]
-        
+
         assert len(radiant_picks) == len(set(radiant_picks)), "No duplicate picks in radiant"
         assert len(dire_picks) == len(set(dire_picks)), "No duplicate picks in dire"
-        
+
         # Data integrity: No hero picked by both teams
         assert len(set(radiant_picks) & set(dire_picks)) == 0, "No hero picked by both teams"
 
-    def test_universal_message_data_consistency(self):
-        """Test universal parsing maintains data consistency."""
-        parser = MantaParser()
-        result = parser.parse_universal(DEMO_FILE, max_messages=15)
-        
+    def test_message_data_consistency(self):
+        """Test message parsing maintains data consistency."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(messages={"max_messages": 15})
+
         # Data consistency: All messages have required fields
-        for msg in result.messages:
+        for msg in result.messages.messages:
             assert len(msg.type) > 0, "Message type cannot be empty"
             assert msg.tick >= 0, "Tick must be non-negative"
             assert msg.net_tick >= 0, "Net tick must be non-negative"
             assert msg.data is not None, "Message data cannot be None"
-        
+
         # Data consistency: Message count matches actual count
-        assert len(result.messages) <= 15  # Requested max
-        assert result.count >= len(result.messages)  # Total should be >= returned
+        assert len(result.messages.messages) <= 15  # Requested max
 
     def test_header_data_validation(self):
         """Test header data passes validation rules."""
-        parser = MantaParser()
-        result = parser.parse_header(DEMO_FILE)
-        
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(header=True)
+
         # Data validation: Required fields must not be empty
-        assert len(result.map_name) > 0, "Map name cannot be empty"
-        assert len(result.server_name) > 0, "Server name cannot be empty"
-        assert len(result.client_name) > 0, "Client name cannot be empty"
-        
+        assert len(result.header.map_name) > 0, "Map name cannot be empty"
+        assert len(result.header.server_name) > 0, "Server name cannot be empty"
+        assert len(result.header.client_name) > 0, "Client name cannot be empty"
+
         # Data validation: Numeric fields must be reasonable
-        assert result.network_protocol > 0, "Network protocol must be positive"
-        assert result.build_num > 0, "Build number must be positive"
-        assert result.server_start_tick >= 0, "Start tick must be non-negative"
-        
+        assert result.header.network_protocol > 0, "Network protocol must be positive"
+        assert result.header.build_num > 0, "Build number must be positive"
+        assert result.header.server_start_tick >= 0, "Start tick must be non-negative"
+
         # Data validation: Demo file stamp must be valid
-        assert len(result.demo_file_stamp) > 0, "Demo file stamp cannot be empty"
+        assert len(result.header.demo_file_stamp) > 0, "Demo file stamp cannot be empty"
 
 
-@pytest.mark.unit  
-class TestMantaParserLibraryIntegration:
+class TestParserLibraryIntegration:
     """Test parser integration with underlying library."""
 
     def test_custom_library_path_works(self):
         """Test parser works with custom library path."""
         # Use explicit library path
         lib_path = "/home/juanma/projects/equilibrium_coach/python_manta/src/python_manta/libmanta_wrapper.so"
-        parser = MantaParser(lib_path)
-        
-        # Should produce same results as default parser
-        result = parser.parse_header(DEMO_FILE)
-        assert result.success is True
-        assert result.map_name == "start"
-        assert result.build_num == 10512
+        parser = Parser(DEMO_FILE, library_path=lib_path)
 
-    def test_library_function_signatures(self):
-        """Test parser library has expected function signatures."""
-        parser = MantaParser()
-        
-        # Verify ctypes functions exist and are callable
-        assert hasattr(parser.lib, 'ParseHeader')
-        assert hasattr(parser.lib, 'ParseMatchInfo')
-        assert hasattr(parser.lib, 'ParseUniversal')
-        
-        # Verify functions can be called and return valid results
-        result = parser.parse_header(DEMO_FILE)
+        # Should produce same results as default parser
+        result = parser.parse(header=True)
         assert result.success is True
+        assert result.header.map_name == "start"
+        assert result.header.build_num == 10512
 
     def test_memory_consistency_multiple_calls(self):
         """Test parser handles memory consistently across multiple calls."""
-        parser = MantaParser()
-        
+        parser = Parser(DEMO_FILE)
+
         # Multiple operations should not cause memory issues
         for i in range(5):
-            header = parser.parse_header(DEMO_FILE)
-            assert header.map_name == "start", f"Failed on iteration {i}"
-            
-            game_info = parser.parse_game_info(DEMO_FILE) 
-            assert len(game_info.picks_bans) == 24, f"Failed on iteration {i}"
-            
-            universal = parser.parse_universal(DEMO_FILE, max_messages=3)
-            assert len(universal.messages) == 3, f"Failed on iteration {i}"
+            result = parser.parse(header=True)
+            assert result.header.map_name == "start", f"Failed on iteration {i}"
+
+            result = parser.parse(game_info=True)
+            assert len(result.game_info.picks_bans) == 24, f"Failed on iteration {i}"
+
+            result = parser.parse(messages={"max_messages": 3})
+            assert len(result.messages.messages) == 3, f"Failed on iteration {i}"
 
 
-@pytest.mark.unit
-class TestMantaParserErrorHandling:
+class TestParserErrorHandling:
     """Test parser error handling with real error scenarios."""
 
     def test_missing_library_file_error(self):
         """Test parser raises proper error for missing library."""
         with pytest.raises(FileNotFoundError, match="Shared library not found"):
-            MantaParser("/nonexistent/path/libmanta_wrapper.so")
+            Parser(DEMO_FILE, library_path="/nonexistent/path/libmanta_wrapper.so")
 
     def test_nonexistent_demo_file_error(self):
         """Test parser raises proper error for nonexistent demo file."""
-        parser = MantaParser()
-        
+        parser = Parser("/nonexistent/file.dem")
+
         with pytest.raises(FileNotFoundError, match="Demo file not found"):
-            parser.parse_header("/nonexistent/file.dem")
-            
+            parser.parse(header=True)
+
         with pytest.raises(FileNotFoundError, match="Demo file not found"):
-            parser.parse_game_info("/nonexistent/file.dem")
-            
+            parser.parse(game_info=True)
+
         with pytest.raises(FileNotFoundError, match="Demo file not found"):
-            parser.parse_universal("/nonexistent/file.dem")
+            parser.parse(messages=True)
 
     def test_invalid_file_type_error(self):
         """Test parser handles invalid file types properly."""
-        parser = MantaParser()
+        parser = Parser("/tmp")
 
-        # Directory instead of file should fail with IsADirectoryError
-        with pytest.raises(IsADirectoryError):
-            parser.parse_header("/tmp")
+        # Directory instead of file should fail with ValueError
+        with pytest.raises(ValueError) as exc_info:
+            parser.parse(header=True)
+        assert "is a directory" in str(exc_info.value)
 
-        with pytest.raises(IsADirectoryError):
-            parser.parse_game_info("/tmp")
+        with pytest.raises(ValueError) as exc_info:
+            parser.parse(game_info=True)
+        assert "is a directory" in str(exc_info.value)
 
-        with pytest.raises(IsADirectoryError):
-            parser.parse_universal("/tmp")
+    def test_empty_parse_still_succeeds(self):
+        """Test parsing with no collectors still succeeds."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse()
 
-    def test_empty_file_path_error(self):
-        """Test parser handles empty file paths properly.""" 
-        parser = MantaParser()
-        
-        with pytest.raises(FileNotFoundError):
-            parser.parse_header("")
-            
-        with pytest.raises(FileNotFoundError):
-            parser.parse_game_info("")
-            
-        with pytest.raises(FileNotFoundError):
-            parser.parse_universal("")
+        assert result.success is True
+        # All collectors should be None
+        assert result.header is None
+        assert result.game_info is None

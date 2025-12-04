@@ -1,134 +1,182 @@
 """
 Test models with REAL VALUES from actual demo file.
 Golden Master approach: Test against verified expected values.
+Uses v2 Parser API exclusively.
 """
 
 import pytest
+
+# Module-level marker: fast tests (~10s)
+pytestmark = pytest.mark.fast
 from python_manta import (
-    MantaParser,
+    Parser,
+    ParseResult,
     HeaderInfo,
     DraftEvent,
     PlayerInfo,
     GameInfo,
     MessageEvent,
-    UniversalParseResult,
+    MessagesResult,
     ChatWheelMessage,
     GameActivity,
+    Hero,
 )
 
 # Real demo file path
 DEMO_FILE = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
 
 
-@pytest.fixture
-def parser():
-    return MantaParser()
-
-
-@pytest.mark.unit
 class TestHeaderInfoRealValues:
     """Test HeaderInfo contains EXACT values from real demo file."""
 
-    def test_header_exact_values(self, parser):
+    def test_header_exact_values(self):
         """Test header parsing produces exact expected values from real file."""
-        result = parser.parse_header(DEMO_FILE)
-        
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(header=True)
+
         # EXACT values from the real demo file (verified manually)
         assert result.success is True
-        assert result.map_name == "start"
-        assert result.server_name == "Valve TI14 Server (srcds227-fra2.Hamburg.4)"
-        assert result.client_name == "SourceTV Demo"
-        assert result.game_directory == "/opt/srcds/dota/dota_v6536/dota"
-        assert result.network_protocol == 48
-        assert result.demo_file_stamp == "PBDEMS2\x00"
-        assert result.build_num == 10512
-        assert result.game == ""  # This specific demo file has empty game field
-        assert result.server_start_tick == 381
-        assert result.error is None
+        assert result.header.map_name == "start"
+        assert result.header.server_name == "Valve TI14 Server (srcds227-fra2.Hamburg.4)"
+        assert result.header.client_name == "SourceTV Demo"
+        assert result.header.game_directory == "/opt/srcds/dota/dota_v6536/dota"
+        assert result.header.network_protocol == 48
+        assert result.header.demo_file_stamp == "PBDEMS2\x00"
+        assert result.header.build_num == 10512
+        assert result.header.game == ""  # This specific demo file has empty game field
+        assert result.header.server_start_tick == 381
+        assert result.header.error is None
 
-    def test_header_serialization_roundtrip(self, parser):
+    def test_header_serialization_roundtrip(self):
         """Test HeaderInfo JSON serialization preserves exact values."""
-        original = parser.parse_header(DEMO_FILE)
-        
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(header=True)
+        original = result.header
+
         # Serialize and deserialize
         json_str = original.model_dump_json()
         restored = HeaderInfo.model_validate_json(json_str)
-        
+
         # Must be identical to original
         assert restored == original
         assert restored.map_name == "start"
         assert restored.build_num == 10512
 
 
-@pytest.mark.unit
 class TestDraftEventRealValues:
     """Test DraftEvent with EXACT values from real draft."""
 
-    def test_draft_exact_structure(self, parser):
+    def test_draft_exact_structure(self):
         """Test draft contains exact pick/ban structure from real game."""
-        game_info = parser.parse_game_info(DEMO_FILE)
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        game_info = result.game_info
 
         # EXACT values from real demo file
-        assert game_info.success is True
+        assert result.success is True
         assert len(game_info.picks_bans) == 24  # Exact number of events
-        assert game_info.error is None
+        assert result.error is None
 
-        # Test first 5 events exact sequence
+        # Test first 5 events exact sequence using Hero enum
         first_5_events = [(e.is_pick, e.team, e.hero_id) for e in game_info.picks_bans[:5]]
-        expected_first_5 = [(False, 3, 53), (False, 2, 74), (False, 2, 38), (False, 3, 11), (False, 2, 89)]
+        expected_first_5 = [
+            (False, 3, Hero.NATURES_PROPHET.value),  # Dire ban
+            (False, 2, Hero.INVOKER.value),          # Radiant ban
+            (False, 2, Hero.BEASTMASTER.value),      # Radiant ban
+            (False, 3, Hero.SHADOW_FIEND.value),     # Dire ban
+            (False, 2, Hero.NAGA_SIREN.value),       # Radiant ban
+        ]
         assert first_5_events == expected_first_5
 
-    def test_picks_exact_values(self, parser):
+    def test_picks_exact_values(self):
         """Test picks contain exact hero IDs from real game."""
-        game_info = parser.parse_game_info(DEMO_FILE)
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        game_info = result.game_info
 
         picks = [e for e in game_info.picks_bans if e.is_pick]
         assert len(picks) == 10  # Standard 5v5 picks
 
-        # Exact pick sequences by team
+        # Exact pick sequences by team using Hero enum
         radiant_picks = [e.hero_id for e in picks if e.team == 2]
         dire_picks = [e.hero_id for e in picks if e.team == 3]
 
-        assert radiant_picks == [99, 123, 66, 114, 95]  # Real radiant picks
-        assert dire_picks == [77, 45, 27, 17, 41]       # Real dire picks
+        # Radiant: Bristleback, Hoodwink, Chen, Monkey King, Troll Warlord
+        assert radiant_picks == [
+            Hero.BRISTLEBACK.value,
+            Hero.HOODWINK.value,
+            Hero.CHEN.value,
+            Hero.MONKEY_KING.value,
+            Hero.TROLL_WARLORD.value,
+        ]
+        # Dire: Lycan, Pugna, Shadow Shaman, Storm Spirit, Faceless Void
+        assert dire_picks == [
+            Hero.LYCAN.value,
+            Hero.PUGNA.value,
+            Hero.SHADOW_SHAMAN.value,
+            Hero.STORM_SPIRIT.value,
+            Hero.FACELESS_VOID.value,
+        ]
 
-    def test_bans_exact_values(self, parser):
+    def test_bans_exact_values(self):
         """Test bans contain exact hero IDs from real game."""
-        game_info = parser.parse_game_info(DEMO_FILE)
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        game_info = result.game_info
 
         bans = [e for e in game_info.picks_bans if not e.is_pick]
         assert len(bans) == 14  # Exact number of bans in this game
 
-        # Exact ban sequences by team
+        # Exact ban sequences by team using Hero enum
         radiant_bans = [e.hero_id for e in bans if e.team == 2]
         dire_bans = [e.hero_id for e in bans if e.team == 3]
 
-        assert radiant_bans == [74, 38, 89, 136, 102, 70, 8]  # Real radiant bans
-        assert dire_bans == [53, 11, 7, 16, 110, 13, 1]       # Real dire bans
+        # Radiant bans: Invoker, Beastmaster, Naga Siren, Marci, Abaddon, Ursa, Juggernaut
+        assert radiant_bans == [
+            Hero.INVOKER.value,
+            Hero.BEASTMASTER.value,
+            Hero.NAGA_SIREN.value,
+            Hero.MARCI.value,
+            Hero.ABADDON.value,
+            Hero.URSA.value,
+            Hero.JUGGERNAUT.value,
+        ]
+        # Dire bans: Nature's Prophet, Shadow Fiend, Earthshaker, Sand King, Phoenix, Puck, Anti-Mage
+        assert dire_bans == [
+            Hero.NATURES_PROPHET.value,
+            Hero.SHADOW_FIEND.value,
+            Hero.EARTHSHAKER.value,
+            Hero.SAND_KING.value,
+            Hero.PHOENIX.value,
+            Hero.PUCK.value,
+            Hero.ANTI_MAGE.value,
+        ]
 
 
-@pytest.mark.unit
 class TestGameInfoRealValues:
     """Test GameInfo with EXACT values from real demo file."""
 
-    def test_game_info_exact_structure(self, parser):
+    def test_game_info_exact_structure(self):
         """Test game info contains exact structure from real file."""
-        result = parser.parse_game_info(DEMO_FILE)
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
 
         assert result.success is True
-        assert len(result.picks_bans) == 24
+        assert len(result.game_info.picks_bans) == 24
         assert result.error is None
 
         # Test team distribution is correct
-        team_2_events = [e for e in result.picks_bans if e.team == 2]  # Radiant
-        team_3_events = [e for e in result.picks_bans if e.team == 3]  # Dire
+        team_2_events = [e for e in result.game_info.picks_bans if e.team == 2]  # Radiant
+        team_3_events = [e for e in result.game_info.picks_bans if e.team == 3]  # Dire
 
         assert len(team_2_events) == 12  # Radiant events (5 picks + 7 bans)
         assert len(team_3_events) == 12  # Dire events (5 picks + 7 bans)
 
-    def test_game_info_serialization_roundtrip(self, parser):
+    def test_game_info_serialization_roundtrip(self):
         """Test GameInfo JSON serialization preserves exact values."""
-        original = parser.parse_game_info(DEMO_FILE)
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        original = result.game_info
 
         # Serialize and deserialize
         json_str = original.model_dump_json()
@@ -139,21 +187,20 @@ class TestGameInfoRealValues:
         assert len(restored.picks_bans) == 24
 
 
-@pytest.mark.unit
 class TestMessageEventRealValues:
     """Test MessageEvent with EXACT values from real demo file."""
 
-    def test_universal_exact_messages(self, parser):
-        """Test universal parsing produces exact message sequence."""
-        result = parser.parse_universal(DEMO_FILE, max_messages=10)
+    def test_messages_exact_values(self):
+        """Test messages parsing produces exact message sequence."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(messages={"max_messages": 10})
 
         assert result.success is True
-        assert len(result.messages) == 10
-        assert result.count == 10
+        assert len(result.messages.messages) == 10
         assert result.error is None
 
         # Test exact message types from real file (specific Manta callback names)
-        message_types = [msg.type for msg in result.messages]
+        message_types = [msg.type for msg in result.messages.messages]
         expected_types = [
             'CDemoFileHeader',
             'CNETMsg_Tick',
@@ -168,21 +215,23 @@ class TestMessageEventRealValues:
         ]
         assert message_types == expected_types
 
-    def test_first_message_exact_values(self, parser):
+    def test_first_message_exact_values(self):
         """Test first message contains exact expected values."""
-        result = parser.parse_universal(DEMO_FILE, max_messages=5)
-        
-        first_message = result.messages[0]
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(messages={"max_messages": 5})
+
+        first_message = result.messages.messages[0]
         assert first_message.type == "CDemoFileHeader"
         assert first_message.tick == 0
         assert first_message.net_tick == 0
         assert first_message.data is not None
 
-    def test_tick_progression_exact_sequence(self, parser):
+    def test_tick_progression_exact_sequence(self):
         """Test tick progression follows exact sequence from real file."""
-        result = parser.parse_universal(DEMO_FILE, max_messages=10)
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(messages={"max_messages": 10})
 
-        ticks = [msg.tick for msg in result.messages]
+        ticks = [msg.tick for msg in result.messages.messages]
         # First 10 messages are all at tick 0 (header and string table setup)
         expected_ticks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         assert ticks == expected_ticks
@@ -191,49 +240,50 @@ class TestMessageEventRealValues:
         assert ticks == sorted(ticks)
 
 
-@pytest.mark.unit
-class TestUniversalParseResultRealValues:
-    """Test UniversalParseResult with EXACT values from real demo file."""
+class TestMessagesResultRealValues:
+    """Test MessagesResult with EXACT values from real demo file."""
 
-    def test_universal_result_exact_structure(self, parser):
-        """Test universal result contains exact structure from real file."""
-        result = parser.parse_universal(DEMO_FILE, max_messages=5)
-        
+    def test_messages_result_exact_structure(self):
+        """Test messages result contains exact structure from real file."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(messages={"max_messages": 5})
+
         assert result.success is True
-        assert len(result.messages) == 5
-        assert result.count == 5  # Should match message count for small requests
+        assert len(result.messages.messages) == 5
         assert result.error is None
 
-    def test_universal_result_serialization_roundtrip(self, parser):
-        """Test UniversalParseResult JSON serialization preserves exact values."""
-        original = parser.parse_universal(DEMO_FILE, max_messages=3)
-        
+    def test_messages_result_serialization_roundtrip(self):
+        """Test MessagesResult JSON serialization preserves exact values."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(messages={"max_messages": 3})
+        original = result.messages
+
         # Serialize and deserialize
         json_str = original.model_dump_json()
-        restored = UniversalParseResult.model_validate_json(json_str)
-        
+        restored = MessagesResult.model_validate_json(json_str)
+
         # Must be identical to original
         assert restored == original
         assert len(restored.messages) == 3
         assert restored.messages[0].type == "CDemoFileHeader"
 
-    def test_filtered_messages_exact_results(self, parser):
+    def test_filtered_messages_exact_results(self):
         """Test message filtering produces exact expected results."""
-        result = parser.parse_universal(DEMO_FILE, message_filter="CDemoFileHeader", max_messages=5)
-        
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(messages={"filter": "CDemoFileHeader", "max_messages": 5})
+
         assert result.success is True
-        assert len(result.messages) >= 1
-        
+        assert len(result.messages.messages) >= 1
+
         # All messages must match the filter
-        for message in result.messages:
+        for message in result.messages.messages:
             assert "CDemoFileHeader" in message.type
-            
+
         # First message should be the file header
-        assert result.messages[0].type == "CDemoFileHeader"
-        assert result.messages[0].tick == 0
+        assert result.messages.messages[0].type == "CDemoFileHeader"
+        assert result.messages.messages[0].tick == 0
 
 
-@pytest.mark.unit
 class TestChatWheelMessageEnum:
     """Test ChatWheelMessage enum with real values."""
 
@@ -283,7 +333,6 @@ class TestChatWheelMessageEnum:
         assert "TI Talent/Team Voice Line" in result
 
 
-@pytest.mark.unit
 class TestGameActivityEnum:
     """Test GameActivity enum with real values."""
 
