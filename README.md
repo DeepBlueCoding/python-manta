@@ -105,6 +105,18 @@ Pre-built wheels are available for:
 
 **No Go installation required** - wheels include pre-compiled binaries.
 
+### Version Pinning
+
+**Always use the latest release for your target Manta version** to get bug fixes and improvements:
+
+```bash
+# Latest release for Manta 1.4.5.x (recommended)
+pip install "python-manta>=1.4.5,<1.4.6"
+
+# Or use compatible release operator
+pip install "python-manta~=1.4.5"
+```
+
 ### From Source
 
 See [Building from Source](#building-from-source) section below.

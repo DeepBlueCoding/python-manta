@@ -21,6 +21,27 @@ Pre-built wheels include the compiled library for:
 
 No Go installation required when installing from PyPI.
 
+### Version Pinning
+
+Python Manta versions follow the format `X.Y.Z.M-devN` where:
+
+- `X.Y.Z` - Python Manta major/minor/patch
+- `M` - Manta (Go) library version compatibility
+- `devN` - Development release number
+
+**Always use the latest release for your target Manta version** to get bug fixes and improvements:
+
+```bash
+# Latest release for Manta 1.4.5.x (recommended)
+pip install "python-manta>=1.4.5,<1.4.6"
+
+# Or use compatible release operator
+pip install "python-manta~=1.4.5"
+
+# Exact version (not recommended - misses updates)
+pip install "python-manta==1.4.5.2"
+```
+
 ### From Source
 
 If you're developing or need to build from source:
