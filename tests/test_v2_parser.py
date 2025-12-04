@@ -113,6 +113,89 @@ class TestV2ParserCollectorConfigs:
         assert result.game_events is not None
 
 
+class TestV2ParserGameInfoFields:
+    """Test v2 Parser game_info field values match actual demo data."""
+
+    def test_game_info_match_id(self):
+        """Test match_id is correct for known demo file."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        assert result.game_info.match_id == 8447659831
+
+    def test_game_info_game_mode(self):
+        """Test game_mode is correct (2 = Captains Mode)."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        assert result.game_info.game_mode == 2
+
+    def test_game_info_game_winner(self):
+        """Test game_winner is correct (2 = Radiant won this match)."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        assert result.game_info.game_winner == 2
+
+    def test_game_info_league_id_is_zero(self):
+        """Test league_id is 0 for this pro match (not all pro matches have league_id)."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        assert result.game_info.league_id == 0
+
+    def test_game_info_team_ids(self):
+        """Test team IDs are correct for known pro teams."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        assert result.game_info.radiant_team_id == 7119388  # Team Spirit
+        assert result.game_info.dire_team_id == 8291895  # Tundra
+
+    def test_game_info_team_tags(self):
+        """Test team tags are correct for known pro teams."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        assert result.game_info.radiant_team_tag == "TSpirit"
+        assert result.game_info.dire_team_tag == "Tundra"
+
+    def test_game_info_is_pro_match_with_zero_league_id(self):
+        """Test is_pro_match() returns True even when league_id is 0.
+
+        This is the critical test - league_id can be 0 for pro matches,
+        but is_pro_match() uses team_ids as fallback.
+        """
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+
+        # league_id is 0
+        assert result.game_info.league_id == 0
+        # But team_ids are set
+        assert result.game_info.radiant_team_id > 0
+        assert result.game_info.dire_team_id > 0
+        # So is_pro_match() should return True
+        assert result.game_info.is_pro_match() is True
+
+    def test_game_info_playback_info(self):
+        """Test playback information is populated."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+
+        assert result.game_info.playback_time > 0
+        assert result.game_info.playback_ticks > 0
+        assert result.game_info.playback_frames > 0
+        # Specific values for this demo
+        assert result.game_info.playback_ticks == 109131
+
+    def test_game_info_end_time(self):
+        """Test end_time is populated (Unix timestamp)."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        # Unix timestamp should be > 2020 (1577836800)
+        assert result.game_info.end_time > 1577836800
+
+    def test_game_info_picks_bans_count(self):
+        """Test picks_bans has 24 events (CM draft)."""
+        parser = Parser(DEMO_FILE)
+        result = parser.parse(game_info=True)
+        assert len(result.game_info.picks_bans) == 24
+
+
 class TestV2ParserPlayerInfo:
     """Test v2 Parser game_info.players functionality."""
 

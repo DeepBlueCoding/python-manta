@@ -142,17 +142,30 @@ Complete game information including draft, players, and teams.
 class GameInfo(BaseModel):
     match_id: int = 0
     game_mode: int = 0
-    game_winner: int = 0
-    league_id: int = 0
+    game_winner: int = 0             # 2=Radiant, 3=Dire
+    league_id: int = 0               # Can be 0 even for pro matches!
+    end_time: int = 0                # Unix timestamp
     radiant_team_id: int = 0
-    radiant_team_tag: str = ""
-    radiant_team_name: str = ""
     dire_team_id: int = 0
+    radiant_team_tag: str = ""
     dire_team_tag: str = ""
-    dire_team_name: str = ""
-    picks_bans: List[DraftEvent] = []
     players: List[PlayerInfo] = []
+    picks_bans: List[DraftEvent] = []
+    playback_time: float = 0.0       # Match duration in seconds
+    playback_ticks: int = 0
+    playback_frames: int = 0
+
+    def is_pro_match(self) -> bool:
+        """Check if this is a pro/league match."""
+        ...
 ```
+
+**Helper Methods:**
+
+- `is_pro_match()`: Returns `True` if this is a professional match. Checks `league_id > 0` OR `radiant_team_id > 0` OR `dire_team_id > 0`. Use this instead of checking `league_id` directly, as some pro matches have `league_id=0` but valid team IDs.
+
+!!! warning "league_id can be 0 for pro matches"
+    Don't rely on `league_id > 0` to detect pro matches. Some professional matches have `league_id=0` but valid `radiant_team_id` and `dire_team_id`. Always use `is_pro_match()` instead.
 
 **Example:**
 ```python
@@ -173,8 +186,8 @@ for event in game_info.picks_bans:
     team = "Radiant" if event.team == 2 else "Dire"
     print(f"{team} {action}: Hero {event.hero_id}")
 
-# Pro match info
-if game_info.league_id > 0:
+# Pro match info (use is_pro_match() helper - works even when league_id is 0)
+if game_info.is_pro_match():
     print(f"{game_info.radiant_team_tag} vs {game_info.dire_team_tag}")
 ```
 
