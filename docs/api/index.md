@@ -1,8 +1,7 @@
-
 # API Reference
 
 ??? info "AI Summary"
-    Complete API documentation for Python Manta. The main class is `MantaParser` which provides all parsing methods. Data is returned as Pydantic models (`HeaderInfo`, `GameInfo`, `GameEventsResult`, etc.) for type safety and easy serialization. Key methods: `parse_header()`, `parse_game_info()`, `parse_universal()`, `parse_game_events()`, `parse_combat_log()`, `parse_modifiers()`, `query_entities()`, `get_string_tables()`, `get_parser_info()`.
+    Complete API documentation for Python Manta. The main class is `Parser` which provides a unified `parse()` method with collectors for different data types. Data is returned as Pydantic models (`HeaderInfo`, `GameInfo`, `ParseResult`, etc.) for type safety and easy serialization. Main usage: `Parser("match.dem").parse(header=True, game_info=True)`.
 
 ---
 
@@ -14,48 +13,73 @@ Python Manta provides a single main class and several data models:
 
 | Class | Description |
 |-------|-------------|
-| [`MantaParser`](manta-parser) | Main parser class with all parsing methods |
+| [`Parser`](parser) | Main parser class with unified `parse()` method |
 
 ### Data Models
 
 | Model | Description |
 |-------|-------------|
+| [`ParseResult`](parser#parseresult) | Result from `parse()` containing all collected data |
 | [`HeaderInfo`](models#headerinfo) | Demo file header metadata |
 | [`GameInfo`](models#gameinfo) | Game information (draft, players, teams) |
 | [`DraftEvent`](models#draftevent) | Single pick/ban event |
 | [`PlayerInfo`](models#playerinfo) | Player information from match |
-| [`UniversalParseResult`](models#universalparseresult) | Universal parsing results |
-| [`MessageEvent`](models#messageevent) | Single message from replay |
-| [`GameEventsResult`](models#gameeventsresult) | Game events parsing results |
-| [`GameEventData`](models#gameeventdata) | Single game event |
-| [`ModifiersResult`](models#modifiersresult) | Modifier parsing results |
-| [`ModifierEntry`](models#modifierentry) | Single modifier/buff entry |
-| [`EntitiesResult`](models#entitiesresult) | Entity query results |
-| [`EntityData`](models#entitydata) | Single entity data |
-| [`CombatLogResult`](models#combatlogresult) | Combat log parsing results |
-| [`CombatLogEntry`](models#combatlogentry) | Single combat log entry |
-| [`StringTablesResult`](models#stringtablesresult) | String table results |
-| [`ParserInfo`](models#parserinfo) | Parser state information |
+| [`MessagesResult`](parser#messagesresult) | Messages parsing results |
+| [`MessageEvent`](parser#messageevent) | Single message from replay |
 
 ---
 
 ## Quick Reference
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
+# Create parser for a demo file
+parser = Parser("match.dem")
 
-# Basic parsing
-header = parser.parse_header("match.dem")
-game_info = parser.parse_game_info("match.dem")
-messages = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 100)
+# Parse header only
+result = parser.parse(header=True)
+print(f"Map: {result.header.map_name}")
 
-# Advanced parsing
-events = parser.parse_game_events("match.dem", event_filter="dota", max_events=100)
-combat = parser.parse_combat_log("match.dem", heroes_only=True, max_entries=500)
-modifiers = parser.parse_modifiers("match.dem", max_modifiers=100)
-entities = parser.query_entities("match.dem", class_filter="Hero", max_entities=10)
-tables = parser.get_string_tables("match.dem", table_names=["userinfo"])
-info = parser.get_parser_info("match.dem")
+# Parse multiple data types in single pass
+result = parser.parse(header=True, game_info=True)
+print(f"Map: {result.header.map_name}")
+print(f"Match ID: {result.game_info.match_id}")
+
+# Parse messages with filtering
+result = parser.parse(messages={
+    "filter": "CDOTAUserMsg_ChatMessage",
+    "max_messages": 100
+})
+for msg in result.messages.messages:
+    print(f"[{msg.tick}] {msg.data}")
+```
+
+---
+
+## Collector Options
+
+The `parse()` method accepts these collector options:
+
+| Collector | Type | Description |
+|-----------|------|-------------|
+| `header` | `bool` | Enable header parsing |
+| `game_info` | `bool` | Enable game info parsing (draft, players, teams) |
+| `messages` | `bool` or `dict` | Enable message parsing with optional filter |
+
+### Message Options
+
+When using `messages`, you can pass a dictionary with:
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `filter` | `str` | Substring match for message types |
+| `max_messages` | `int` | Maximum messages to capture |
+
+```python
+# All messages (limited)
+result = parser.parse(messages={"max_messages": 100})
+
+# Filtered messages
+result = parser.parse(messages={"filter": "Chat", "max_messages": 50})
 ```

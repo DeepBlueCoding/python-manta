@@ -60,16 +60,8 @@ nav:
   - Getting Started: getting-started.md
   - API Reference:
     - Overview: api/index.md
-    - MantaParser: api/manta-parser.md
+    - Parser: api/parser.md
     - Data Models: api/models.md
-  - Guides:
-    - Overview: guides/index.md
-    - Game Events: guides/game-events.md
-    - Combat Log: guides/combat-log.md
-    - Entity Queries: guides/entities.md
-    - Modifiers: guides/modifiers.md
-    - Universal Messages: guides/universal.md
-  - Examples: examples.md
   - Reference:
     - Overview: reference/index.md
     - Callbacks: reference/callbacks.md
