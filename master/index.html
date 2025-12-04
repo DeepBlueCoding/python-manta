@@ -263,45 +263,6 @@
     
     
       <li class="md-tabs__item">
-        <a href="guides/" class="md-tabs__link">
-          
-  
-  
-  Guides
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="examples/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Examples
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
         <a href="reference/" class="md-tabs__link">
           
   
@@ -615,14 +576,14 @@
   
   
     <li class="md-nav__item">
-      <a href="api/manta-parser/" class="md-nav__link">
+      <a href="api/parser/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    MantaParser
+    Parser
   
 
     
@@ -703,7 +664,7 @@
   <span class="md-ellipsis">
     
   
-    Guides
+    Reference
   
 
     
@@ -716,262 +677,6 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Guides
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="guides/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="guides/game-events/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Game Events
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="guides/combat-log/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Combat Log
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="guides/entities/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entity Queries
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="guides/modifiers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Modifiers
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="guides/universal/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Universal Messages
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="examples/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Examples
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Reference
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1303,19 +1008,19 @@
 <div class="highlight"><pre><span></span><code>Python Manta lets you parse Dota 2 replay files (.dem) in Python. Install with `pip install python-manta`. The library wraps the Go-based manta parser and provides:
 </code></pre></div>
 <ul>
-<li>Header/draft parsing for match metadata</li>
+<li>Single-pass parsing for header, game info, and messages</li>
 <li>272 message callbacks for any replay data</li>
 <li>Game events (364 types), combat log, modifiers, entity queries</li>
 <li>Pydantic models for type-safe data access</li>
 </ul>
-<p>Quick start: <code>from python_manta import MantaParser; parser = MantaParser(); header = parser.parse_header("match.dem")</code></p>
+<p>Quick start: <code>from python_manta import Parser; parser = Parser("match.dem"); result = parser.parse(header=True)</code></p>
 </details>
 <hr />
 <h2 id="what-is-python-manta">What is Python Manta?<a class="headerlink" href="#what-is-python-manta" title="Permanent link">&para;</a></h2>
 <p>Python Manta provides Python access to the <a href="https://github.com/dotabuff/manta">Manta</a> Go library for parsing Dota 2 replay files. All parsing is done by Manta - this library provides:</p>
 <ol>
 <li><strong>CGO bindings</strong> - Wraps the Go parser as a shared library</li>
-<li><strong>Pythonic API</strong> - Clean, intuitive interface via <code>MantaParser</code></li>
+<li><strong>Pythonic API</strong> - Clean, intuitive interface via <code>Parser</code></li>
 <li><strong>Type safety</strong> - Pydantic models for all parsed data</li>
 <li><strong>Comprehensive access</strong> - All 272 Manta callbacks + specialized APIs</li>
 </ol>
@@ -1324,79 +1029,51 @@
 </code></pre></div>
 <p>Pre-built wheels available for Linux, macOS (Intel + Apple Silicon), and Windows.</p>
 <h2 id="quick-example">Quick Example<a class="headerlink" href="#quick-example" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parser</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Get match metadata</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">header</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_header</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Map: </span><span class="si">{</span><span class="n">header</span><span class="o">.</span><span class="n">map_name</span><span class="si">}</span><span class="s2">, Build: </span><span class="si">{</span><span class="n">header</span><span class="o">.</span><span class="n">build_num</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Create parser for a specific demo file</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Parse header and game info in a single pass</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">game_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># Get game info (draft, players, teams)</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">game_info</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_game_info</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">for</span> <span class="n">pb</span> <span class="ow">in</span> <span class="n">game_info</span><span class="o">.</span><span class="n">picks_bans</span><span class="p">:</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">action</span> <span class="o">=</span> <span class="s2">&quot;PICK&quot;</span> <span class="k">if</span> <span class="n">pb</span><span class="o">.</span><span class="n">is_pick</span> <span class="k">else</span> <span class="s2">&quot;BAN&quot;</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">: Hero </span><span class="si">{</span><span class="n">pb</span><span class="o">.</span><span class="n">hero_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># Parse chat messages</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;CDOTAUserMsg_ChatMessage&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># Access header data</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Map: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">map_name</span><span class="si">}</span><span class="s2">, Build: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">build_num</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># Access draft picks and bans</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="k">for</span> <span class="n">pb</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">game_info</span><span class="o">.</span><span class="n">picks_bans</span><span class="p">:</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">action</span> <span class="o">=</span> <span class="s2">&quot;PICK&quot;</span> <span class="k">if</span> <span class="n">pb</span><span class="o">.</span><span class="n">is_pick</span> <span class="k">else</span> <span class="s2">&quot;BAN&quot;</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">: Hero </span><span class="si">{</span><span class="n">pb</span><span class="o">.</span><span class="n">hero_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># Parse messages separately</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">messages</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;filter&quot;</span><span class="p">:</span> <span class="s2">&quot;CDOTAUserMsg_ChatMessage&quot;</span><span class="p">,</span> <span class="s2">&quot;max_messages&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">})</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="features-overview">Features Overview<a class="headerlink" href="#features-overview" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Feature</th>
-<th>Method</th>
+<th>Collector</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Header</strong></td>
-<td><code>parse_header()</code></td>
+<td><code>header=True</code></td>
 <td>Match metadata (map, build, server)</td>
 </tr>
 <tr>
 <td><strong>Game Info</strong></td>
-<td><code>parse_game_info()</code></td>
+<td><code>game_info=True</code></td>
 <td>Draft, players, teams, league</td>
 </tr>
 <tr>
 <td><strong>Messages</strong></td>
-<td><code>parse_universal()</code></td>
+<td><code>messages={...}</code></td>
 <td>Any of 272 message types</td>
-</tr>
-<tr>
-<td><strong>Game Events</strong></td>
-<td><code>parse_game_events()</code></td>
-<td>364 named event types</td>
-</tr>
-<tr>
-<td><strong>Combat Log</strong></td>
-<td><code>parse_combat_log()</code></td>
-<td>Damage, heals, kills</td>
-</tr>
-<tr>
-<td><strong>Modifiers</strong></td>
-<td><code>parse_modifiers()</code></td>
-<td>Buffs, debuffs, auras</td>
-</tr>
-<tr>
-<td><strong>Entities</strong></td>
-<td><code>query_entities()</code></td>
-<td>Hero/unit state queries</td>
-</tr>
-<tr>
-<td><strong>Positions</strong></td>
-<td><code>parse_entities()</code></td>
-<td>Hero positions over time</td>
-</tr>
-<tr>
-<td><strong>String Tables</strong></td>
-<td><code>get_string_tables()</code></td>
-<td>Player info, baselines</td>
 </tr>
 </tbody>
 </table>
