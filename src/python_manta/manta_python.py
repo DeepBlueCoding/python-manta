@@ -10,7 +10,7 @@ import tempfile
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Iterator
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class RuneType(str, Enum):
@@ -1124,11 +1124,13 @@ class PlayerInfo(BaseModel):
 
     Maps to Manta's CGameInfo.CDotaGameInfo.CPlayerInfo protobuf.
     """
-    hero_name: str
-    player_name: str
+    model_config = {"populate_by_name": True}
+
+    hero_name: str = ""
+    player_name: str = ""
     is_fake_client: bool = False
-    steam_id: int
-    team: int  # 2=Radiant, 3=Dire
+    steam_id: int = Field(default=0, alias="steamid")
+    team: int = Field(default=0, alias="game_team")  # 2=Radiant, 3=Dire
 
 
 class GameInfo(BaseModel):
@@ -1140,6 +1142,8 @@ class GameInfo(BaseModel):
 
     Maps to Manta's CGameInfo.CDotaGameInfo protobuf.
     """
+    model_config = {"populate_by_name": True}
+
     match_id: int
     game_mode: int
     game_winner: int  # 2=Radiant, 3=Dire
@@ -1152,8 +1156,8 @@ class GameInfo(BaseModel):
     radiant_team_tag: str = ""
     dire_team_tag: str = ""
 
-    # Players
-    players: List[PlayerInfo] = []
+    # Players (Go returns as "player_info")
+    players: List[PlayerInfo] = Field(default=[], alias="player_info")
 
     # Draft
     picks_bans: List[DraftEvent] = []
