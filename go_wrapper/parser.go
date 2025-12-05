@@ -659,12 +659,22 @@ func setupEntityCollector(parser *manta.Parser, state *entityCollectorState) {
 
 		className := e.GetClassName()
 
-		// Track game start time
+		// Track game start time (needs to run on all entities)
 		if strings.Contains(className, "CDOTAGamerulesProxy") {
 			if gst, ok := e.GetFloat32("m_pGameRules.m_flGameStartTime"); ok && gst > 0 && state.gameStartTime == 0 {
 				state.gameStartTime = gst
 				state.gameStartTick = parser.Tick
 			}
+			return nil // Not a PlayerResource, skip capture check
+		}
+
+		// Only capture on updates to PlayerResource entity (like RunEntityParse)
+		// This ensures we have valid player data when capturing
+		if !op.Flag(manta.EntityOpUpdated) {
+			return nil
+		}
+		if !strings.Contains(className, "CDOTA_PlayerResource") {
+			return nil
 		}
 
 		// Check max snapshots
@@ -696,9 +706,12 @@ func setupEntityCollector(parser *manta.Parser, state *entityCollectorState) {
 		}
 
 		if shouldCapture {
-			snapshot := captureEntitySnapshot(parser, config, state.gameStartTime)
-			state.snapshots = append(state.snapshots, snapshot)
-			state.lastCaptureTick = currentTick
+			snapshot := captureEntitySnapshot(parser, config, state.gameStartTime, state.gameStartTick)
+			// Only add snapshot if it has players (like RunEntityParse)
+			if len(snapshot.Players) > 0 {
+				state.snapshots = append(state.snapshots, snapshot)
+				state.lastCaptureTick = currentTick
+			}
 		}
 
 		return nil
@@ -706,112 +719,36 @@ func setupEntityCollector(parser *manta.Parser, state *entityCollectorState) {
 }
 
 // captureEntitySnapshot captures the current entity state
-func captureEntitySnapshot(parser *manta.Parser, config *EntityParseConfig, gameStartTime float32) EntitySnapshot {
-	snapshot := EntitySnapshot{
+// This delegates to captureSnapshot from entity_parser.go which properly extracts
+// hero positions by finding CDOTA_Unit_Hero_* entities
+func captureEntitySnapshot(parser *manta.Parser, config *EntityParseConfig, gameStartTime float32, gameStartTick uint32) EntitySnapshot {
+	// Calculate game time from ticks since game start (30 ticks per second)
+	var gameTime float32 = 0
+	if gameStartTick > 0 && parser.Tick > gameStartTick {
+		gameTime = float32(parser.Tick-gameStartTick) / 30.0
+	}
+
+	// Use the working captureSnapshot from entity_parser.go
+	entityConfig := EntityParseConfig{
+		IntervalTicks: config.IntervalTicks,
+		MaxSnapshots:  config.MaxSnapshots,
+		TargetTicks:   config.TargetTicks,
+		TargetHeroes:  config.TargetHeroes,
+		EntityClasses: config.EntityClasses,
+		IncludeRaw:    config.IncludeRaw,
+	}
+
+	result := captureSnapshot(parser, gameTime, entityConfig)
+	if result != nil {
+		return *result
+	}
+
+	// Fallback empty snapshot
+	return EntitySnapshot{
 		Tick:    parser.Tick,
-		Players: make([]PlayerState, 0, 10),
-		Teams:   make([]TeamState, 0, 2),
+		Players: make([]PlayerState, 0),
+		Teams:   make([]TeamState, 0),
 	}
-
-	// Calculate game time
-	if gameStartTime > 0 {
-		// Estimate current game time based on ticks since game start
-		ticksPerSecond := float32(30.0)
-		elapsedSeconds := float32(parser.Tick) / ticksPerSecond
-		snapshot.GameTime = elapsedSeconds
-	}
-
-	// Build hero filter set
-	heroFilter := make(map[string]bool)
-	for _, h := range config.TargetHeroes {
-		heroFilter[h] = true
-	}
-	useHeroFilter := len(heroFilter) > 0
-
-	// Find all player data entities
-	playerDataEntities := parser.FilterEntity(func(e *manta.Entity) bool {
-		if e == nil {
-			return false
-		}
-		return strings.Contains(e.GetClassName(), "CDOTA_PlayerResource") ||
-			strings.Contains(e.GetClassName(), "CDOTA_DataSpectator") ||
-			strings.Contains(e.GetClassName(), "CDOTA_DataRadiant") ||
-			strings.Contains(e.GetClassName(), "CDOTA_DataDire")
-	})
-
-	// Collect player states from data entities
-	for _, e := range playerDataEntities {
-		if e == nil {
-			continue
-		}
-
-		className := e.GetClassName()
-
-		// Extract player data based on entity type
-		if strings.Contains(className, "CDOTA_PlayerResource") {
-			// PlayerResource has arrays of player data
-			for i := 0; i < 10; i++ {
-				heroID, ok := e.GetInt32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_nSelectedHeroID", i))
-				if !ok || heroID <= 0 {
-					continue
-				}
-
-				// Get hero name from player resource if available
-				heroName := fmt.Sprintf("hero_%d", heroID)
-
-				// Apply hero filter
-				if useHeroFilter && !heroFilter[heroName] {
-					continue
-				}
-
-				player := PlayerState{
-					PlayerID: i,
-					HeroID:   int(heroID),
-					HeroName: heroName,
-				}
-
-				// Get team
-				if team, ok := e.GetInt32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_iTeam", i)); ok {
-					player.Team = int(team)
-				}
-
-				// Get basic stats
-				if kills, ok := e.GetInt32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_iKills", i)); ok {
-					player.Kills = int(kills)
-				}
-				if deaths, ok := e.GetInt32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_iDeaths", i)); ok {
-					player.Deaths = int(deaths)
-				}
-				if assists, ok := e.GetInt32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_iAssists", i)); ok {
-					player.Assists = int(assists)
-				}
-				if level, ok := e.GetInt32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_iLevel", i)); ok {
-					player.Level = int(level)
-				}
-
-				snapshot.Players = append(snapshot.Players, player)
-			}
-		}
-
-		// Extract team data
-		if strings.Contains(className, "CDOTA_DataRadiant") || strings.Contains(className, "CDOTA_DataDire") {
-			teamID := 2 // Radiant
-			if strings.Contains(className, "Dire") {
-				teamID = 3
-			}
-
-			team := TeamState{TeamID: teamID}
-
-			// Get team score if available
-			if score, ok := e.GetInt32("m_iScore"); ok {
-				team.Score = int(score)
-			}
-
-			snapshot.Teams = append(snapshot.Teams, team)
-		}
-	}
-
-	return snapshot
 }
 
 // finalizeEntitySnapshots builds the final entity result

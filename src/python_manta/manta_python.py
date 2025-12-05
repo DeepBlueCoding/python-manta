@@ -262,6 +262,109 @@ class CombatLogType(int, Enum):
             CombatLogType.ALLIED_GOLD, CombatLogType.NEUTRAL_ITEM_EARNED
         )
 
+    @property
+    def is_shield_related(self) -> bool:
+        """True if this type is related to shields, barriers, or damage absorption.
+
+        Note: These events may be rare or not generated in all replays.
+        - PHYSICAL_DAMAGE_PREVENTED: Damage block (Vanguard, Crimson Guard, etc.)
+        - SPELL_ABSORB: Spell blocked (Linken's Sphere, Lotus Orb, etc.)
+        - AEGIS_TAKEN: Aegis of the Immortal picked up
+        """
+        return self in (
+            CombatLogType.PHYSICAL_DAMAGE_PREVENTED,
+            CombatLogType.SPELL_ABSORB,
+            CombatLogType.AEGIS_TAKEN,
+        )
+
+    @property
+    def is_death_related(self) -> bool:
+        """True if this type is related to death, kills, or reincarnation.
+
+        Note: Check `will_reincarnate` field on DEATH events for Aegis/WK respawns.
+        """
+        return self in (
+            CombatLogType.DEATH,
+            CombatLogType.FIRST_BLOOD,
+            CombatLogType.MULTIKILL,
+            CombatLogType.KILLSTREAK,
+            CombatLogType.END_KILLSTREAK,
+            CombatLogType.TEAM_BUILDING_KILL,
+            CombatLogType.BUYBACK,
+        )
+
+    @property
+    def is_defensive_related(self) -> bool:
+        """True if this type is related to defensive actions or evasion.
+
+        Includes damage prevention, spell absorption, saves, and evasion.
+        """
+        return self in (
+            CombatLogType.PHYSICAL_DAMAGE_PREVENTED,
+            CombatLogType.SPELL_ABSORB,
+            CombatLogType.ATTACK_EVADE,
+            CombatLogType.HERO_SAVED,
+            CombatLogType.REVEALED_INVISIBLE,
+        )
+
+    @property
+    def is_ability_related(self) -> bool:
+        """True if this type is related to ability usage."""
+        return self in (
+            CombatLogType.ABILITY,
+            CombatLogType.ABILITY_TRIGGER,
+            CombatLogType.INTERRUPT_CHANNEL,
+        )
+
+    @property
+    def is_movement_related(self) -> bool:
+        """True if this type is related to movement or teleportation."""
+        return self in (
+            CombatLogType.UNIT_TELEPORTED,
+            CombatLogType.TELEPORT_INTERRUPTED,
+        )
+
+    @property
+    def is_resource_related(self) -> bool:
+        """True if this type is related to health/mana resources."""
+        return self in (
+            CombatLogType.HEAL,
+            CombatLogType.MANA_RESTORED,
+            CombatLogType.MANA_DAMAGE,
+            CombatLogType.BOTTLE_HEAL_ALLY,
+            CombatLogType.BLOODSTONE_CHARGE,
+        )
+
+    @property
+    def is_unit_related(self) -> bool:
+        """True if this type is related to unit spawning or summoning."""
+        return self in (
+            CombatLogType.UNIT_SUMMONED,
+            CombatLogType.NEUTRAL_CAMP_STACK,
+        )
+
+    @classmethod
+    def shield_types(cls) -> list["CombatLogType"]:
+        """Get all combat log types related to shields/absorption."""
+        return [
+            cls.PHYSICAL_DAMAGE_PREVENTED,
+            cls.SPELL_ABSORB,
+            cls.AEGIS_TAKEN,
+        ]
+
+    @classmethod
+    def death_types(cls) -> list["CombatLogType"]:
+        """Get all combat log types related to death/kills."""
+        return [
+            cls.DEATH,
+            cls.FIRST_BLOOD,
+            cls.MULTIKILL,
+            cls.KILLSTREAK,
+            cls.END_KILLSTREAK,
+            cls.TEAM_BUILDING_KILL,
+            cls.BUYBACK,
+        ]
+
 
 class DamageType(int, Enum):
     """Dota 2 damage types.
