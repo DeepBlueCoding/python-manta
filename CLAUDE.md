@@ -286,83 +286,65 @@ parser.Callbacks.OnNewCallbackName(func(m *dota.NewCallbackName) error {
 This project uses **commitizen** for version management and changelog generation.
 All versions follow **PEP 440** format.
 
-#### Commit Message Format (Conventional Commits)
-```
-<type>(<scope>): <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-**Types that affect version:**
-- `feat:` → bumps MINOR version (new feature)
-- `fix:` → bumps PATCH version (bug fix)
-- `feat!:` or `BREAKING CHANGE:` → bumps MAJOR version
-
-**Types that don't affect version:**
-- `docs:`, `style:`, `refactor:`, `perf:`, `test:`, `build:`, `ci:`, `chore:`
-
 #### Version Types (PEP 440)
 | Type | Example | Tag | Publish To |
 |------|---------|-----|------------|
-| Development | `1.5.0.dev0` | `v1.5.0.dev0` | TestPyPI |
-| Alpha | `1.5.0a0` | `v1.5.0a0` | TestPyPI |
-| Beta | `1.5.0b0` | `v1.5.0b0` | TestPyPI |
-| Release Candidate | `1.5.0rc0` | `v1.5.0rc0` | TestPyPI |
-| Final Release | `1.5.0` | `v1.5.0` | PyPI |
+| Development | `1.4.5.2.dev0` | `v1.4.5.2.dev0` | TestPyPI |
+| Final Release | `1.4.5.2` | `v1.4.5.2` | PyPI |
 
-#### Release Workflow
+#### Development Workflow
 
-**For development iterations (TestPyPI):**
+During development, commits can be low-level/messy. Use any commit style:
 ```bash
-# Bump dev version and update changelog
+git commit -m "wip: trying new approach"
+git commit -m "fix typo"
+git commit -m "more changes"
+
+# Bump dev version (no changelog update for dev)
 cz bump --devrelease
-
-# Or manually specify dev number
-cz bump --devrelease 1  # → X.Y.Z.dev1
-
-# Push changes and tag
 git push origin master --tags
 ```
 
-**For pre-releases (TestPyPI):**
+#### Release Workflow (with squash)
+
+When ready to release, squash dev commits into clean conventional commits:
+
 ```bash
-# Alpha release
-cz bump --prerelease alpha  # → X.Y.Za0
+# 1. Find last release tag
+git log --oneline
 
-# Beta release
-cz bump --prerelease beta   # → X.Y.Zb0
+# 2. Interactive rebase to squash commits since last release
+git rebase -i <last-release-tag>
+# Mark commits as "squash" (s), keep one as "pick"
+# Write a clean conventional commit message:
+#   feat: add HeroSnapshot combat stats
+#   fix: resolve field mapping issues
 
-# Release candidate
-cz bump --prerelease rc     # → X.Y.Zrc0
-
+# 3. Bump to release (auto-generates changelog from squashed commits)
+cz bump
 git push origin master --tags
 ```
 
-**For final release (PyPI):**
-```bash
-# Graduate from dev/pre-release to final
-cz bump                     # → X.Y.Z
-
-git push origin master --tags
+#### Conventional Commit Format (for release commits)
 ```
+<type>(<scope>): <description>
+```
+
+**Types that appear in changelog:**
+- `feat:` → **Added** section, bumps MINOR
+- `fix:` → **Fixed** section, bumps PATCH
+- `perf:` → **Performance** section
+
+**Types excluded from changelog:**
+- `docs:`, `style:`, `refactor:`, `test:`, `build:`, `ci:`, `chore:`
 
 #### Quick Reference
 ```bash
-# Check current version
-cz version
-
-# See what next version would be (dry run)
-cz bump --dry-run
-
-# Interactive commit with prompts
-cz commit
-
-# Bump with specific increment
-cz bump --increment PATCH   # Force patch bump
-cz bump --increment MINOR   # Force minor bump
-cz bump --increment MAJOR   # Force major bump
+cz version              # Check current version
+cz bump --dry-run       # Preview next version
+cz bump --devrelease    # Dev bump (no changelog)
+cz bump                 # Release bump (with changelog)
+cz bump --increment MINOR  # Force minor bump
 ```
 
 ⚠️ **NEVER manually edit version in pyproject.toml** - always use `cz bump`

@@ -79,5 +79,6 @@ version = "1.4.5.2.dev5"
 version_scheme = "pep440"
 version_provider = "pep621"
 tag_format = "v$version"
-update_changelog_on_bump = false
+update_changelog_on_bump = true
+changelog_incremental = true
 major_version_zero = true
