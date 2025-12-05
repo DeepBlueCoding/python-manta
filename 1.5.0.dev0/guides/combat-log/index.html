@@ -1,0 +1,3523 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python bindings for the dotabuff/manta Dota 2 replay parser">
+      
+      
+        <meta name="author" content="DeepBlueCoding">
+      
+      
+        <link rel="canonical" href="https://deepbluecoding.github.io/python-manta/1.5.0.dev0/guides/combat-log/">
+      
+      
+        <link rel="prev" href="../game-events/">
+      
+      
+        <link rel="next" href="../entities/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Combat Log - Python Manta</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#combat-log-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Python Manta" class="md-header__button md-logo" aria-label="Python Manta" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Python Manta
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Combat Log
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DeepBlueCoding/python-manta" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    DeepBlueCoding/python-manta
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../examples/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Examples
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Python Manta" class="md-nav__button md-logo" aria-label="Python Manta" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Python Manta
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DeepBlueCoding/python-manta" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    DeepBlueCoding/python-manta
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Use Cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../unit-orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Unit Orders
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../game-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Game Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combat Log
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combat Log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combat-log-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat Log Types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filtering-by-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering by Type
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Filtering by Type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#damage-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Damage Only
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#healing-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Healing Only
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deaths-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deaths Only
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hero-only-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero-Only Filtering
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hero-Only Filtering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#combining-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combining Filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entry-fields-80-total" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Fields (80+ Total)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entry Fields (80+ Total)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#participant-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Participant Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#participant-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Participant Flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combat-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cc-durations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CC Durations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assist-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assist Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modifier-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modifier Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ability-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ability Info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#killdeath-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kill/Death Info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hero-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#economy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Economy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Use Cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Use Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dps-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DPS Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kill-feed-reconstruction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kill Feed Reconstruction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ability-usage-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ability Usage Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gold-economy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gold Economy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#healing-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Healing Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important Notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Important Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#game-time-vs-replay-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Game Time vs Replay Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pre-game-events-negative-game-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-Game Events (Negative Game Time)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#game-start-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Game Start Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#illusion-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Illusion Filtering
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combat-log-vs-game-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat Log vs Game Events
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#available-data-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Data Fields
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Available Data Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-available-per-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Available Per Event
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-not-available-in-combat-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data NOT Available in Combat Log
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../entities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modifiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modifiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../universal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Universal Messages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/parser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/callbacks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Callbacks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/game-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Game Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/combat-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combat Log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/modifiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modifiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/entities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/string-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    String Tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combat-log-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat Log Types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filtering-by-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering by Type
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Filtering by Type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#damage-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Damage Only
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#healing-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Healing Only
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deaths-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deaths Only
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hero-only-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero-Only Filtering
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hero-Only Filtering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#combining-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combining Filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entry-fields-80-total" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry Fields (80+ Total)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entry Fields (80+ Total)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#participant-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Participant Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#participant-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Participant Flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combat-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cc-durations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CC Durations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assist-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assist Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modifier-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modifier Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ability-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ability Info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#killdeath-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kill/Death Info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hero-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#economy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Economy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Use Cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Use Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dps-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DPS Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kill-feed-reconstruction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kill Feed Reconstruction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ability-usage-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ability Usage Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gold-economy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gold Economy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#healing-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Healing Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important Notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Important Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#game-time-vs-replay-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Game Time vs Replay Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pre-game-events-negative-game-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-Game Events (Negative Game Time)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#game-start-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Game Start Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#illusion-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Illusion Filtering
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combat-log-vs-game-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat Log vs Game Events
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#available-data-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Data Fields
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Available Data Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-available-per-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Available Per Event
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-not-available-in-combat-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data NOT Available in Combat Log
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="combat-log-guide">Combat Log Guide<a class="headerlink" href="#combat-log-guide" title="Permanent link">&para;</a></h1>
+<details class="info">
+<summary>AI Summary</summary>
+<p>Parse structured combat log entries with <code>parse_combat_log()</code>. Use <code>CombatLogType</code> enum for filtering (DAMAGE, HEAL, MODIFIER_ADD, DEATH, ABILITY, ITEM, PURCHASE, etc.). 80+ fields per entry including health tracking, stun/slow durations, assist players, damage types, hero levels, and location. Use <code>heroes_only=True</code> for hero-related entries. Additional enums: <code>DamageType</code> (PHYSICAL, MAGICAL, PURE), <code>Team</code> (RADIANT, DIRE). The <code>game_time</code> field provides accurate in-game clock time (can be negative for pre-game events). The <code>value_name</code> field resolves item names for PURCHASE events.</p>
+</details>
+<hr />
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The combat log provides structured data about damage, healing, deaths, and other combat-related events with rich metadata.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">type_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="combat-log-types">Combat Log Types<a class="headerlink" href="#combat-log-types" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Type Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>DOTA_COMBATLOG_DAMAGE</td>
+<td>Damage dealt to units</td>
+</tr>
+<tr>
+<td>1</td>
+<td>DOTA_COMBATLOG_HEAL</td>
+<td>Healing received</td>
+</tr>
+<tr>
+<td>2</td>
+<td>DOTA_COMBATLOG_MODIFIER_ADD</td>
+<td>Buff/debuff applied</td>
+</tr>
+<tr>
+<td>3</td>
+<td>DOTA_COMBATLOG_MODIFIER_REMOVE</td>
+<td>Buff/debuff removed</td>
+</tr>
+<tr>
+<td>4</td>
+<td>DOTA_COMBATLOG_DEATH</td>
+<td>Unit death</td>
+</tr>
+<tr>
+<td>5</td>
+<td>DOTA_COMBATLOG_ABILITY</td>
+<td>Ability cast</td>
+</tr>
+<tr>
+<td>6</td>
+<td>DOTA_COMBATLOG_ITEM</td>
+<td>Item used</td>
+</tr>
+<tr>
+<td>7</td>
+<td>DOTA_COMBATLOG_LOCATION</td>
+<td>Location event</td>
+</tr>
+<tr>
+<td>8</td>
+<td>DOTA_COMBATLOG_GOLD</td>
+<td>Gold gained</td>
+</tr>
+<tr>
+<td>9</td>
+<td>DOTA_COMBATLOG_GAME_STATE</td>
+<td>Game state change</td>
+</tr>
+<tr>
+<td>10</td>
+<td>DOTA_COMBATLOG_XP</td>
+<td>Experience gained</td>
+</tr>
+<tr>
+<td>11</td>
+<td>DOTA_COMBATLOG_PURCHASE</td>
+<td>Item purchased</td>
+</tr>
+<tr>
+<td>12</td>
+<td>DOTA_COMBATLOG_BUYBACK</td>
+<td>Buyback used</td>
+</tr>
+<tr>
+<td>13</td>
+<td>DOTA_COMBATLOG_ABILITY_TRIGGER</td>
+<td>Ability triggered</td>
+</tr>
+<tr>
+<td>14</td>
+<td>DOTA_COMBATLOG_PLAYERSTATS</td>
+<td>Player statistics</td>
+</tr>
+<tr>
+<td>15</td>
+<td>DOTA_COMBATLOG_MULTIKILL</td>
+<td>Multi-kill event</td>
+</tr>
+<tr>
+<td>16</td>
+<td>DOTA_COMBATLOG_KILLSTREAK</td>
+<td>Kill streak</td>
+</tr>
+<tr>
+<td>17</td>
+<td>DOTA_COMBATLOG_TEAM_BUILDING_KILL</td>
+<td>Building destroyed</td>
+</tr>
+<tr>
+<td>18</td>
+<td>DOTA_COMBATLOG_FIRST_BLOOD</td>
+<td>First blood</td>
+</tr>
+<tr>
+<td>19</td>
+<td>DOTA_COMBATLOG_MODIFIER_REFRESH</td>
+<td>Modifier refreshed</td>
+</tr>
+<tr>
+<td>20</td>
+<td>DOTA_COMBATLOG_NEUTRAL_CAMP_STACK</td>
+<td>Camp stacked</td>
+</tr>
+<tr>
+<td>21</td>
+<td>DOTA_COMBATLOG_PICKUP_RUNE</td>
+<td>Rune picked up</td>
+</tr>
+<tr>
+<td>22</td>
+<td>DOTA_COMBATLOG_REVEALED_INVISIBLE</td>
+<td>Invisibility revealed</td>
+</tr>
+<tr>
+<td>23</td>
+<td>DOTA_COMBATLOG_HERO_SAVED</td>
+<td>Hero saved from death</td>
+</tr>
+<tr>
+<td>24</td>
+<td>DOTA_COMBATLOG_MANA_RESTORED</td>
+<td>Mana restored</td>
+</tr>
+<tr>
+<td>25</td>
+<td>DOTA_COMBATLOG_HERO_LEVELUP</td>
+<td>Hero level up</td>
+</tr>
+<tr>
+<td>26</td>
+<td>DOTA_COMBATLOG_BOTTLE_HEAL_ALLY</td>
+<td>Bottle heal ally</td>
+</tr>
+<tr>
+<td>27</td>
+<td>DOTA_COMBATLOG_ENDGAME_STATS</td>
+<td>End game statistics</td>
+</tr>
+<tr>
+<td>28</td>
+<td>DOTA_COMBATLOG_INTERRUPT_CHANNEL</td>
+<td>Channel interrupted</td>
+</tr>
+<tr>
+<td>29</td>
+<td>DOTA_COMBATLOG_ALLIED_GOLD</td>
+<td>Allied gold</td>
+</tr>
+<tr>
+<td>30</td>
+<td>DOTA_COMBATLOG_AEGIS_TAKEN</td>
+<td>Aegis taken</td>
+</tr>
+<tr>
+<td>31</td>
+<td>DOTA_COMBATLOG_MANA_DAMAGE</td>
+<td>Mana burned</td>
+</tr>
+<tr>
+<td>32</td>
+<td>DOTA_COMBATLOG_PHYSICAL_DAMAGE_PREVENTED</td>
+<td>Physical damage blocked</td>
+</tr>
+<tr>
+<td>33</td>
+<td>DOTA_COMBATLOG_UNIT_SUMMONED</td>
+<td>Unit summoned</td>
+</tr>
+<tr>
+<td>34</td>
+<td>DOTA_COMBATLOG_ATTACK_EVADE</td>
+<td>Attack evaded</td>
+</tr>
+<tr>
+<td>35</td>
+<td>DOTA_COMBATLOG_TREE_CUT</td>
+<td>Tree cut</td>
+</tr>
+<tr>
+<td>36</td>
+<td>DOTA_COMBATLOG_SUCCESSFUL_SCAN</td>
+<td>Successful scan</td>
+</tr>
+<tr>
+<td>37</td>
+<td>DOTA_COMBATLOG_END_KILLSTREAK</td>
+<td>Kill streak ended</td>
+</tr>
+<tr>
+<td>38</td>
+<td>DOTA_COMBATLOG_BLOODSTONE_CHARGE</td>
+<td>Bloodstone charge</td>
+</tr>
+<tr>
+<td>39</td>
+<td>DOTA_COMBATLOG_CRITICAL_DAMAGE</td>
+<td>Critical damage</td>
+</tr>
+<tr>
+<td>40</td>
+<td>DOTA_COMBATLOG_SPELL_ABSORB</td>
+<td>Spell absorbed</td>
+</tr>
+<tr>
+<td>41</td>
+<td>DOTA_COMBATLOG_UNIT_TELEPORTED</td>
+<td>Unit teleported</td>
+</tr>
+<tr>
+<td>42</td>
+<td>DOTA_COMBATLOG_KILL_EATER_EVENT</td>
+<td>Kill eater (gem) event</td>
+</tr>
+<tr>
+<td>43</td>
+<td>DOTA_COMBATLOG_NEUTRAL_ITEM_EARNED</td>
+<td>Neutral item earned</td>
+</tr>
+<tr>
+<td>44</td>
+<td>DOTA_COMBATLOG_TELEPORT_INTERRUPTED</td>
+<td>Teleport interrupted</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="filtering-by-type">Filtering by Type<a class="headerlink" href="#filtering-by-type" title="Permanent link">&para;</a></h2>
+<h3 id="damage-only">Damage Only<a class="headerlink" href="#damage-only" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> dealt </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> damage to </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  via </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="healing-only">Healing Only<a class="headerlink" href="#healing-only" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> healed for </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  from </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="deaths-only">Deaths Only<a class="headerlink" href="#deaths-only" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> was killed by </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="multiple-types">Multiple Types<a class="headerlink" href="#multiple-types" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Damage and deaths together</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] DAMAGE: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="k">elif</span> <span class="n">entry</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] DEATH: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> killed by </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="hero-only-filtering">Hero-Only Filtering<a class="headerlink" href="#hero-only-filtering" title="Permanent link">&para;</a></h2>
+<p>Filter to only include entries where the attacker or target is a hero:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">hero_indicator</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_attacker_hero</span><span class="p">:</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span class="n">hero_indicator</span> <span class="o">+=</span> <span class="s2">&quot;[HERO ATK] &quot;</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_target_hero</span><span class="p">:</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>        <span class="n">hero_indicator</span> <span class="o">+=</span> <span class="s2">&quot;[HERO TGT] &quot;</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hero_indicator</span><span class="si">}{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="combining-filters">Combining Filters<a class="headerlink" href="#combining-filters" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Hero damage only</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s2">&quot;match.dem&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>           <span class="c1"># Damage</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>    <span class="c1"># Hero involvement</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">max_entries</span><span class="o">=</span><span class="mi">500</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="entry-fields-80-total">Entry Fields (80+ Total)<a class="headerlink" href="#entry-fields-80-total" title="Permanent link">&para;</a></h2>
+<p>Each <code>CombatLogEntry</code> contains comprehensive data for fight analysis:</p>
+<h3 id="core-fields">Core Fields<a class="headerlink" href="#core-fields" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tick</code></td>
+<td>int</td>
+<td>Game tick</td>
+</tr>
+<tr>
+<td><code>net_tick</code></td>
+<td>int</td>
+<td>Network tick</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>int</td>
+<td>Combat log type ID (0-44)</td>
+</tr>
+<tr>
+<td><code>type_name</code></td>
+<td>str</td>
+<td>Human-readable type name</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>float</td>
+<td>Replay time in seconds (includes draft/pre-game)</td>
+</tr>
+<tr>
+<td><code>timestamp_raw</code></td>
+<td>float</td>
+<td>Raw timestamp value</td>
+</tr>
+<tr>
+<td><code>game_time</code></td>
+<td>float</td>
+<td><strong>In-game clock time</strong> (0:00 = creep spawn, can be negative for pre-game)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="participant-fields">Participant Fields<a class="headerlink" href="#participant-fields" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>target_name</code></td>
+<td>str</td>
+<td>Target unit name (e.g., "npc_dota_hero_pudge")</td>
+</tr>
+<tr>
+<td><code>target_source_name</code></td>
+<td>str</td>
+<td>Target's source name</td>
+</tr>
+<tr>
+<td><code>attacker_name</code></td>
+<td>str</td>
+<td>Attacker unit name</td>
+</tr>
+<tr>
+<td><code>damage_source_name</code></td>
+<td>str</td>
+<td>Damage source name</td>
+</tr>
+<tr>
+<td><code>inflictor_name</code></td>
+<td>str</td>
+<td>Ability/item that caused this</td>
+</tr>
+</tbody>
+</table>
+<h3 id="participant-flags">Participant Flags<a class="headerlink" href="#participant-flags" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>is_attacker_illusion</code></td>
+<td>bool</td>
+<td>Attacker is an illusion</td>
+</tr>
+<tr>
+<td><code>is_attacker_hero</code></td>
+<td>bool</td>
+<td>Attacker is a hero</td>
+</tr>
+<tr>
+<td><code>is_target_illusion</code></td>
+<td>bool</td>
+<td>Target is an illusion</td>
+</tr>
+<tr>
+<td><code>is_target_hero</code></td>
+<td>bool</td>
+<td>Target is a hero</td>
+</tr>
+<tr>
+<td><code>is_target_building</code></td>
+<td>bool</td>
+<td>Target is a building</td>
+</tr>
+</tbody>
+</table>
+<h3 id="combat-values">Combat Values<a class="headerlink" href="#combat-values" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>value</code></td>
+<td>int</td>
+<td>Damage/heal amount (or string table index for PURCHASE events)</td>
+</tr>
+<tr>
+<td><code>value_name</code></td>
+<td>str</td>
+<td>Resolved name from CombatLogNames (e.g., item name for PURCHASE)</td>
+</tr>
+<tr>
+<td><code>health</code></td>
+<td>int</td>
+<td>Target HP <strong>after</strong> this event</td>
+</tr>
+<tr>
+<td><code>damage_type</code></td>
+<td>int</td>
+<td>Damage type (physical/magical/pure)</td>
+</tr>
+<tr>
+<td><code>damage_category</code></td>
+<td>int</td>
+<td>Damage category</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cc-durations">CC Durations<a class="headerlink" href="#cc-durations" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stun_duration</code></td>
+<td>float</td>
+<td>Stun duration in seconds</td>
+</tr>
+<tr>
+<td><code>slow_duration</code></td>
+<td>float</td>
+<td>Slow duration in seconds</td>
+</tr>
+<tr>
+<td><code>modifier_duration</code></td>
+<td>float</td>
+<td>Total modifier duration</td>
+</tr>
+<tr>
+<td><code>modifier_elapsed_duration</code></td>
+<td>float</td>
+<td>How long modifier has been active</td>
+</tr>
+</tbody>
+</table>
+<h3 id="location">Location<a class="headerlink" href="#location" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>location_x</code></td>
+<td>float</td>
+<td>X coordinate on map</td>
+</tr>
+<tr>
+<td><code>location_y</code></td>
+<td>float</td>
+<td>Y coordinate on map</td>
+</tr>
+</tbody>
+</table>
+<h3 id="assist-tracking">Assist Tracking<a class="headerlink" href="#assist-tracking" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>assist_player0</code></td>
+<td>int</td>
+<td>First assist player ID</td>
+</tr>
+<tr>
+<td><code>assist_player1</code></td>
+<td>int</td>
+<td>Second assist player ID</td>
+</tr>
+<tr>
+<td><code>assist_player2</code></td>
+<td>int</td>
+<td>Third assist player ID</td>
+</tr>
+<tr>
+<td><code>assist_player3</code></td>
+<td>int</td>
+<td>Fourth assist player ID</td>
+</tr>
+<tr>
+<td><code>assist_players</code></td>
+<td>List[int]</td>
+<td>All assist player IDs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="modifier-fields">Modifier Fields<a class="headerlink" href="#modifier-fields" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>root_modifier</code></td>
+<td>bool</td>
+<td>Is a root effect</td>
+</tr>
+<tr>
+<td><code>silence_modifier</code></td>
+<td>bool</td>
+<td>Is a silence effect</td>
+</tr>
+<tr>
+<td><code>aura_modifier</code></td>
+<td>bool</td>
+<td>Is an aura</td>
+</tr>
+<tr>
+<td><code>armor_debuff_modifier</code></td>
+<td>bool</td>
+<td>Is armor reduction</td>
+</tr>
+<tr>
+<td><code>motion_controller_modifier</code></td>
+<td>bool</td>
+<td>Is motion control (knockback)</td>
+</tr>
+<tr>
+<td><code>invisibility_modifier</code></td>
+<td>bool</td>
+<td>Grants invisibility</td>
+</tr>
+<tr>
+<td><code>hidden_modifier</code></td>
+<td>bool</td>
+<td>Is hidden modifier</td>
+</tr>
+<tr>
+<td><code>modifier_hidden</code></td>
+<td>bool</td>
+<td>Modifier is hidden from UI</td>
+</tr>
+<tr>
+<td><code>modifier_purged</code></td>
+<td>bool</td>
+<td>Modifier was purged</td>
+</tr>
+<tr>
+<td><code>no_physical_damage_modifier</code></td>
+<td>bool</td>
+<td>Blocks physical damage</td>
+</tr>
+<tr>
+<td><code>modifier_ability</code></td>
+<td>int</td>
+<td>Ability index in CombatLogNames</td>
+</tr>
+<tr>
+<td><code>modifier_ability_name</code></td>
+<td>str</td>
+<td>Resolved ability name that applied this modifier</td>
+</tr>
+<tr>
+<td><code>modifier_purge_ability</code></td>
+<td>int</td>
+<td>Ability index that purged this modifier</td>
+</tr>
+<tr>
+<td><code>modifier_purge_ability_name</code></td>
+<td>str</td>
+<td>Resolved ability name that purged this modifier</td>
+</tr>
+<tr>
+<td><code>modifier_purge_npc</code></td>
+<td>int</td>
+<td>NPC index that purged this modifier</td>
+</tr>
+<tr>
+<td><code>modifier_purge_npc_name</code></td>
+<td>str</td>
+<td>Resolved NPC name that purged this modifier</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ability-info">Ability Info<a class="headerlink" href="#ability-info" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ability_level</code></td>
+<td>int</td>
+<td>Ability level (1-4+)</td>
+</tr>
+<tr>
+<td><code>is_ability_toggle_on</code></td>
+<td>bool</td>
+<td>Ability toggled on</td>
+</tr>
+<tr>
+<td><code>is_ability_toggle_off</code></td>
+<td>bool</td>
+<td>Ability toggled off</td>
+</tr>
+<tr>
+<td><code>is_ultimate_ability</code></td>
+<td>bool</td>
+<td>Is an ultimate ability</td>
+</tr>
+<tr>
+<td><code>inflictor_is_stolen_ability</code></td>
+<td>bool</td>
+<td>Ability was stolen (Rubick)</td>
+</tr>
+<tr>
+<td><code>spell_generated_attack</code></td>
+<td>bool</td>
+<td>Attack from spell</td>
+</tr>
+<tr>
+<td><code>uses_charges</code></td>
+<td>bool</td>
+<td>Ability uses charges</td>
+</tr>
+</tbody>
+</table>
+<h3 id="killdeath-info">Kill/Death Info<a class="headerlink" href="#killdeath-info" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spell_evaded</code></td>
+<td>bool</td>
+<td>Spell was evaded</td>
+</tr>
+<tr>
+<td><code>long_range_kill</code></td>
+<td>bool</td>
+<td>Long range kill</td>
+</tr>
+<tr>
+<td><code>will_reincarnate</code></td>
+<td>bool</td>
+<td>Target will reincarnate (Aegis/WK)</td>
+</tr>
+<tr>
+<td><code>total_unit_death_count</code></td>
+<td>int</td>
+<td>Total deaths of this unit type</td>
+</tr>
+<tr>
+<td><code>heal_from_lifesteal</code></td>
+<td>bool</td>
+<td>Heal is from lifesteal</td>
+</tr>
+<tr>
+<td><code>is_heal_save</code></td>
+<td>bool</td>
+<td>Heal prevented death</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hero-state">Hero State<a class="headerlink" href="#hero-state" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>attacker_hero_level</code></td>
+<td>int</td>
+<td>Attacker's hero level</td>
+</tr>
+<tr>
+<td><code>target_hero_level</code></td>
+<td>int</td>
+<td>Target's hero level</td>
+</tr>
+<tr>
+<td><code>attacker_has_scepter</code></td>
+<td>bool</td>
+<td>Attacker has Aghanim's Scepter</td>
+</tr>
+<tr>
+<td><code>attacker_team</code></td>
+<td>int</td>
+<td>Attacker team (2=Radiant, 3=Dire)</td>
+</tr>
+<tr>
+<td><code>target_team</code></td>
+<td>int</td>
+<td>Target team</td>
+</tr>
+</tbody>
+</table>
+<h3 id="visibility">Visibility<a class="headerlink" href="#visibility" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>is_visible_radiant</code></td>
+<td>bool</td>
+<td>Visible to Radiant team</td>
+</tr>
+<tr>
+<td><code>is_visible_dire</code></td>
+<td>bool</td>
+<td>Visible to Dire team</td>
+</tr>
+<tr>
+<td><code>at_night_time</code></td>
+<td>bool</td>
+<td>Event occurred at night</td>
+</tr>
+</tbody>
+</table>
+<h3 id="economy">Economy<a class="headerlink" href="#economy" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>xp</code></td>
+<td>int</td>
+<td>XP gained/reason</td>
+</tr>
+<tr>
+<td><code>gold</code></td>
+<td>int</td>
+<td>Gold gained/reason</td>
+</tr>
+<tr>
+<td><code>last_hits</code></td>
+<td>int</td>
+<td>Last hits at time</td>
+</tr>
+<tr>
+<td><code>networth</code></td>
+<td>int</td>
+<td>Player networth</td>
+</tr>
+<tr>
+<td><code>xpm</code></td>
+<td>int</td>
+<td>XP per minute</td>
+</tr>
+<tr>
+<td><code>gpm</code></td>
+<td>int</td>
+<td>Gold per minute</td>
+</tr>
+</tbody>
+</table>
+<h3 id="additional">Additional<a class="headerlink" href="#additional" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stack_count</code></td>
+<td>int</td>
+<td>Modifier stack count</td>
+</tr>
+<tr>
+<td><code>building_type</code></td>
+<td>int</td>
+<td>Building type ID</td>
+</tr>
+<tr>
+<td><code>neutral_camp_type</code></td>
+<td>int</td>
+<td>Neutral camp type</td>
+</tr>
+<tr>
+<td><code>neutral_camp_team</code></td>
+<td>int</td>
+<td>Neutral camp team</td>
+</tr>
+<tr>
+<td><code>rune_type</code></td>
+<td>int</td>
+<td>Rune type</td>
+</tr>
+<tr>
+<td><code>obs_wards_placed</code></td>
+<td>int</td>
+<td>Observer wards placed</td>
+</tr>
+<tr>
+<td><code>regenerated_health</code></td>
+<td>float</td>
+<td>Health regenerated</td>
+</tr>
+<tr>
+<td><code>target_is_self</code></td>
+<td>bool</td>
+<td>Target is self</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="common-use-cases">Common Use Cases<a class="headerlink" href="#common-use-cases" title="Permanent link">&para;</a></h2>
+<h3 id="dps-analysis">DPS Analysis<a class="headerlink" href="#dps-analysis" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">damage_dealt</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_attacker_hero</span><span class="p">:</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        <span class="n">damage_dealt</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total Damage Dealt by Hero:&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="k">for</span> <span class="n">hero</span><span class="p">,</span> <span class="n">damage</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">damage_dealt</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">hero</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">damage</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="kill-feed-reconstruction">Kill Feed Reconstruction<a class="headerlink" href="#kill-feed-reconstruction" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Kill Feed:&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">timestamp_min</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">//</span> <span class="mi">60</span><span class="p">)</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">timestamp_sec</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">%</span> <span class="mi">60</span><span class="p">)</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">timestamp_min</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">timestamp_sec</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> killed </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="ability-usage-tracking">Ability Usage Tracking<a class="headerlink" href="#ability-usage-tracking" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">ability_usage</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>        <span class="n">ability_usage</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Most Used Abilities:&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="k">for</span> <span class="n">ability</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ability_usage</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])[:</span><span class="mi">20</span><span class="p">]:</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">ability</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="gold-economy">Gold Economy<a class="headerlink" href="#gold-economy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">gold_gained</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_target_hero</span><span class="p">:</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="n">gold_gained</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">gold</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gold Gained:&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="k">for</span> <span class="n">hero</span><span class="p">,</span> <span class="n">gold</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">gold_gained</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">hero</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">gold</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="healing-analysis">Healing Analysis<a class="headerlink" href="#healing-analysis" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">healing_received</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">healing_sources</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="n">healing_received</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>        <span class="n">healing_sources</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="p">][</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Healing Received:&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="k">for</span> <span class="n">unit</span><span class="p">,</span> <span class="n">total</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">healing_received</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])[:</span><span class="mi">10</span><span class="p">]:</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">total</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> total&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>    <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">amount</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">healing_sources</span><span class="p">[</span><span class="n">unit</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])[:</span><span class="mi">3</span><span class="p">]:</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">amount</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="important-notes">Important Notes<a class="headerlink" href="#important-notes" title="Permanent link">&para;</a></h2>
+<h3 id="game-time-vs-replay-time">Game Time vs Replay Time<a class="headerlink" href="#game-time-vs-replay-time" title="Permanent link">&para;</a></h3>
+<p>The combat log provides two timing fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>timestamp</code></td>
+<td><strong>Replay time</strong> - seconds since replay recording started (includes draft/pre-game)</td>
+</tr>
+<tr>
+<td><code>game_time</code></td>
+<td><strong>In-game clock time</strong> - what you see on the game clock (0:00 = creep spawn)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Use <code>game_time</code> for game clock</p>
+<p>The <code>game_time</code> field automatically calculates the in-game clock time. It detects when the game transitions to <code>GAME_IN_PROGRESS</code> state and computes the offset.</p>
+</div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>  <span class="c1"># PURCHASE events</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="c1"># game_time is already the in-game clock time</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">mins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">)</span> <span class="o">//</span> <span class="mi">60</span><span class="p">)</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="n">secs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">))</span> <span class="o">%</span> <span class="mi">60</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="n">sign</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span> <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">game_time</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sign</span><span class="si">}{</span><span class="n">mins</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">secs</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="pre-game-events-negative-game-time">Pre-Game Events (Negative Game Time)<a class="headerlink" href="#pre-game-events-negative-game-time" title="Permanent link">&para;</a></h3>
+<p>Events during the 90-second pre-game countdown have <strong>negative</strong> <code>game_time</code> values:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>  <span class="c1"># PURCHASE</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="c1"># Pre-game purchases (during countdown)</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">pregame</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">game_time</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pre-game purchases: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pregame</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">pregame</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="n">mins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">)</span> <span class="o">//</span> <span class="mi">60</span><span class="p">)</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="n">secs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">))</span> <span class="o">%</span> <span class="mi">60</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="n">hero</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;npc_dota_hero_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>    <span class="n">item</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;item_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">mins</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">secs</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">hero</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="c1"># Output:</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="c1"># -01:29 - antimage: ward_observer</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="c1"># -01:28 - troll_warlord: tango</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="c1"># -01:27 - crystal_maiden: blood_grenade</span>
+</code></pre></div>
+<h3 id="game-start-time">Game Start Time<a class="headerlink" href="#game-start-time" title="Permanent link">&para;</a></h3>
+<p>The <code>CombatLogResult</code> includes <code>game_start_time</code> which is the replay timestamp when the game clock hit 0:00:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">18</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># First blood</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Game started at replay time: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">game_start_time</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="n">entry</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First blood at </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s game time&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="illusion-filtering">Illusion Filtering<a class="headerlink" href="#illusion-filtering" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Filter out illusion damage for accurate stats</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">real_damage</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">entry</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_attacker_illusion</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_target_illusion</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="p">]</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total entries: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Real damage entries (no illusions): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">real_damage</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="combat-log-vs-game-events">Combat Log vs Game Events<a class="headerlink" href="#combat-log-vs-game-events" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Combat Log</th>
+<th>Game Events</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API</td>
+<td><code>parse_combat_log()</code></td>
+<td><code>parse_game_events()</code></td>
+</tr>
+<tr>
+<td>Structure</td>
+<td>Fixed schema with 80+ fields</td>
+<td>Variable fields per event type</td>
+</tr>
+<tr>
+<td>Types</td>
+<td>45 log types</td>
+<td>364 event types</td>
+</tr>
+<tr>
+<td>Best for</td>
+<td>Detailed damage/heal analysis</td>
+<td>Discrete game occurrences</td>
+</tr>
+<tr>
+<td>Timing</td>
+<td>Full match (timestamp is replay time)</td>
+<td>Full match</td>
+</tr>
+<tr>
+<td>Filtering</td>
+<td>By type ID, heroes_only</td>
+<td>By event name</td>
+</tr>
+</tbody>
+</table>
+<p>Use combat log for continuous combat data (DPS, healing totals) and game events for discrete occurrences (tower kills, rune pickups).</p>
+<hr />
+<h2 id="available-data-fields">Available Data Fields<a class="headerlink" href="#available-data-fields" title="Permanent link">&para;</a></h2>
+<p>The combat log exposes raw data that can be used by other tools for analysis or narrative generation.</p>
+<h3 id="data-available-per-event">Data Available Per Event<a class="headerlink" href="#data-available-per-event" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Data Point</th>
+<th>Field</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HP after event</td>
+<td><code>health</code></td>
+<td>Target's HP after this event</td>
+</tr>
+<tr>
+<td>Damage/heal amount</td>
+<td><code>value</code></td>
+<td>Raw numeric value</td>
+</tr>
+<tr>
+<td>Ability/item name</td>
+<td><code>inflictor_name</code></td>
+<td>Internal name (e.g., "pugna_nether_blast")</td>
+</tr>
+<tr>
+<td>Item name (PURCHASE)</td>
+<td><code>value_name</code></td>
+<td>Resolved item name for PURCHASE events</td>
+</tr>
+<tr>
+<td>Ability level</td>
+<td><code>ability_level</code></td>
+<td>1-4+</td>
+</tr>
+<tr>
+<td>Assist player IDs</td>
+<td><code>assist_players</code></td>
+<td>List of player IDs</td>
+</tr>
+<tr>
+<td>Stun duration</td>
+<td><code>stun_duration</code></td>
+<td>Seconds</td>
+</tr>
+<tr>
+<td>Slow duration</td>
+<td><code>slow_duration</code></td>
+<td>Seconds</td>
+</tr>
+<tr>
+<td>Root applied</td>
+<td><code>root_modifier</code></td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>Lifesteal heal</td>
+<td><code>heal_from_lifesteal</code></td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>Will reincarnate</td>
+<td><code>will_reincarnate</code></td>
+<td>Boolean (Aegis/WK)</td>
+</tr>
+<tr>
+<td>Night time</td>
+<td><code>at_night_time</code></td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>Has Aghanim's</td>
+<td><code>attacker_has_scepter</code></td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>Hero levels</td>
+<td><code>attacker_hero_level</code>, <code>target_hero_level</code></td>
+<td>Integer</td>
+</tr>
+<tr>
+<td>Position</td>
+<td><code>location_x</code>, <code>location_y</code></td>
+<td>Map coordinates</td>
+</tr>
+<tr>
+<td>Game time</td>
+<td><code>game_time</code></td>
+<td>In-game clock time (can be negative for pre-game)</td>
+</tr>
+<tr>
+<td>Replay timestamp</td>
+<td><code>timestamp</code></td>
+<td>Replay time in seconds</td>
+</tr>
+</tbody>
+</table>
+<h3 id="data-not-available-in-combat-log">Data NOT Available in Combat Log<a class="headerlink" href="#data-not-available-in-combat-log" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Data Point</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stack_count</code></td>
+<td>Always 0 - Valve doesn't populate this field</td>
+</tr>
+<tr>
+<td><code>uses_charges</code></td>
+<td>Always false - Valve doesn't populate this field</td>
+</tr>
+<tr>
+<td>Cooldowns</td>
+<td>Not in combat log</td>
+</tr>
+<tr>
+<td>Mana costs</td>
+<td>Not in combat log</td>
+</tr>
+<tr>
+<td>Exact max HP</td>
+<td>Only current HP after event</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Getting Item Charges</p>
+<p>The combat log <code>stack_count</code> field is NOT populated by Valve. To get actual item charges (e.g., Magic Stick/Wand), use entity queries instead:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_magic_stick_charges</span><span class="p">(</span><span class="n">demo_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">at_tick</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="sd">    Get magic stick/wand charges for all players at a specific game tick.</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="sd">    Args:</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="sd">        demo_path: Path to the .dem file</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="sd">        at_tick: Game tick to query (0 = end of game)</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="sd">        Dict mapping player_id -&gt; charges</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>        <span class="n">demo_path</span><span class="p">,</span>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>        <span class="n">class_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CDOTA_Item_MagicStick&#39;</span><span class="p">,</span> <span class="s1">&#39;CDOTA_Item_MagicWand&#39;</span><span class="p">],</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>        <span class="n">property_filter</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;m_iCurrentCharges&#39;</span><span class="p">,</span> <span class="s1">&#39;m_iPlayerOwnerID&#39;</span><span class="p">],</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>        <span class="n">at_tick</span><span class="o">=</span><span class="n">at_tick</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a>    <span class="p">)</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a>    <span class="n">player_charges</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a>    <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span><span class="p">:</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a>        <span class="n">owner</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iPlayerOwnerID&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a>        <span class="n">charges</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iCurrentCharges&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a>        <span class="k">if</span> <span class="n">owner</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a>            <span class="n">player_charges</span><span class="p">[</span><span class="n">owner</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">player_charges</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">charges</span><span class="p">)</span>
+<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a>
+<a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a>    <span class="k">return</span> <span class="n">player_charges</span>
+<a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a>
+<a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a><span class="c1"># Get charges at a specific tick</span>
+<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a><span class="n">charges</span> <span class="o">=</span> <span class="n">get_magic_stick_charges</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">at_tick</span><span class="o">=</span><span class="mi">50000</span><span class="p">)</span>
+<a id="__codelineno-16-34" name="__codelineno-16-34" href="#__codelineno-16-34"></a><span class="c1"># {0: 6, 2: 18, 4: 7, 6: 6, 8: 1, 10: 15, 12: 4, 14: 20, 16: 0, 18: 5}</span>
+</code></pre></div>
+<p><strong>Alternative</strong>: Calculate charges from HEAL event value (Magic Stick/Wand heal 15 HP per charge):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># From a combat log HEAL entry with inflictor_name containing &quot;magic_stick&quot; or &quot;magic_wand&quot;</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">charges_used</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span> <span class="o">//</span> <span class="mi">15</span>  <span class="c1"># e.g., 150 HP healed = 10 charges</span>
+</code></pre></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/DeepBlueCoding/python-manta" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/python-manta/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
