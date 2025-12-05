@@ -8,13 +8,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Determine if this is a base version (v1.4.5) or patch version (v1.4.5.1)
-  # Also check if go_wrapper changed since base version (requires rebuild)
+  # Determine version type for PEP 440 versions:
+  # - Final release: v1.5.0 → publish to PyPI
+  # - Dev release: v1.5.0.dev0 → publish to TestPyPI
+  # - Pre-release: v1.5.0a0, v1.5.0b0, v1.5.0rc0 → publish to TestPyPI
   check-version:
     runs-on: ubuntu-latest
     outputs:
-      is_base_version: ${{ steps.check.outputs.is_base_version }}
-      is_patch_version: ${{ steps.check.outputs.is_patch_version }}
+      is_release: ${{ steps.check.outputs.is_release }}
+      is_prerelease: ${{ steps.check.outputs.is_prerelease }}
       base_version: ${{ steps.check.outputs.base_version }}
       full_version: ${{ steps.check.outputs.full_version }}
       go_wrapper_changed: ${{ steps.check-go-wrapper.outputs.changed }}
@@ -28,25 +30,31 @@ jobs:
         id: check
         run: |
           REF="${{ github.ref }}"
+          # Final release: v1.5.0 (no suffix)
           if [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-            # Base version like v1.4.5
-            echo "is_base_version=true" >> $GITHUB_OUTPUT
-            echo "is_patch_version=false" >> $GITHUB_OUTPUT
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
             echo "base_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
             echo "full_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
-            echo "📦 Base version detected: ${BASH_REMATCH[1]}"
-          elif [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)\.([0-9]+)(-.*)?$ ]]; then
-            # Patch version like v1.4.5.1 or v1.4.5.1-dev1
-            echo "is_base_version=false" >> $GITHUB_OUTPUT
-            echo "is_patch_version=true" >> $GITHUB_OUTPUT
+            echo "📦 Final release: ${BASH_REMATCH[1]}"
+          # Dev release: v1.5.0.dev0, v1.5.0.dev1, etc (PEP 440)
+          elif [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)\.(dev[0-9]+)$ ]]; then
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
             echo "base_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
-            FULL_VER="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}${BASH_REMATCH[3]}"
-            echo "full_version=$FULL_VER" >> $GITHUB_OUTPUT
-            echo "🔧 Patch version detected: $FULL_VER (base: ${BASH_REMATCH[1]})"
+            echo "full_version=${BASH_REMATCH[1]}.${BASH_REMATCH[2]}" >> $GITHUB_OUTPUT
+            echo "🔧 Dev release: ${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+          # Pre-release: v1.5.0a0, v1.5.0b0, v1.5.0rc0 (PEP 440)
+          elif [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)(a|b|rc)([0-9]+)$ ]]; then
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "base_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "full_version=${BASH_REMATCH[1]}${BASH_REMATCH[2]}${BASH_REMATCH[3]}" >> $GITHUB_OUTPUT
+            echo "🔧 Pre-release: ${BASH_REMATCH[1]}${BASH_REMATCH[2]}${BASH_REMATCH[3]}"
           else
             # Not a version tag (branch push, PR, etc.)
-            echo "is_base_version=false" >> $GITHUB_OUTPUT
-            echo "is_patch_version=false" >> $GITHUB_OUTPUT
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
             echo "base_version=" >> $GITHUB_OUTPUT
             echo "full_version=" >> $GITHUB_OUTPUT
             echo "ℹ️ Not a version tag: $REF"
@@ -56,9 +64,9 @@ jobs:
         id: check-go-wrapper
         run: |
           BASE_VERSION="${{ steps.check.outputs.base_version }}"
-          IS_PATCH="${{ steps.check.outputs.is_patch_version }}"
+          IS_PRERELEASE="${{ steps.check.outputs.is_prerelease }}"
 
-          if [[ "$IS_PATCH" == "true" && -n "$BASE_VERSION" ]]; then
+          if [[ "$IS_PRERELEASE" == "true" && -n "$BASE_VERSION" ]]; then
             # Check if go_wrapper/ changed since base version tag
             BASE_TAG="v${BASE_VERSION}"
             if git rev-parse "$BASE_TAG" >/dev/null 2>&1; then
@@ -77,13 +85,13 @@ jobs:
             fi
           else
             echo "changed=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ Not a patch version, skipping go_wrapper check"
+            echo "ℹ️ Not a prerelease version, skipping go_wrapper check"
           fi
 
-  # Build wheels from scratch (for base versions, non-tag builds, or when go_wrapper changed)
+  # Build wheels from scratch (for releases, non-tag builds, or when go_wrapper changed)
   linux-wheels:
     needs: check-version
-    if: needs.check-version.outputs.is_patch_version != 'true' || needs.check-version.outputs.go_wrapper_changed == 'true'
+    if: needs.check-version.outputs.is_prerelease != 'true' || needs.check-version.outputs.go_wrapper_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -142,7 +150,7 @@ jobs:
 
   macos-wheels:
     needs: check-version
-    if: needs.check-version.outputs.is_patch_version != 'true' || needs.check-version.outputs.go_wrapper_changed == 'true'
+    if: needs.check-version.outputs.is_prerelease != 'true' || needs.check-version.outputs.go_wrapper_changed == 'true'
     runs-on: macos-latest
     strategy:
       matrix:
@@ -224,7 +232,7 @@ jobs:
 
   windows-wheels:
     needs: check-version
-    if: needs.check-version.outputs.is_patch_version != 'true' || needs.check-version.outputs.go_wrapper_changed == 'true'
+    if: needs.check-version.outputs.is_prerelease != 'true' || needs.check-version.outputs.go_wrapper_changed == 'true'
     runs-on: windows-latest
     steps:
       - name: Checkout source
@@ -284,11 +292,11 @@ jobs:
           name: wheels-windows
           path: dist/*.whl
 
-  # Upload wheels to GitHub Release (for base versions only)
+  # Upload wheels to GitHub Release (for final releases only)
   upload-release:
     name: Upload to GitHub Release
     needs: [check-version, linux-wheels, macos-wheels, windows-wheels]
-    if: needs.check-version.outputs.is_base_version == 'true'
+    if: needs.check-version.outputs.is_release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -310,16 +318,16 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: dist/*.whl
-          tag_name: v${{ needs.check-version.outputs.base_version }}
+          tag_name: v${{ needs.check-version.outputs.full_version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Reversion wheels for patch releases (download from base release, re-version)
+  # Reversion wheels for pre-releases (download from base release, re-version)
   # Only used when go_wrapper has NOT changed - otherwise we rebuild from scratch
   reversion-wheels:
-    name: Re-version wheels for patch release
+    name: Re-version wheels for pre-release
     needs: check-version
-    if: needs.check-version.outputs.is_patch_version == 'true' && needs.check-version.outputs.go_wrapper_changed != 'true'
+    if: needs.check-version.outputs.is_prerelease == 'true' && needs.check-version.outputs.go_wrapper_changed != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -344,14 +352,12 @@ jobs:
       - name: Re-version wheels
         run: |
           FULL_VERSION="${{ needs.check-version.outputs.full_version }}"
-          # Normalize version for PEP 440: replace hyphen with dot for pre-release
-          # e.g., 1.4.5.1-dev3 -> 1.4.5.1.dev3
-          WHEEL_VERSION=$(echo "$FULL_VERSION" | sed 's/-\(dev\|alpha\|beta\|rc\)/.\1/')
-          echo "🔄 Re-versioning wheels to ${WHEEL_VERSION} (from tag version ${FULL_VERSION})..."
+          # PEP 440 versions are already wheel-compatible
+          echo "🔄 Re-versioning wheels to ${FULL_VERSION}..."
           mkdir -p dist
           for whl in base_wheels/*.whl; do
             echo "Processing: $whl"
-            python tools/reversion_wheel.py "$whl" "$WHEEL_VERSION" --output-dir dist
+            python tools/reversion_wheel.py "$whl" "$FULL_VERSION" --output-dir dist
           done
           echo ""
           echo "📦 Re-versioned wheels:"
@@ -363,7 +369,7 @@ jobs:
           name: wheels-reversioned
           path: dist/*.whl
 
-  # Publish to TestPyPI (for dev/pre-release tags)
+  # Publish to TestPyPI (for dev/pre-release tags: .dev, a, b, rc)
   publish-test-pypi:
     name: Publish to TestPyPI
     needs: [check-version, linux-wheels, macos-wheels, windows-wheels, reversion-wheels]
@@ -371,7 +377,7 @@ jobs:
       always() &&
       github.event_name == 'push' &&
       startsWith(github.ref, 'refs/tags/v') &&
-      contains(github.ref, '-') &&
+      needs.check-version.outputs.is_prerelease == 'true' &&
       (needs.reversion-wheels.result == 'success' || (needs.linux-wheels.result == 'success' && needs.macos-wheels.result == 'success' && needs.windows-wheels.result == 'success'))
     runs-on: ubuntu-latest
     permissions:
@@ -400,16 +406,16 @@ jobs:
           verbose: true
           skip-existing: true
 
-  # Publish to PyPI (for final release tags)
+  # Publish to PyPI (for final release tags: v1.5.0 with no suffix)
   publish-pypi:
     name: Publish to PyPI
-    needs: [check-version, linux-wheels, macos-wheels, windows-wheels, reversion-wheels]
+    needs: [check-version, linux-wheels, macos-wheels, windows-wheels]
     if: |
       always() &&
       github.event_name == 'push' &&
       startsWith(github.ref, 'refs/tags/v') &&
-      !contains(github.ref, '-') &&
-      (needs.reversion-wheels.result == 'success' || (needs.linux-wheels.result == 'success' && needs.macos-wheels.result == 'success' && needs.windows-wheels.result == 'success'))
+      needs.check-version.outputs.is_release == 'true' &&
+      needs.linux-wheels.result == 'success' && needs.macos-wheels.result == 'success' && needs.windows-wheels.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read

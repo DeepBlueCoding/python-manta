@@ -281,19 +281,91 @@ parser.Callbacks.OnNewCallbackName(func(m *dota.NewCallbackName) error {
 4. Try empty filter `""` to see all messages
 5. Check Go build for CGO warnings
 
-### Releasing a new version (CRITICAL - follow exactly)
-1. **Read `pyproject.toml`** to check the current version
-2. **Increment the version** appropriately (e.g., `1.4.5.1-dev11` → `1.4.5.1-dev12`)
-3. **Update `pyproject.toml`** with the new version
-4. **Commit the version bump**: `git commit -m "chore: bump version to X.Y.Z"`
-5. **Push to master**: `git push origin master`
-6. **Create git tag** matching the version: `git tag vX.Y.Z` (note the `v` prefix)
-7. **Push the tag**: `git push origin vX.Y.Z`
+### Releasing a new version (CRITICAL - use commitizen)
 
-**Version format**: `MAJOR.MINOR.PATCH.BUILD-devN` (e.g., `1.4.5.1-dev12`)
-**Tag format**: `v` + version (e.g., `v1.4.5.1-dev12`)
+This project uses **commitizen** for version management and changelog generation.
+All versions follow **PEP 440** format.
 
-⚠️ **NEVER guess the version number** - always read pyproject.toml first!
+#### Commit Message Format (Conventional Commits)
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types that affect version:**
+- `feat:` → bumps MINOR version (new feature)
+- `fix:` → bumps PATCH version (bug fix)
+- `feat!:` or `BREAKING CHANGE:` → bumps MAJOR version
+
+**Types that don't affect version:**
+- `docs:`, `style:`, `refactor:`, `perf:`, `test:`, `build:`, `ci:`, `chore:`
+
+#### Version Types (PEP 440)
+| Type | Example | Tag | Publish To |
+|------|---------|-----|------------|
+| Development | `1.5.0.dev0` | `v1.5.0.dev0` | TestPyPI |
+| Alpha | `1.5.0a0` | `v1.5.0a0` | TestPyPI |
+| Beta | `1.5.0b0` | `v1.5.0b0` | TestPyPI |
+| Release Candidate | `1.5.0rc0` | `v1.5.0rc0` | TestPyPI |
+| Final Release | `1.5.0` | `v1.5.0` | PyPI |
+
+#### Release Workflow
+
+**For development iterations (TestPyPI):**
+```bash
+# Bump dev version and update changelog
+cz bump --devrelease
+
+# Or manually specify dev number
+cz bump --devrelease 1  # → X.Y.Z.dev1
+
+# Push changes and tag
+git push origin master --tags
+```
+
+**For pre-releases (TestPyPI):**
+```bash
+# Alpha release
+cz bump --prerelease alpha  # → X.Y.Za0
+
+# Beta release
+cz bump --prerelease beta   # → X.Y.Zb0
+
+# Release candidate
+cz bump --prerelease rc     # → X.Y.Zrc0
+
+git push origin master --tags
+```
+
+**For final release (PyPI):**
+```bash
+# Graduate from dev/pre-release to final
+cz bump                     # → X.Y.Z
+
+git push origin master --tags
+```
+
+#### Quick Reference
+```bash
+# Check current version
+cz version
+
+# See what next version would be (dry run)
+cz bump --dry-run
+
+# Interactive commit with prompts
+cz commit
+
+# Bump with specific increment
+cz bump --increment PATCH   # Force patch bump
+cz bump --increment MINOR   # Force minor bump
+cz bump --increment MAJOR   # Force major bump
+```
+
+⚠️ **NEVER manually edit version in pyproject.toml** - always use `cz bump`
 
 ## Dependencies
 
@@ -311,6 +383,7 @@ parser.Callbacks.OnNewCallbackName(func(m *dota.NewCallbackName) error {
 - black>=22.0.0
 - isort>=5.0.0
 - mypy>=1.0.0
+- commitizen>=3.0.0
 
 ## Project Links
 

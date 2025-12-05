@@ -3,9 +3,39 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+with [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
-## [Unreleased]
+## [1.4.5.2] - 2025-12-05
+
+### Added
+- **Commitizen integration** for automated versioning and changelog generation
+- **HeroSnapshot combat stats**: `armor`, `magic_resistance`, `damage_min`, `damage_max`, `attack_range`
+- **HeroSnapshot attributes**: `strength`, `agility`, `intellect`
+- **MCP use-case documentation** with 5 validated examples (docs/guides/use-cases.md)
+- **MCP use-case validation tests** (35 tests in test_mcp_usecase_validation.py)
+- **Parser v2 API**: Unified single-pass parsing with `parser.parse(**collectors)`
+- **Entity snapshots**: `parser.snapshot(target_tick=...)` for hero state at any tick
+- **Index/Seek API**: `parser.build_index()` for random access
+- **GameInfo model**: Complete game info with draft, teams, players, and winner
+- `DamageType.COMPOSITE = 3` (legacy damage type)
+- `DamageType.HP_REMOVAL = 4`
+- `Team.NEUTRAL = 4`
+- `ChatWheelMessage` enum for chat wheel phrases
+- `GameActivity` enum for game activity types
+- `EntityType` enum for entity classification
+- `RuneType` enum for rune types
+- `Hero` enum with all 145 heroes and ID/name lookup
+- `NeutralItem` and `NeutralItemTier` enums
+
+### Changed
+- **Version format**: Migrated to PEP 440 format
+- **CI/CD pipelines**: Updated for PEP 440 version detection
+- Refactored to Pythonic model names (e.g., `HeroSnapshot` instead of `hero_snapshot`)
+- Removed convenience functions in favor of `Parser` class methods
+
+### Fixed
+- Field aliases for game_info.players mapping
 
 ## [1.4.5] - 2024-11-30
 
@@ -63,8 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ctypes interface for shared library loading
 - Platform-specific build scripts for reproducible builds
 
-[Unreleased]: https://github.com/equilibrium-coach/python-manta/compare/v1.4.5...HEAD
-[1.4.5]: https://github.com/equilibrium-coach/python-manta/compare/v1.4.0...v1.4.5
-[1.4.0]: https://github.com/equilibrium-coach/python-manta/compare/v0.1.0...v1.4.0
-[0.1.0]: https://github.com/equilibrium-coach/python-manta/compare/v0.0.1...v0.1.0
-[0.0.1]: https://github.com/equilibrium-coach/python-manta/releases/tag/v0.0.1
+[1.4.5.2]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.5...v1.4.5.2
+[1.4.5]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.0...v1.4.5
+[1.4.0]: https://github.com/DeepBlueCoding/python-manta/compare/v0.1.0...v1.4.0
+[0.1.0]: https://github.com/DeepBlueCoding/python-manta/compare/v0.0.1...v0.1.0
+[0.0.1]: https://github.com/DeepBlueCoding/python-manta/releases/tag/v0.0.1
