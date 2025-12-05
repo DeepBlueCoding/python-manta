@@ -30,27 +30,27 @@ jobs:
         id: check
         run: |
           REF="${{ github.ref }}"
-          # Final release: v1.5.0 (no suffix)
-          if [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+          # Final release: v1.5.0 or v1.4.5.2 (no suffix)
+          if [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?)$ ]]; then
             echo "is_release=true" >> $GITHUB_OUTPUT
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
             echo "base_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
             echo "full_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
             echo "📦 Final release: ${BASH_REMATCH[1]}"
-          # Dev release: v1.5.0.dev0, v1.5.0.dev1, etc (PEP 440)
-          elif [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)\.(dev[0-9]+)$ ]]; then
+          # Dev release: v1.5.0.dev0, v1.4.5.2.dev7, etc (PEP 440)
+          elif [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?)\.(dev[0-9]+)$ ]]; then
             echo "is_release=false" >> $GITHUB_OUTPUT
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
             echo "base_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
-            echo "full_version=${BASH_REMATCH[1]}.${BASH_REMATCH[2]}" >> $GITHUB_OUTPUT
-            echo "🔧 Dev release: ${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+            echo "full_version=${BASH_REMATCH[1]}.${BASH_REMATCH[3]}" >> $GITHUB_OUTPUT
+            echo "🔧 Dev release: ${BASH_REMATCH[1]}.${BASH_REMATCH[3]}"
           # Pre-release: v1.5.0a0, v1.5.0b0, v1.5.0rc0 (PEP 440)
-          elif [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)(a|b|rc)([0-9]+)$ ]]; then
+          elif [[ "$REF" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?)(a|b|rc)([0-9]+)$ ]]; then
             echo "is_release=false" >> $GITHUB_OUTPUT
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
             echo "base_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
-            echo "full_version=${BASH_REMATCH[1]}${BASH_REMATCH[2]}${BASH_REMATCH[3]}" >> $GITHUB_OUTPUT
-            echo "🔧 Pre-release: ${BASH_REMATCH[1]}${BASH_REMATCH[2]}${BASH_REMATCH[3]}"
+            echo "full_version=${BASH_REMATCH[1]}${BASH_REMATCH[3]}${BASH_REMATCH[4]}" >> $GITHUB_OUTPUT
+            echo "🔧 Pre-release: ${BASH_REMATCH[1]}${BASH_REMATCH[3]}${BASH_REMATCH[4]}"
           else
             # Not a version tag (branch push, PR, etc.)
             echo "is_release=false" >> $GITHUB_OUTPUT
