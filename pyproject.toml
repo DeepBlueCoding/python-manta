@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-manta"
-version = "1.4.5.2.dev5"
+version = "1.4.5.2.dev6"
 description = "Python interface for the Manta Dota 2 replay parser"
 readme = "README.md"
 license = {text = "MIT"}
@@ -75,7 +75,7 @@ disallow_untyped_defs = true
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "1.4.5.2.dev5"
+version = "1.4.5.2.dev6"
 version_scheme = "pep440"
 version_provider = "pep621"
 tag_format = "v$version"
