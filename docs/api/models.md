@@ -2,7 +2,7 @@
 # Data Models
 
 ??? info "AI Summary"
-    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` (rune tracking), `EntityType` (hero, creep, summon, building), `CombatLogType` (45 combat log event types), `DamageType` (physical/magical/pure), `Team` (Radiant/Dire), `NeutralItemTier` (tier unlock times), `NeutralItem` (100+ neutral items), `ChatWheelMessage` (voice line IDs), and `GameActivity` (animation/taunt detection). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `HeroSnapshot`/`EntityStateSnapshot` (hero state with armor, damage, attributes at specific ticks), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` (rune tracking), `EntityType` (hero, creep, summon, building), `CombatLogType` (45 combat log event types), `DamageType` (physical/magical/pure/hp_removal), `Team` (Radiant/Dire/Neutral), `NeutralItemTier` (tier unlock times), `NeutralItem` (100+ neutral items), `ChatWheelMessage` (voice line IDs), and `GameActivity` (animation/taunt detection). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
 
 ---
 
@@ -221,9 +221,11 @@ Enum for Dota 2 damage types.
 
 ```python
 class DamageType(int, Enum):
-    PHYSICAL = 0
-    MAGICAL = 1
-    PURE = 2
+    PHYSICAL = 0    # Right-click attacks, physical spells
+    MAGICAL = 1     # Most spells, reduced by magic resistance
+    PURE = 2        # Ignores armor and magic resistance
+    COMPOSITE = 3   # Legacy: removed from Dota 2, was reduced by both armor and magic resistance
+    HP_REMOVAL = 4  # Blood Grenade, Heart stopper aura, etc.
 ```
 
 **Properties:**
@@ -240,15 +242,17 @@ class DamageType(int, Enum):
 
 **Example:**
 ```python
-from python_manta import MantaParser, DamageType, CombatLogType
+from python_manta import Parser, DamageType, CombatLogType
 
-parser = MantaParser()
-result = parser.parse_combat_log(demo_path, types=[CombatLogType.DAMAGE], max_entries=100)
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [CombatLogType.DAMAGE.value], "max_entries": 100})
 
-for entry in result.entries:
+for entry in result.combat_log.entries:
     dmg_type = DamageType.from_value(entry.damage_type)
     if dmg_type == DamageType.PURE:
         print(f"Pure damage: {entry.value} from {entry.inflictor_name}")
+    elif dmg_type == DamageType.HP_REMOVAL:
+        print(f"HP Removal: {entry.value} from {entry.inflictor_name}")
 ```
 
 ---
@@ -259,10 +263,11 @@ Enum for Dota 2 team identifiers.
 
 ```python
 class Team(int, Enum):
-    SPECTATOR = 0
-    UNASSIGNED = 1
-    RADIANT = 2
-    DIRE = 3
+    SPECTATOR = 0   # Spectator/observer
+    UNASSIGNED = 1  # Not yet assigned
+    RADIANT = 2     # Radiant team (bottom-left)
+    DIRE = 3        # Dire team (top-right)
+    NEUTRAL = 4     # Neutral creeps, Roshan, jungle camps
 ```
 
 **Properties:**
@@ -270,7 +275,8 @@ class Team(int, Enum):
 | Property | Type | Description |
 |----------|------|-------------|
 | `display_name` | str | Human-readable name (e.g., "Radiant") |
-| `is_playing` | bool | True if this is an actual playing team |
+| `is_playing` | bool | True if Radiant or Dire |
+| `is_neutral` | bool | True if neutral unit |
 | `opposite` | `Team \| None` | The opposing team (None for non-playing) |
 
 **Class Methods:**
@@ -281,17 +287,21 @@ class Team(int, Enum):
 
 **Example:**
 ```python
-from python_manta import MantaParser, Team, CombatLogType
+from python_manta import Parser, Team, CombatLogType
 
-parser = MantaParser()
-result = parser.parse_combat_log(demo_path, types=[CombatLogType.DEATH], heroes_only=True)
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [CombatLogType.DEATH.value], "heroes_only": True})
 
-for entry in result.entries:
+for entry in result.combat_log.entries:
     attacker_team = Team.from_value(entry.attacker_team)
     target_team = Team.from_value(entry.target_team)
 
     if attacker_team and target_team and attacker_team != target_team:
         print(f"{attacker_team.display_name} killed {target_team.display_name} hero")
+
+    # Check for neutral creep kills
+    if target_team == Team.NEUTRAL:
+        print(f"{attacker_team.display_name} killed neutral creep")
 
     # Use opposite property
     if attacker_team == Team.RADIANT:
@@ -919,6 +929,75 @@ for entity in result.entities:
     print(f"\n{entity.class_name} (index={entity.index})")
     print(f"  Health: {entity.properties.get('m_iHealth')}/{entity.properties.get('m_iMaxHealth')}")
     print(f"  Level: {entity.properties.get('m_iCurrentLevel')}")
+```
+
+---
+
+## Snapshot Models
+
+### HeroSnapshot
+
+Hero state captured at a specific tick via `parser.snapshot()`.
+
+```python
+class HeroSnapshot(BaseModel):
+    hero_name: str = ""           # Hero class name (e.g., "CDOTA_Unit_Hero_Axe")
+    hero_id: int = 0              # Hero ID
+    player_id: int = 0            # Player slot (0-9)
+    team: int = 0                 # Team (2=Radiant, 3=Dire)
+    x: float = 0.0                # World X position
+    y: float = 0.0                # World Y position
+    z: float = 0.0                # World Z position
+    health: int = 0               # Current health
+    max_health: int = 0           # Maximum health
+    mana: float = 0.0             # Current mana
+    max_mana: float = 0.0         # Maximum mana
+    level: int = 0                # Hero level
+    is_alive: bool = True         # Alive status
+    is_illusion: bool = False     # True if illusion
+    is_clone: bool = False        # True if clone (Meepo, Arc Warden)
+    # Combat stats
+    armor: float = 0.0            # Physical armor value
+    magic_resistance: float = 0.0 # Magic resistance percentage
+    damage_min: int = 0           # Minimum attack damage
+    damage_max: int = 0           # Maximum attack damage
+    attack_range: int = 0         # Attack range
+    # Attributes
+    strength: float = 0.0         # Total strength (base + bonuses)
+    agility: float = 0.0          # Total agility (base + bonuses)
+    intellect: float = 0.0        # Total intellect (base + bonuses)
+```
+
+### EntityStateSnapshot
+
+Result container for `parser.snapshot()`.
+
+```python
+class EntityStateSnapshot(BaseModel):
+    tick: int = 0                   # Tick when snapshot was captured
+    game_time: float = 0.0          # Game time in seconds
+    heroes: List[HeroSnapshot] = [] # All hero states
+    success: bool = True            # Parse success flag
+    error: Optional[str] = None     # Error message if failed
+```
+
+**Example:**
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+index = parser.build_index(interval_ticks=1800)
+
+# Get hero state at 10 minutes
+target_tick = index.game_started + (10 * 60 * 30)
+snap = parser.snapshot(target_tick=target_tick)
+
+for hero in snap.heroes:
+    name = hero.hero_name.replace("CDOTA_Unit_Hero_", "")
+    print(f"{name}: Lvl {hero.level}, HP {hero.health}/{hero.max_health}")
+    print(f"  Armor: {hero.armor:.1f}, Magic Resist: {hero.magic_resistance:.0f}%")
+    print(f"  Damage: {hero.damage_min}-{hero.damage_max}")
+    print(f"  STR: {hero.strength:.1f}, AGI: {hero.agility:.1f}, INT: {hero.intellect:.1f}")
 ```
 
 ---

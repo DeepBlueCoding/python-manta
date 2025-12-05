@@ -273,6 +273,8 @@ class DamageType(int, Enum):
     PHYSICAL = 0
     MAGICAL = 1
     PURE = 2
+    COMPOSITE = 3  # Legacy: removed from Dota 2, was reduced by both armor and magic resistance
+    HP_REMOVAL = 4
 
     @property
     def display_name(self) -> str:
@@ -299,6 +301,7 @@ class Team(int, Enum):
     UNASSIGNED = 1
     RADIANT = 2
     DIRE = 3
+    NEUTRAL = 4
 
     @property
     def display_name(self) -> str:
@@ -309,6 +312,11 @@ class Team(int, Enum):
     def is_playing(self) -> bool:
         """True if this is an actual playing team (not spectator/unassigned)."""
         return self in (Team.RADIANT, Team.DIRE)
+
+    @property
+    def is_neutral(self) -> bool:
+        """True if this is a neutral unit (creeps, Roshan, etc.)."""
+        return self == Team.NEUTRAL
 
     @classmethod
     def from_value(cls, value: int) -> Optional["Team"]:
@@ -1636,6 +1644,16 @@ class HeroSnapshot(BaseModel):
     is_alive: bool = True
     is_illusion: bool = False
     is_clone: bool = False
+    # Combat stats
+    armor: float = 0.0
+    magic_resistance: float = 0.0
+    damage_min: int = 0
+    damage_max: int = 0
+    attack_range: int = 0
+    # Attributes
+    strength: float = 0.0
+    agility: float = 0.0
+    intellect: float = 0.0
 
 
 class EntityStateSnapshot(BaseModel):

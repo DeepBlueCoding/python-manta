@@ -57,6 +57,16 @@ type HeroSnapshot struct {
 	Y          float32 `json:"y"`
 	IsClone    bool    `json:"is_clone,omitempty"`
 	IsIllusion bool    `json:"is_illusion,omitempty"`
+	// Combat stats
+	Armor           float32 `json:"armor"`
+	MagicResistance float32 `json:"magic_resistance"`
+	DamageMin       int     `json:"damage_min"`
+	DamageMax       int     `json:"damage_max"`
+	AttackRange     int     `json:"attack_range"`
+	// Attributes
+	Strength  float32 `json:"strength"`
+	Agility   float32 `json:"agility"`
+	Intellect float32 `json:"intellect"`
 }
 
 // SnapshotConfig configures snapshot capture
@@ -403,6 +413,34 @@ func extractHeroSnapshot(entity *manta.Entity, playerIdx int) HeroSnapshot {
 		if vecY, ok := entity.GetFloat32("CBodyComponent.m_vecY"); ok {
 			hero.Y = float32(cellY)*128.0 + vecY - 16384.0
 		}
+	}
+
+	// Combat stats
+	if armor, ok := entity.GetFloat32("m_flPhysicalArmorValue"); ok {
+		hero.Armor = armor
+	}
+	if magicRes, ok := entity.GetFloat32("m_flMagicalResistanceValue"); ok {
+		hero.MagicResistance = magicRes
+	}
+	if dmgMin, ok := entity.GetInt32("m_iDamageMin"); ok {
+		hero.DamageMin = int(dmgMin)
+	}
+	if dmgMax, ok := entity.GetInt32("m_iDamageMax"); ok {
+		hero.DamageMax = int(dmgMax)
+	}
+	if atkRange, ok := entity.GetInt32("m_iAttackRange"); ok {
+		hero.AttackRange = int(atkRange)
+	}
+
+	// Attributes (total values including bonuses)
+	if str, ok := entity.GetFloat32("m_flStrengthTotal"); ok {
+		hero.Strength = str
+	}
+	if agi, ok := entity.GetFloat32("m_flAgilityTotal"); ok {
+		hero.Agility = agi
+	}
+	if intel, ok := entity.GetFloat32("m_flIntellectTotal"); ok {
+		hero.Intellect = intel
 	}
 
 	return hero

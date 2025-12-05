@@ -58,6 +58,16 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Guides:
+    - Overview: guides/index.md
+    - MCP Use Cases: guides/use-cases.md
+    - Unit Orders: guides/unit-orders.md
+    - Game Events: guides/game-events.md
+    - Combat Log: guides/combat-log.md
+    - Entities: guides/entities.md
+    - Modifiers: guides/modifiers.md
+    - Universal Messages: guides/universal.md
+  - Examples: examples.md
   - API Reference:
     - Overview: api/index.md
     - Parser: api/parser.md
