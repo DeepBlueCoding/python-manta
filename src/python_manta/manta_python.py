@@ -2,6 +2,8 @@
 Python interface for Manta Dota 2 replay parser using ctypes.
 Provides basic file header reading functionality through Go CGO wrapper.
 """
+from __future__ import annotations
+
 import bz2
 import ctypes
 import json
