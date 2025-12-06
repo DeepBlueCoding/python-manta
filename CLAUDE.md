@@ -140,12 +140,6 @@ from python_manta import (
     TeamState,             # Team state
     EntitySnapshot,        # Snapshot at a tick
     EntityParseResult,     # Entity parsing result
-    # Hero snapshots with abilities/talents
-    AbilitySnapshot,       # Single ability state (level, cooldown, charges)
-    TalentChoice,          # Talent selection (tier, left/right)
-    HeroSnapshot,          # Full hero state including abilities/talents
-    EntityStateSnapshot,   # All heroes at a specific tick
-    # Other result types
     GameEventsResult,      # Game events result
     ModifiersResult,       # Modifiers result
     EntitiesResult,        # Entity query result
@@ -203,8 +197,6 @@ result = parser.parse_range(start_tick=25000, end_tick=35000, combat_log=True)
 | Draft picks/bans | `game_info=True` | Picks/bans with hero IDs |
 | Pro match info | `game_info=True` | Teams, league, players, winner |
 | Hero positions | `entities={"interval_ticks": 900}` | Position, stats at intervals |
-| **Hero abilities** | `parser.snapshot(target_tick=N)` | Ability levels, cooldowns, charges |
-| **Talent choices** | `parser.snapshot(target_tick=N)` | Left/right at levels 10/15/20/25 |
 | Chat messages | `messages={"filter": "ChatMessage"}` | Player text chat |
 | Item purchases | `messages={"filter": "ItemPurchased"}` | Item buy events |
 | Map pings | `messages={"filter": "LocationPing"}` | Ping coordinates |
@@ -220,7 +212,6 @@ result = parser.parse_range(start_tick=25000, end_tick=35000, combat_log=True)
 |------|--------|
 | Multiple data types | `parser.parse(header=True, game_info=True, ...)` |
 | Hero state at tick | `parser.snapshot(target_tick=36000)` |
-| Hero abilities/talents | `snap.heroes[0].abilities`, `snap.heroes[0].talents` |
 | Hero state with illusions | `parser.snapshot(target_tick=36000, include_illusions=True)` |
 | Build keyframe index | `parser.build_index(interval_ticks=1800)` |
 | Events in tick range | `parser.parse_range(start_tick=..., end_tick=..., combat_log=True)` |

@@ -227,40 +227,6 @@ for entry in result.combat_log:
     print(f"Tick {entry['tick']}: {entry['target_name']}")
 ```
 
-### Hero Abilities & Talents
-
-Track hero ability levels and talent choices at any point in the game:
-
-```python
-from python_manta import Parser
-
-parser = Parser("match.dem")
-snap = parser.snapshot(target_tick=60000)  # ~33 minutes
-
-for hero in snap.heroes:
-    print(f"{hero.hero_name} (Level {hero.level})")
-
-    # Abilities with levels and cooldowns
-    for ability in hero.abilities:
-        status = "[MAX]" if ability.is_maxed else ""
-        cd = f" (CD: {ability.cooldown:.1f}s)" if ability.is_on_cooldown else ""
-        print(f"  {ability.short_name}: Level {ability.level}{status}{cd}")
-
-    # Talent choices (levels 10, 15, 20, 25)
-    print(f"  Talents: {hero.talents_chosen}/4")
-    for talent in hero.talents:
-        print(f"    Level {talent.tier}: {talent.side}")
-
-    # Helper methods
-    if hero.has_ultimate:
-        print("  Has ultimate!")
-
-    # Find specific ability
-    blade_fury = hero.get_ability("BladeFury")
-    if blade_fury:
-        print(f"  Blade Fury is level {blade_fury.level}")
-```
-
 ### API Reference
 
 | Method | Description |
@@ -984,78 +950,6 @@ class ParserInfo(BaseModel):
     success: bool                 # Parse success flag
 ```
 
-### AbilitySnapshot
-
-```python
-class AbilitySnapshot(BaseModel):
-    slot: int = 0                 # Ability slot index (0-5 for regular abilities)
-    name: str = ""                # Full ability class name (e.g., "CDOTA_Ability_Juggernaut_BladeFury")
-    level: int = 0                # Current ability level (0-4 typically)
-    cooldown: float = 0.0         # Current cooldown remaining
-    max_cooldown: float = 0.0     # Maximum cooldown length
-    mana_cost: int = 0            # Mana cost
-    charges: int = 0              # Current charges (for charge-based abilities)
-    is_ultimate: bool = False     # True if slot 5 (ultimate)
-
-    # Properties
-    short_name: str               # Name without "CDOTA_Ability_" prefix
-    is_maxed: bool                # True if at max level (4 for regular, 3 for ultimate)
-    is_on_cooldown: bool          # True if cooldown > 0
-```
-
-### TalentChoice
-
-```python
-class TalentChoice(BaseModel):
-    tier: int = 0                 # Talent tier (10, 15, 20, or 25)
-    slot: int = 0                 # Raw slot index
-    is_left: bool = True          # True if left talent was chosen
-    name: str = ""                # Talent ability name
-
-    # Properties
-    side: str                     # "left" or "right"
-```
-
-### HeroSnapshot
-
-```python
-class HeroSnapshot(BaseModel):
-    hero_name: str = ""           # Hero class name (e.g., "CDOTA_Unit_Hero_Juggernaut")
-    hero_id: int = 0              # Hero ID
-    player_id: int = 0            # Player slot (0-9)
-    team: int = 0                 # 2 = Radiant, 3 = Dire
-    x: float = 0.0                # World X coordinate
-    y: float = 0.0                # World Y coordinate
-    health: int = 0               # Current health
-    max_health: int = 0           # Maximum health
-    mana: float = 0.0             # Current mana
-    max_mana: float = 0.0         # Maximum mana
-    level: int = 0                # Hero level (1-30)
-    is_alive: bool = True         # Whether hero is alive
-    is_illusion: bool = False     # True if this is an illusion
-    is_clone: bool = False        # True if this is a clone (Meepo, MK soldiers)
-    # Combat stats
-    armor: float = 0.0            # Physical armor
-    magic_resistance: float = 0.0 # Magic resistance %
-    damage_min: int = 0           # Minimum attack damage
-    damage_max: int = 0           # Maximum attack damage
-    attack_range: int = 0         # Attack range
-    # Attributes
-    strength: float = 0.0         # Total strength
-    agility: float = 0.0          # Total agility
-    intellect: float = 0.0        # Total intelligence
-    # Abilities and talents
-    abilities: List[AbilitySnapshot] = []  # All hero abilities
-    talents: List[TalentChoice] = []       # Chosen talents
-    ability_points: int = 0                # Unspent ability points
-
-    # Properties and methods
-    has_ultimate: bool            # True if ultimate has been learned
-    talents_chosen: int           # Number of talents selected (0-4)
-    get_ability(name) -> Optional[AbilitySnapshot]  # Find ability by name (partial match)
-    get_talent_at_tier(tier) -> Optional[TalentChoice]  # Get talent at tier (10/15/20/25)
-```
-
 ---
 
 ## Common Use Cases
@@ -1292,8 +1186,6 @@ print(len(result.combat_log.entries))
 | Draft sequence | `game_info=True` | Picks/bans with hero IDs |
 | Pro match info | `game_info=True` | Teams, league, players, winner |
 | Hero positions | `entities={"interval_ticks": 900}` | Position, stats at intervals |
-| **Hero abilities** | `parser.snapshot(target_tick=N)` | Ability levels, cooldowns |
-| **Talent choices** | `parser.snapshot(target_tick=N)` | Left/right choices at 10/15/20/25 |
 | Chat messages | `messages={"filter": "ChatMessage"}` | Player text chat |
 | Item purchases | `messages={"filter": "ItemPurchased"}` | Item buy events |
 | Map pings | `messages={"filter": "LocationPing"}` | Ping coordinates |
