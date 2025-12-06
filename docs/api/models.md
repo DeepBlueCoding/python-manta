@@ -935,6 +935,42 @@ for entity in result.entities:
 
 ## Snapshot Models
 
+### AbilitySnapshot
+
+State of a single hero ability at a specific tick.
+
+```python
+class AbilitySnapshot(BaseModel):
+    slot: int = 0                 # Ability slot index (0-5 for regular abilities)
+    name: str = ""                # Full ability class name (e.g., "CDOTA_Ability_Juggernaut_BladeFury")
+    level: int = 0                # Current ability level (0-4 typically)
+    cooldown: float = 0.0         # Current cooldown remaining
+    max_cooldown: float = 0.0     # Maximum cooldown length
+    mana_cost: int = 0            # Mana cost
+    charges: int = 0              # Current charges (for charge-based abilities)
+    is_ultimate: bool = False     # True if slot 5 (ultimate)
+
+    # Properties
+    short_name: str               # Name without "CDOTA_Ability_" prefix
+    is_maxed: bool                # True if at max level (4 for regular, 3 for ultimate)
+    is_on_cooldown: bool          # True if cooldown > 0
+```
+
+### TalentChoice
+
+Represents a talent selection at levels 10, 15, 20, or 25.
+
+```python
+class TalentChoice(BaseModel):
+    tier: int = 0                 # Talent tier (10, 15, 20, or 25)
+    slot: int = 0                 # Raw ability slot index
+    is_left: bool = True          # True if left talent was chosen
+    name: str = ""                # Talent ability name
+
+    # Properties
+    side: str                     # "left" or "right"
+```
+
 ### HeroSnapshot
 
 Hero state captured at a specific tick via `parser.snapshot()`.
@@ -952,7 +988,7 @@ class HeroSnapshot(BaseModel):
     max_health: int = 0           # Maximum health
     mana: float = 0.0             # Current mana
     max_mana: float = 0.0         # Maximum mana
-    level: int = 0                # Hero level
+    level: int = 0                # Hero level (1-30)
     is_alive: bool = True         # Alive status
     is_illusion: bool = False     # True if illusion
     is_clone: bool = False        # True if clone (Meepo, Arc Warden)
@@ -966,6 +1002,16 @@ class HeroSnapshot(BaseModel):
     strength: float = 0.0         # Total strength (base + bonuses)
     agility: float = 0.0          # Total agility (base + bonuses)
     intellect: float = 0.0        # Total intellect (base + bonuses)
+    # Abilities and talents
+    abilities: List[AbilitySnapshot] = []  # All hero abilities with levels
+    talents: List[TalentChoice] = []       # Chosen talents
+    ability_points: int = 0                # Unspent ability points
+
+    # Properties and methods
+    has_ultimate: bool            # True if ultimate ability has been learned
+    talents_chosen: int           # Number of talents selected (0-4)
+    get_ability(name) -> Optional[AbilitySnapshot]  # Find ability by name (partial match)
+    get_talent_at_tier(tier) -> Optional[TalentChoice]  # Get talent at tier (10/15/20/25)
 ```
 
 ### EntityStateSnapshot
@@ -981,7 +1027,7 @@ class EntityStateSnapshot(BaseModel):
     error: Optional[str] = None     # Error message if failed
 ```
 
-**Example:**
+**Example - Basic Hero State:**
 ```python
 from python_manta import Parser
 
@@ -998,6 +1044,42 @@ for hero in snap.heroes:
     print(f"  Armor: {hero.armor:.1f}, Magic Resist: {hero.magic_resistance:.0f}%")
     print(f"  Damage: {hero.damage_min}-{hero.damage_max}")
     print(f"  STR: {hero.strength:.1f}, AGI: {hero.agility:.1f}, INT: {hero.intellect:.1f}")
+```
+
+**Example - Abilities and Talents:**
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+snap = parser.snapshot(target_tick=60000)  # ~33 minutes
+
+for hero in snap.heroes:
+    print(f"{hero.hero_name} (Level {hero.level})")
+
+    # Show all abilities with levels
+    for ability in hero.abilities:
+        status = "[MAX]" if ability.is_maxed else ""
+        cd = f" (CD: {ability.cooldown:.1f}s)" if ability.is_on_cooldown else ""
+        print(f"  {ability.short_name}: Level {ability.level}{status}{cd}")
+
+    # Show talent choices
+    print(f"  Talents: {hero.talents_chosen}/4")
+    for talent in hero.talents:
+        print(f"    Level {talent.tier}: {talent.side}")
+
+    # Find specific ability by name
+    omnislash = hero.get_ability("Omnislash")
+    if omnislash and omnislash.level > 0:
+        print(f"  Has Omnislash level {omnislash.level}")
+
+    # Check if ultimate is learned
+    if hero.has_ultimate:
+        print("  Ultimate learned!")
+
+    # Get talent at specific tier
+    lvl20_talent = hero.get_talent_at_tier(20)
+    if lvl20_talent:
+        print(f"  Level 20 talent: {lvl20_talent.side}")
 ```
 
 ---

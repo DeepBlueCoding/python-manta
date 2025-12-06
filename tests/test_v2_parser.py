@@ -640,3 +640,268 @@ class TestV2ParserIncludeIllusions:
         snap_explicit = parser.snapshot(target_tick=30000, include_illusions=False)
 
         assert len(snap_default.heroes) == len(snap_explicit.heroes) == 10
+
+
+class TestV2ParserHeroAbilities:
+    """Test hero ability tracking in snapshots."""
+
+    def test_snapshot_heroes_have_abilities(self):
+        """Test snapshot heroes have abilities list populated."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=60000)  # Mid-game
+
+        assert snapshot.success is True
+        for hero in snapshot.heroes:
+            # Every hero should have some abilities
+            assert len(hero.abilities) > 0
+
+    def test_snapshot_abilities_have_valid_levels(self):
+        """Test ability levels are within valid range.
+
+        Note: Most abilities max at 4 (regular) or 3 (ultimate), but some abilities
+        like Chen's Holy Persuasion can have more levels with Aghanim's upgrades.
+        """
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=60000)
+
+        for hero in snapshot.heroes:
+            for ability in hero.abilities:
+                # All abilities should have non-negative levels
+                assert ability.level >= 0
+                # Max level is typically 7 (some upgraded abilities)
+                assert ability.level <= 7
+
+    def test_snapshot_abilities_have_valid_names(self):
+        """Test ability names are properly formatted class names."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=60000)
+
+        for hero in snapshot.heroes:
+            for ability in hero.abilities:
+                # All abilities should have CDOTA_Ability prefix
+                assert ability.name.startswith("CDOTA_Ability_")
+                # short_name property should strip the prefix
+                assert not ability.short_name.startswith("CDOTA_Ability_")
+
+    def test_snapshot_abilities_have_cooldown_data(self):
+        """Test abilities have cooldown and max_cooldown fields."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=60000)
+
+        for hero in snapshot.heroes:
+            for ability in hero.abilities:
+                # Cooldown should be non-negative
+                assert ability.cooldown >= 0.0
+                assert ability.max_cooldown >= 0.0
+                # If on cooldown, current should be <= max
+                if ability.cooldown > 0:
+                    assert ability.cooldown <= ability.max_cooldown + 0.1  # Small tolerance
+
+    def test_snapshot_abilities_slot_ordering(self):
+        """Test abilities have sequential slot indices."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=60000)
+
+        for hero in snapshot.heroes:
+            if hero.abilities:
+                # Slots should be in increasing order
+                slots = [a.slot for a in hero.abilities]
+                assert slots == sorted(slots)
+                # Slots should be non-negative
+                assert all(s >= 0 for s in slots)
+
+    def test_snapshot_ability_is_maxed_property(self):
+        """Test is_maxed property correctly identifies max level abilities."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=90000)  # Later game for maxed abilities
+
+        found_maxed = False
+        for hero in snapshot.heroes:
+            for ability in hero.abilities:
+                if ability.is_ultimate:
+                    if ability.level >= 3:
+                        assert ability.is_maxed is True
+                        found_maxed = True
+                else:
+                    if ability.level >= 4:
+                        assert ability.is_maxed is True
+                        found_maxed = True
+
+        # At 90000 ticks, should have some maxed abilities
+        assert found_maxed is True
+
+    def test_snapshot_ability_is_on_cooldown_property(self):
+        """Test is_on_cooldown property matches cooldown value."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=60000)
+
+        for hero in snapshot.heroes:
+            for ability in hero.abilities:
+                if ability.cooldown > 0:
+                    assert ability.is_on_cooldown is True
+                else:
+                    assert ability.is_on_cooldown is False
+
+    def test_snapshot_hero_get_ability_method(self):
+        """Test get_ability helper method finds abilities by partial name."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=60000)
+
+        # Find a hero with known abilities
+        for hero in snapshot.heroes:
+            if len(hero.abilities) > 0:
+                # Get first ability by its short name
+                first_ability = hero.abilities[0]
+                found = hero.get_ability(first_ability.short_name)
+                assert found is not None
+                assert found.name == first_ability.name
+                break
+
+    def test_snapshot_hero_has_ultimate_property(self):
+        """Test has_ultimate property correctly identifies heroes with learned ultimates."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=60000)
+
+        # At 60000 ticks, heroes should be high enough level to have ultimates
+        heroes_with_ult = [h for h in snapshot.heroes if h.has_ultimate]
+        assert len(heroes_with_ult) >= 5  # At least half should have ult by now
+
+    def test_snapshot_ability_points_tracked(self):
+        """Test unspent ability points are tracked."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=30000)
+
+        for hero in snapshot.heroes:
+            # ability_points should be non-negative
+            assert hero.ability_points >= 0
+
+
+class TestV2ParserHeroTalents:
+    """Test hero talent tracking in snapshots."""
+
+    def test_snapshot_heroes_have_talents_list(self):
+        """Test snapshot heroes have talents list (may be empty early game)."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=60000)
+
+        assert snapshot.success is True
+        for hero in snapshot.heroes:
+            # Talents should be a list (possibly empty)
+            assert isinstance(hero.talents, list)
+
+    def test_snapshot_talents_have_valid_tiers(self):
+        """Test talent tiers are one of 10, 15, 20, or 25."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=90000)  # Later game for more talents
+
+        valid_tiers = {10, 15, 20, 25}
+        for hero in snapshot.heroes:
+            for talent in hero.talents:
+                assert talent.tier in valid_tiers
+
+    def test_snapshot_talents_have_side_property(self):
+        """Test talent side property returns 'left' or 'right'."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=90000)
+
+        for hero in snapshot.heroes:
+            for talent in hero.talents:
+                assert talent.side in ["left", "right"]
+                # is_left should match side
+                if talent.is_left:
+                    assert talent.side == "left"
+                else:
+                    assert talent.side == "right"
+
+    def test_snapshot_talents_one_per_tier(self):
+        """Test heroes have at most one talent per tier."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=90000)
+
+        for hero in snapshot.heroes:
+            if len(hero.talents) > 1:
+                tiers = [t.tier for t in hero.talents]
+                # All tiers should be unique
+                assert len(tiers) == len(set(tiers))
+
+    def test_snapshot_talents_chosen_property(self):
+        """Test talents_chosen property returns count of talents."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=90000)
+
+        for hero in snapshot.heroes:
+            assert hero.talents_chosen == len(hero.talents)
+            assert 0 <= hero.talents_chosen <= 4
+
+    def test_snapshot_hero_get_talent_at_tier_method(self):
+        """Test get_talent_at_tier helper method."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=90000)
+
+        for hero in snapshot.heroes:
+            if hero.talents:
+                # Get first talent by its tier
+                first_talent = hero.talents[0]
+                found = hero.get_talent_at_tier(first_talent.tier)
+                assert found is not None
+                assert found.tier == first_talent.tier
+                break
+
+    def test_snapshot_talents_increase_over_time(self):
+        """Test heroes gain more talents as game progresses."""
+        parser = Parser(DEMO_FILE)
+
+        early_snapshot = parser.snapshot(target_tick=30000)
+        late_snapshot = parser.snapshot(target_tick=90000)
+
+        early_talents = sum(h.talents_chosen for h in early_snapshot.heroes)
+        late_talents = sum(h.talents_chosen for h in late_snapshot.heroes)
+
+        # Later snapshot should have more total talents
+        assert late_talents >= early_talents
+
+    def test_snapshot_talent_names_are_special_bonus(self):
+        """Test talent names contain 'Special_Bonus'."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=90000)
+
+        for hero in snapshot.heroes:
+            for talent in hero.talents:
+                # Talent names should contain Special_Bonus
+                assert "Special_Bonus" in talent.name
+
+
+class TestV2ParserAbilityProgression:
+    """Test ability progression over game time."""
+
+    def test_ability_levels_increase_over_time(self):
+        """Test total ability levels increase as game progresses."""
+        parser = Parser(DEMO_FILE)
+
+        early_snapshot = parser.snapshot(target_tick=20000)
+        late_snapshot = parser.snapshot(target_tick=80000)
+
+        def total_ability_levels(snapshot):
+            return sum(
+                sum(a.level for a in h.abilities)
+                for h in snapshot.heroes
+            )
+
+        early_total = total_ability_levels(early_snapshot)
+        late_total = total_ability_levels(late_snapshot)
+
+        # Later snapshot should have more total ability levels
+        assert late_total > early_total
+
+    def test_heroes_gain_abilities_with_level(self):
+        """Test heroes at higher levels have more ability levels allocated."""
+        parser = Parser(DEMO_FILE)
+        snapshot = parser.snapshot(target_tick=60000)
+
+        for hero in snapshot.heroes:
+            if hero.level >= 6:
+                # Heroes at level 6+ should have at least 6 ability levels allocated
+                total_levels = sum(a.level for a in hero.abilities)
+                # Account for unspent points
+                expected_min = hero.level - hero.ability_points - 1  # Some slack
+                assert total_levels >= expected_min

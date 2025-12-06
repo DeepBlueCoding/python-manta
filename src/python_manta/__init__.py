@@ -25,6 +25,8 @@ from .manta_python import (
     # V2 index/seek types
     Keyframe,
     DemoIndex,
+    AbilitySnapshot,
+    TalentChoice,
     HeroSnapshot,
     EntityStateSnapshot,
     RangeParseConfig,
@@ -98,6 +100,8 @@ __all__ = [
     # V2 index/seek types
     "Keyframe",
     "DemoIndex",
+    "AbilitySnapshot",
+    "TalentChoice",
     "HeroSnapshot",
     "EntityStateSnapshot",
     "RangeParseConfig",

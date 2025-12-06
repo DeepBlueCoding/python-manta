@@ -42,6 +42,26 @@ type EntityStateSnapshot struct {
 	Error    string         `json:"error,omitempty"`
 }
 
+// AbilitySnapshot captures an ability's state
+type AbilitySnapshot struct {
+	Slot      int     `json:"slot"`       // Slot index (0-5 for regular abilities)
+	Name      string  `json:"name"`       // Ability class name (e.g., "CDOTA_Ability_Juggernaut_BladeFury")
+	Level     int     `json:"level"`      // Current ability level (0-4 typically)
+	Cooldown  float32 `json:"cooldown"`   // Current cooldown remaining
+	MaxCooldown float32 `json:"max_cooldown"` // Maximum cooldown length
+	ManaCost  int     `json:"mana_cost"`  // Mana cost
+	Charges   int     `json:"charges"`    // Current charges (for charge-based abilities)
+	IsUltimate bool   `json:"is_ultimate"` // True if this is the ultimate (typically slot 5)
+}
+
+// TalentChoice captures a talent tier selection
+type TalentChoice struct {
+	Tier      int    `json:"tier"`       // Talent tier (10, 15, 20, or 25)
+	Slot      int    `json:"slot"`       // Raw slot index (6-13)
+	IsLeft    bool   `json:"is_left"`    // True if left talent chosen, false if right
+	Name      string `json:"name"`       // Talent ability name if available
+}
+
 // HeroSnapshot captures a hero's state
 type HeroSnapshot struct {
 	Index      int     `json:"index"`
@@ -67,6 +87,10 @@ type HeroSnapshot struct {
 	Strength  float32 `json:"strength"`
 	Agility   float32 `json:"agility"`
 	Intellect float32 `json:"intellect"`
+	// Abilities and talents
+	Abilities     []AbilitySnapshot `json:"abilities,omitempty"`
+	Talents       []TalentChoice    `json:"talents,omitempty"`
+	AbilityPoints int               `json:"ability_points"` // Unspent ability points
 }
 
 // SnapshotConfig configures snapshot capture
@@ -313,7 +337,7 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 						continue
 					}
 
-					hero := extractHeroSnapshot(entity, playerIdx)
+					hero := extractHeroSnapshot(entity, playerIdx, parser)
 					snapshot.Heroes = append(snapshot.Heroes, hero)
 				}
 			}
@@ -337,7 +361,7 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 						playerID = int(pid) / 2
 					}
 
-					hero := extractHeroSnapshot(entity, playerID)
+					hero := extractHeroSnapshot(entity, playerID, parser)
 
 					// Check if it's an illusion or clone
 					if isIllusion, ok := entity.GetBool("m_bIsIllusion"); ok && isIllusion {
@@ -369,11 +393,13 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 }
 
 // extractHeroSnapshot extracts hero state from entity
-func extractHeroSnapshot(entity *manta.Entity, playerIdx int) HeroSnapshot {
+func extractHeroSnapshot(entity *manta.Entity, playerIdx int, parser *manta.Parser) HeroSnapshot {
 	hero := HeroSnapshot{
-		HeroName: entity.GetClassName(),
-		Index:    int(entity.GetIndex()),
-		PlayerID: playerIdx,
+		HeroName:  entity.GetClassName(),
+		Index:     int(entity.GetIndex()),
+		PlayerID:  playerIdx,
+		Abilities: make([]AbilitySnapshot, 0),
+		Talents:   make([]TalentChoice, 0),
 	}
 
 	// Team based on player slot (0-4 = Radiant, 5-9 = Dire)
@@ -401,6 +427,11 @@ func extractHeroSnapshot(entity *manta.Entity, playerIdx int) HeroSnapshot {
 	// Override team from entity if available
 	if team, ok := entity.GetInt32("m_iTeamNum"); ok {
 		hero.Team = int(team)
+	}
+
+	// Ability points (unspent)
+	if pts, ok := entity.GetInt32("m_iAbilityPoints"); ok {
+		hero.AbilityPoints = int(pts)
 	}
 
 	// Position from cell (world = cell * 128 + vec - 16384)
@@ -443,7 +474,125 @@ func extractHeroSnapshot(entity *manta.Entity, playerIdx int) HeroSnapshot {
 		hero.Intellect = intel
 	}
 
+	// Extract abilities and talents if parser is available
+	if parser != nil {
+		extractAbilities(entity, parser, &hero)
+	}
+
 	return hero
+}
+
+// extractAbilities extracts ability and talent data from a hero entity
+func extractAbilities(entity *manta.Entity, parser *manta.Parser, hero *HeroSnapshot) {
+	// Track talent slots for tier detection
+	// Talents appear in pairs: first talent pair is at the earliest slots with Special_Bonus
+	talentSlots := make([]int, 0)
+	talentsBySlot := make(map[int]struct {
+		name  string
+		level int32
+	})
+
+	// First pass: identify all abilities and separate talents
+	for slot := 0; slot < 24; slot++ {
+		key := fmt.Sprintf("m_vecAbilities.%04d", slot)
+		val := entity.Get(key)
+
+		handle, ok := val.(uint32)
+		if !ok || handle == 16777215 { // 16777215 = invalid handle
+			continue
+		}
+
+		abilityEntity := parser.FindEntityByHandle(uint64(handle))
+		if abilityEntity == nil {
+			continue
+		}
+
+		abilityName := abilityEntity.GetClassName()
+		abilityLevel, _ := abilityEntity.GetInt32("m_iLevel")
+		hidden, _ := abilityEntity.GetBool("m_bHidden")
+
+		// Check if this is a talent (name-based detection)
+		if strings.Contains(abilityName, "Special_Bonus") {
+			talentSlots = append(talentSlots, slot)
+			talentsBySlot[slot] = struct {
+				name  string
+				level int32
+			}{abilityName, abilityLevel}
+			continue
+		}
+
+		// Skip hidden abilities with no level
+		if hidden && abilityLevel == 0 {
+			continue
+		}
+
+		// Skip non-hero abilities (shared abilities)
+		if strings.Contains(abilityName, "Capture") ||
+			strings.Contains(abilityName, "Portal_Warp") ||
+			strings.Contains(abilityName, "Lamp_Use") ||
+			strings.Contains(abilityName, "Plus_HighFive") ||
+			strings.Contains(abilityName, "Plus_GuildBanner") {
+			continue
+		}
+
+		// Regular ability
+		cooldown, _ := abilityEntity.GetFloat32("m_fCooldown")
+		maxCooldown, _ := abilityEntity.GetFloat32("m_flCooldownLength")
+		manaCost, _ := abilityEntity.GetInt32("m_iManaCost")
+		charges, _ := abilityEntity.GetInt32("m_nAbilityCurrentCharges")
+
+		ability := AbilitySnapshot{
+			Slot:        slot,
+			Name:        abilityName,
+			Level:       int(abilityLevel),
+			Cooldown:    cooldown,
+			MaxCooldown: maxCooldown,
+			ManaCost:    int(manaCost),
+			Charges:     int(charges),
+			IsUltimate:  slot == 5, // Slot 5 is typically the ultimate
+		}
+		hero.Abilities = append(hero.Abilities, ability)
+	}
+
+	// Second pass: process talents
+	// Talents come in pairs, ordered by tier (10, 15, 20, 25)
+	// Sort talent slots to ensure consistent ordering
+	sort.Ints(talentSlots)
+
+	tiers := []int{10, 15, 20, 25}
+	tierIndex := 0
+	for i := 0; i < len(talentSlots) && tierIndex < len(tiers); i += 2 {
+		tier := tiers[tierIndex]
+		tierIndex++
+
+		// Check left talent (first of pair)
+		if i < len(talentSlots) {
+			leftSlot := talentSlots[i]
+			leftData := talentsBySlot[leftSlot]
+			if leftData.level > 0 {
+				hero.Talents = append(hero.Talents, TalentChoice{
+					Tier:   tier,
+					Slot:   leftSlot,
+					IsLeft: true,
+					Name:   leftData.name,
+				})
+			}
+		}
+
+		// Check right talent (second of pair)
+		if i+1 < len(talentSlots) {
+			rightSlot := talentSlots[i+1]
+			rightData := talentsBySlot[rightSlot]
+			if rightData.level > 0 {
+				hero.Talents = append(hero.Talents, TalentChoice{
+					Tier:   tier,
+					Slot:   rightSlot,
+					IsLeft: false,
+					Name:   rightData.name,
+				})
+			}
+		}
+	}
 }
 
 //export ParseRange

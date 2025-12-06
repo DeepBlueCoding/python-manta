@@ -531,3 +531,134 @@ Each player in a snapshot includes:
 | `parse_entities()` | Time-series or specific ticks | ✅ `position_x`, `position_y` |
 | `query_entities()` | End-of-game state | ✅ Raw `CBodyComponent.m_cellX/Y` |
 | `parse_combat_log()` | Combat events | ❌ `location_x/y` always 0 |
+
+---
+
+## Hero Abilities and Talents
+
+The `parser.snapshot()` method returns hero state including abilities and talent choices.
+
+### Basic Ability Tracking
+
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+snap = parser.snapshot(target_tick=60000)  # ~33 minutes
+
+for hero in snap.heroes:
+    print(f"{hero.hero_name} (Level {hero.level})")
+
+    # Show all abilities
+    for ability in hero.abilities:
+        if ability.level > 0:
+            print(f"  {ability.short_name}: Level {ability.level}")
+```
+
+### Ability Properties
+
+Each `AbilitySnapshot` includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `slot` | int | Ability slot (0-5 for regular abilities) |
+| `name` | str | Full ability class name |
+| `level` | int | Current ability level (0-4) |
+| `cooldown` | float | Current cooldown remaining |
+| `max_cooldown` | float | Maximum cooldown length |
+| `mana_cost` | int | Mana cost |
+| `charges` | int | Current charges |
+| `is_ultimate` | bool | True if slot 5 (ultimate) |
+
+**Helper Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `short_name` | str | Name without "CDOTA_Ability_" prefix |
+| `is_maxed` | bool | True if at max level |
+| `is_on_cooldown` | bool | True if cooldown > 0 |
+
+### Talent Tracking
+
+Talents are tracked separately from abilities:
+
+```python
+snap = parser.snapshot(target_tick=120000)  # Late game
+
+for hero in snap.heroes:
+    print(f"{hero.hero_name}: {hero.talents_chosen}/4 talents")
+
+    for talent in hero.talents:
+        print(f"  Level {talent.tier}: {talent.side}")
+```
+
+Each `TalentChoice` includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `tier` | int | Talent tier (10, 15, 20, or 25) |
+| `slot` | int | Raw ability slot index |
+| `is_left` | bool | True if left talent chosen |
+| `name` | str | Talent ability name |
+| `side` | str | "left" or "right" |
+
+### Finding Specific Abilities
+
+Use helper methods to find abilities:
+
+```python
+for hero in snap.heroes:
+    # Find ability by name (partial match)
+    omnislash = hero.get_ability("Omnislash")
+    if omnislash and omnislash.level > 0:
+        print(f"Omnislash level {omnislash.level}")
+
+    # Check if ultimate is learned
+    if hero.has_ultimate:
+        print("Has ultimate!")
+
+    # Get talent at specific tier
+    lvl20_talent = hero.get_talent_at_tier(20)
+    if lvl20_talent:
+        print(f"Level 20 talent: {lvl20_talent.side}")
+```
+
+### Tracking Skill Builds Over Time
+
+Combine multiple snapshots to track skill progression:
+
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+
+# Get snapshots at different times
+ticks = [30000, 60000, 90000, 120000]
+
+for tick in ticks:
+    snap = parser.snapshot(target_tick=tick)
+
+    for hero in snap.heroes:
+        if "Juggernaut" in hero.hero_name:
+            print(f"Tick {tick} - Level {hero.level}")
+            for ab in hero.abilities:
+                if ab.level > 0:
+                    print(f"  {ab.short_name}: {ab.level}")
+            break
+```
+
+### Cooldown Analysis
+
+Track ability cooldowns for timing analysis:
+
+```python
+snap = parser.snapshot(target_tick=60000)
+
+for hero in snap.heroes:
+    print(f"\n{hero.hero_name} cooldowns:")
+    for ability in hero.abilities:
+        if ability.is_on_cooldown:
+            print(f"  {ability.short_name}: {ability.cooldown:.1f}s remaining")
+        elif ability.level > 0:
+            print(f"  {ability.short_name}: ready")
+```

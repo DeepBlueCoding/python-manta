@@ -411,3 +411,265 @@ class TestGameActivityEnum:
         assert GameActivity.CAST_ABILITY_1.display_name == "Cast Ability 1"
         assert GameActivity.TAUNT.display_name == "Taunt"
         assert GameActivity.RUN.display_name == "Run"
+
+
+class TestAbilitySnapshotModel:
+    """Test AbilitySnapshot model properties."""
+
+    def test_ability_snapshot_defaults(self):
+        """Test AbilitySnapshot has correct default values."""
+        from python_manta import AbilitySnapshot
+
+        ability = AbilitySnapshot()
+        assert ability.slot == 0
+        assert ability.name == ""
+        assert ability.level == 0
+        assert ability.cooldown == 0.0
+        assert ability.max_cooldown == 0.0
+        assert ability.mana_cost == 0
+        assert ability.charges == 0
+        assert ability.is_ultimate is False
+
+    def test_ability_snapshot_short_name_property(self):
+        """Test short_name strips CDOTA_Ability_ prefix."""
+        from python_manta import AbilitySnapshot
+
+        ability = AbilitySnapshot(name="CDOTA_Ability_Juggernaut_BladeFury")
+        assert ability.short_name == "Juggernaut_BladeFury"
+
+        # Empty name case
+        empty = AbilitySnapshot(name="")
+        assert empty.short_name == ""
+
+        # Name without prefix
+        no_prefix = AbilitySnapshot(name="SomeOtherAbility")
+        assert no_prefix.short_name == "SomeOtherAbility"
+
+    def test_ability_snapshot_is_maxed_regular(self):
+        """Test is_maxed for regular abilities (max level 4)."""
+        from python_manta import AbilitySnapshot
+
+        # Not maxed
+        ability = AbilitySnapshot(level=3, is_ultimate=False)
+        assert ability.is_maxed is False
+
+        # Maxed
+        maxed = AbilitySnapshot(level=4, is_ultimate=False)
+        assert maxed.is_maxed is True
+
+        # Over max (still maxed)
+        over = AbilitySnapshot(level=5, is_ultimate=False)
+        assert over.is_maxed is True
+
+    def test_ability_snapshot_is_maxed_ultimate(self):
+        """Test is_maxed for ultimate abilities (max level 3)."""
+        from python_manta import AbilitySnapshot
+
+        # Not maxed
+        ult = AbilitySnapshot(level=2, is_ultimate=True)
+        assert ult.is_maxed is False
+
+        # Maxed
+        maxed_ult = AbilitySnapshot(level=3, is_ultimate=True)
+        assert maxed_ult.is_maxed is True
+
+    def test_ability_snapshot_is_on_cooldown(self):
+        """Test is_on_cooldown property."""
+        from python_manta import AbilitySnapshot
+
+        # Not on cooldown
+        ready = AbilitySnapshot(cooldown=0.0)
+        assert ready.is_on_cooldown is False
+
+        # On cooldown
+        on_cd = AbilitySnapshot(cooldown=5.5)
+        assert on_cd.is_on_cooldown is True
+
+    def test_ability_snapshot_serialization(self):
+        """Test AbilitySnapshot serializes and deserializes correctly."""
+        from python_manta import AbilitySnapshot
+
+        ability = AbilitySnapshot(
+            slot=2,
+            name="CDOTA_Ability_Juggernaut_BladeDance",
+            level=4,
+            cooldown=0.0,
+            max_cooldown=0.0,
+            mana_cost=0,
+            charges=0,
+            is_ultimate=False,
+        )
+
+        # Serialize
+        json_str = ability.model_dump_json()
+
+        # Deserialize
+        restored = AbilitySnapshot.model_validate_json(json_str)
+        assert restored == ability
+        assert restored.short_name == "Juggernaut_BladeDance"
+
+
+class TestTalentChoiceModel:
+    """Test TalentChoice model properties."""
+
+    def test_talent_choice_defaults(self):
+        """Test TalentChoice has correct default values."""
+        from python_manta import TalentChoice
+
+        talent = TalentChoice()
+        assert talent.tier == 0
+        assert talent.slot == 0
+        assert talent.is_left is True
+        assert talent.name == ""
+
+    def test_talent_choice_side_property_left(self):
+        """Test side property returns 'left' when is_left is True."""
+        from python_manta import TalentChoice
+
+        talent = TalentChoice(tier=10, is_left=True)
+        assert talent.side == "left"
+
+    def test_talent_choice_side_property_right(self):
+        """Test side property returns 'right' when is_left is False."""
+        from python_manta import TalentChoice
+
+        talent = TalentChoice(tier=15, is_left=False)
+        assert talent.side == "right"
+
+    def test_talent_choice_valid_tiers(self):
+        """Test TalentChoice accepts valid tier values."""
+        from python_manta import TalentChoice
+
+        for tier in [10, 15, 20, 25]:
+            talent = TalentChoice(tier=tier)
+            assert talent.tier == tier
+
+    def test_talent_choice_serialization(self):
+        """Test TalentChoice serializes and deserializes correctly."""
+        from python_manta import TalentChoice
+
+        talent = TalentChoice(
+            tier=20,
+            slot=10,
+            is_left=False,
+            name="CDOTA_Ability_Special_Bonus_Base",
+        )
+
+        # Serialize
+        json_str = talent.model_dump_json()
+
+        # Deserialize
+        restored = TalentChoice.model_validate_json(json_str)
+        assert restored == talent
+        assert restored.side == "right"
+
+
+class TestHeroSnapshotAbilityMethods:
+    """Test HeroSnapshot ability-related methods."""
+
+    def test_hero_snapshot_has_ultimate_false(self):
+        """Test has_ultimate is False when no ultimate is learned."""
+        from python_manta import HeroSnapshot, AbilitySnapshot
+
+        hero = HeroSnapshot(
+            abilities=[
+                AbilitySnapshot(slot=0, level=1, is_ultimate=False),
+                AbilitySnapshot(slot=5, level=0, is_ultimate=True),  # Unlearned ult
+            ]
+        )
+        assert hero.has_ultimate is False
+
+    def test_hero_snapshot_has_ultimate_true(self):
+        """Test has_ultimate is True when ultimate is learned."""
+        from python_manta import HeroSnapshot, AbilitySnapshot
+
+        hero = HeroSnapshot(
+            abilities=[
+                AbilitySnapshot(slot=0, level=1, is_ultimate=False),
+                AbilitySnapshot(slot=5, level=1, is_ultimate=True),  # Learned ult
+            ]
+        )
+        assert hero.has_ultimate is True
+
+    def test_hero_snapshot_talents_chosen(self):
+        """Test talents_chosen returns correct count."""
+        from python_manta import HeroSnapshot, TalentChoice
+
+        # No talents
+        hero_no_talents = HeroSnapshot(talents=[])
+        assert hero_no_talents.talents_chosen == 0
+
+        # Some talents
+        hero_with_talents = HeroSnapshot(
+            talents=[
+                TalentChoice(tier=10, is_left=True),
+                TalentChoice(tier=15, is_left=False),
+            ]
+        )
+        assert hero_with_talents.talents_chosen == 2
+
+    def test_hero_snapshot_get_ability_found(self):
+        """Test get_ability finds ability by partial name match."""
+        from python_manta import HeroSnapshot, AbilitySnapshot
+
+        hero = HeroSnapshot(
+            abilities=[
+                AbilitySnapshot(slot=0, name="CDOTA_Ability_Juggernaut_BladeFury", level=4),
+                AbilitySnapshot(slot=1, name="CDOTA_Ability_Juggernaut_HealingWard", level=2),
+            ]
+        )
+
+        # Exact partial match
+        found = hero.get_ability("BladeFury")
+        assert found is not None
+        assert found.level == 4
+
+        # Case-insensitive match
+        found_case = hero.get_ability("bladefury")
+        assert found_case is not None
+
+    def test_hero_snapshot_get_ability_not_found(self):
+        """Test get_ability returns None when not found."""
+        from python_manta import HeroSnapshot, AbilitySnapshot
+
+        hero = HeroSnapshot(
+            abilities=[
+                AbilitySnapshot(slot=0, name="CDOTA_Ability_Juggernaut_BladeFury", level=4),
+            ]
+        )
+
+        not_found = hero.get_ability("Omnislash")
+        assert not_found is None
+
+    def test_hero_snapshot_get_talent_at_tier_found(self):
+        """Test get_talent_at_tier finds talent at specified tier."""
+        from python_manta import HeroSnapshot, TalentChoice
+
+        hero = HeroSnapshot(
+            talents=[
+                TalentChoice(tier=10, is_left=True, name="talent_10"),
+                TalentChoice(tier=20, is_left=False, name="talent_20"),
+            ]
+        )
+
+        found = hero.get_talent_at_tier(10)
+        assert found is not None
+        assert found.tier == 10
+        assert found.is_left is True
+
+        found_20 = hero.get_talent_at_tier(20)
+        assert found_20 is not None
+        assert found_20.tier == 20
+
+    def test_hero_snapshot_get_talent_at_tier_not_found(self):
+        """Test get_talent_at_tier returns None when not found."""
+        from python_manta import HeroSnapshot, TalentChoice
+
+        hero = HeroSnapshot(
+            talents=[
+                TalentChoice(tier=10, is_left=True),
+            ]
+        )
+
+        not_found = hero.get_talent_at_tier(15)
+        assert not_found is None

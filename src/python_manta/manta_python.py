@@ -1732,6 +1732,56 @@ class DemoIndex(BaseModel):
     error: Optional[str] = None
 
 
+class AbilitySnapshot(BaseModel):
+    """State of a single ability at a specific tick.
+
+    Abilities are tracked from hero entity's m_vecAbilities array. Each ability
+    has a slot index (0-5 for regular abilities) and various state properties.
+    """
+    slot: int = 0
+    name: str = ""
+    level: int = 0
+    cooldown: float = 0.0
+    max_cooldown: float = 0.0
+    mana_cost: int = 0
+    charges: int = 0
+    is_ultimate: bool = False
+
+    @property
+    def short_name(self) -> str:
+        """Return ability name without CDOTA_Ability_ prefix."""
+        return self.name.replace("CDOTA_Ability_", "")
+
+    @property
+    def is_maxed(self) -> bool:
+        """True if ability is at max level (typically 4 for regular, 3 for ultimate)."""
+        if self.is_ultimate:
+            return self.level >= 3
+        return self.level >= 4
+
+    @property
+    def is_on_cooldown(self) -> bool:
+        """True if ability is currently on cooldown."""
+        return self.cooldown > 0
+
+
+class TalentChoice(BaseModel):
+    """A talent choice made by a hero.
+
+    Talents are selected at levels 10, 15, 20, and 25. Each tier offers two
+    choices (left and right). This model captures which choice was made.
+    """
+    tier: int = 0
+    slot: int = 0
+    is_left: bool = True
+    name: str = ""
+
+    @property
+    def side(self) -> str:
+        """Return 'left' or 'right' based on talent choice."""
+        return "left" if self.is_left else "right"
+
+
 class HeroSnapshot(BaseModel):
     """Hero state at a specific tick."""
     hero_name: str = ""
@@ -1759,6 +1809,38 @@ class HeroSnapshot(BaseModel):
     strength: float = 0.0
     agility: float = 0.0
     intellect: float = 0.0
+    # Abilities and talents
+    abilities: List[AbilitySnapshot] = []
+    talents: List[TalentChoice] = []
+    ability_points: int = 0
+
+    @property
+    def has_ultimate(self) -> bool:
+        """True if hero has learned their ultimate ability."""
+        for ability in self.abilities:
+            if ability.is_ultimate and ability.level > 0:
+                return True
+        return False
+
+    @property
+    def talents_chosen(self) -> int:
+        """Number of talents selected (0-4)."""
+        return len(self.talents)
+
+    def get_ability(self, name: str) -> Optional[AbilitySnapshot]:
+        """Get ability by name (partial match supported)."""
+        name_lower = name.lower()
+        for ability in self.abilities:
+            if name_lower in ability.name.lower():
+                return ability
+        return None
+
+    def get_talent_at_tier(self, tier: int) -> Optional[TalentChoice]:
+        """Get the talent chosen at a specific tier (10, 15, 20, or 25)."""
+        for talent in self.talents:
+            if talent.tier == tier:
+                return talent
+        return None
 
 
 class EntityStateSnapshot(BaseModel):
