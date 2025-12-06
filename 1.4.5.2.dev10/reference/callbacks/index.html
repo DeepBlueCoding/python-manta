@@ -1,0 +1,3473 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python bindings for the dotabuff/manta Dota 2 replay parser">
+      
+      
+        <meta name="author" content="DeepBlueCoding">
+      
+      
+        <link rel="canonical" href="https://deepbluecoding.github.io/python-manta/1.4.5.2.dev10/reference/callbacks/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../game-events/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Callbacks - Python Manta</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#callbacks-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Python Manta" class="md-header__button md-logo" aria-label="Python Manta" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Python Manta
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Callbacks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DeepBlueCoding/python-manta" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    DeepBlueCoding/python-manta
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/" class="md-tabs__link">
+          
+  
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../examples/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Examples
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Python Manta" class="md-nav__button md-logo" aria-label="Python Manta" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Python Manta
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DeepBlueCoding/python-manta" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    DeepBlueCoding/python-manta
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/use-cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Use Cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/unit-orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Unit Orders
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/game-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Game Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/combat-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combat Log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/entities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/modifiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modifiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/universal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Universal Messages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/parser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Callbacks
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Callbacks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dota-user-messages-143" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dota User Messages (143)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dota User Messages (143)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Communication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pings-and-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pings and Alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#item-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Item Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combat-and-abilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat and Abilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projectiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projectiles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#animation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Animation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#game-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Game State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draft-and-hero-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Draft and Hero Selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stats-and-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stats and Progress
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spectator-and-player-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spectator and Player Input
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duel-and-combat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Duel and Combat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arcana-and-cosmetics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arcana and Cosmetics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voting-and-social" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voting and Social
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ui-and-hud" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UI and HUD
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tutorial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tutorial
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#misc-dota" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Misc Dota
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#demo-messages-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Demo Messages (16)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network-messages-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Messages (31)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Network Messages (31)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#net-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NET Messages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spawn-group-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spawn Group Messages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#svc-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SVC Messages
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combat-log-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat Log Message
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entity-messages-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entity Messages (6)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#general-user-messages-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General User Messages (25)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#misc-messages-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Misc Messages (15)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-multiple-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering Multiple Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../game-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Game Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../combat-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combat Log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modifiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modifiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../entities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../string-tables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    String Tables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dota-user-messages-143" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dota User Messages (143)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dota User Messages (143)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Communication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pings-and-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pings and Alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#item-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Item Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combat-and-abilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat and Abilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projectiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projectiles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#animation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Animation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#game-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Game State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draft-and-hero-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Draft and Hero Selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stats-and-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stats and Progress
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spectator-and-player-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spectator and Player Input
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duel-and-combat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Duel and Combat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arcana-and-cosmetics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arcana and Cosmetics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#voting-and-social" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voting and Social
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ui-and-hud" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UI and HUD
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tutorial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tutorial
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#misc-dota" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Misc Dota
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#demo-messages-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Demo Messages (16)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network-messages-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Messages (31)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Network Messages (31)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#net-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NET Messages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spawn-group-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spawn Group Messages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#svc-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SVC Messages
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combat-log-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat Log Message
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entity-messages-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entity Messages (6)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#general-user-messages-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General User Messages (25)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#misc-messages-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Misc Messages (15)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-multiple-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering Multiple Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="callbacks-reference">Callbacks Reference<a class="headerlink" href="#callbacks-reference" title="Permanent link">&para;</a></h1>
+<details class="info">
+<summary>AI Summary</summary>
+<p>Complete reference of all 272 message callbacks available in Python Manta. Use with <code>parse_universal(demo_path, callback_name, max_messages)</code>. Callbacks are categorized: Dota User Messages (143 types for game events, chat, pings, items), Demo Messages (16 types for recording metadata), Network Messages (31 types for low-level networking), and misc messages. Filter matches substrings: "Chat" matches ChatMessage, ChatEvent, ChatWheel.</p>
+</details>
+<hr />
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>Python Manta supports <strong>272 message callbacks</strong> inherited from the <a href="https://github.com/dotabuff/manta">dotabuff/manta</a> Go library. Use <code>parse_universal()</code> to capture any of these message types.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Filter by exact callback name</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;CDOTAUserMsg_ChatMessage&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Filter by substring (matches multiple)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;Chat&quot;</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>  <span class="c1"># ChatMessage, ChatEvent, etc.</span>
+</code></pre></div>
+<hr />
+<h2 id="dota-user-messages-143">Dota User Messages (143)<a class="headerlink" href="#dota-user-messages-143" title="Permanent link">&para;</a></h2>
+<p>Game-related messages visible to players.</p>
+<h3 id="communication">Communication<a class="headerlink" href="#communication" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_ChatMessage</code></td>
+<td>Player chat messages</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ChatEvent</code></td>
+<td>Chat events (kills, items, etc.)</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ChatWheel</code></td>
+<td>Chat wheel phrases</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ChatWheelCooldown</code></td>
+<td>Chat wheel cooldown</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_BotChat</code></td>
+<td>Bot chat messages</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_BeastChat</code></td>
+<td>Beast chat (custom game)</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SpeechBubble</code></td>
+<td>Speech bubbles</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pings-and-alerts">Pings and Alerts<a class="headerlink" href="#pings-and-alerts" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_LocationPing</code></td>
+<td>Map location pings</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_Ping</code></td>
+<td>General ping</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_PingConfirmation</code></td>
+<td>Ping confirmation</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_AbilityPing</code></td>
+<td>Ability ping</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_InnatePing</code></td>
+<td>Innate ability ping</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_FacetPing</code></td>
+<td>Facet ping</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_MinimapEvent</code></td>
+<td>Minimap events</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_MinimapDebugPoint</code></td>
+<td>Debug minimap points</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_MapLine</code></td>
+<td>Map drawing lines</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_WorldLine</code></td>
+<td>World drawing lines</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_CoachHUDPing</code></td>
+<td>Coach HUD pings</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_RadarAlert</code></td>
+<td>Radar alerts</td>
+</tr>
+</tbody>
+</table>
+<h3 id="item-events">Item Events<a class="headerlink" href="#item-events" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_ItemPurchased</code></td>
+<td>Item purchases</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ItemSold</code></td>
+<td>Item sales</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ItemFound</code></td>
+<td>Items found</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ItemAlert</code></td>
+<td>Item alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_EnemyItemAlert</code></td>
+<td>Enemy item alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_QuickBuyAlert</code></td>
+<td>Quick buy alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_WillPurchaseAlert</code></td>
+<td>Will purchase alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SetNextAutobuyItem</code></td>
+<td>Auto-buy settings</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_EmptyItemSlotAlert</code></td>
+<td>Empty slot alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_FoundNeutralItem</code></td>
+<td>Neutral item found</td>
+</tr>
+</tbody>
+</table>
+<h3 id="combat-and-abilities">Combat and Abilities<a class="headerlink" href="#combat-and-abilities" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_UnitEvent</code></td>
+<td>Unit events (spawn, death, etc.)</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_OverheadEvent</code></td>
+<td>Overhead numbers (damage, heal)</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_DamageReport</code></td>
+<td>Damage reports</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_KillcamDamageTaken</code></td>
+<td>Killcam damage</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_MiniKillCamInfo</code></td>
+<td>Mini killcam info</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_AbilitySteal</code></td>
+<td>Ability steal (Rubick)</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ModifierAlert</code></td>
+<td>Modifier alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SharedCooldown</code></td>
+<td>Shared cooldowns</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_DodgeTrackingProjectiles</code></td>
+<td>Projectile dodging</td>
+</tr>
+</tbody>
+</table>
+<h3 id="projectiles">Projectiles<a class="headerlink" href="#projectiles" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_CreateLinearProjectile</code></td>
+<td>Create projectile</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_DestroyLinearProjectile</code></td>
+<td>Destroy projectile</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_UpdateLinearProjectileCPData</code></td>
+<td>Update projectile</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TE_Projectile</code></td>
+<td>Projectile effect</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TE_ProjectileLoc</code></td>
+<td>Projectile location</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TE_DestroyProjectile</code></td>
+<td>Destroy projectile effect</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TE_DotaBloodImpact</code></td>
+<td>Blood impact effect</td>
+</tr>
+</tbody>
+</table>
+<h3 id="animation">Animation<a class="headerlink" href="#animation" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_TE_UnitAnimation</code></td>
+<td>Unit animation</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TE_UnitAnimationEnd</code></td>
+<td>Animation end</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_MiniTaunt</code></td>
+<td>Mini taunt</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_HighFiveCompleted</code></td>
+<td>High five complete</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_HighFiveLeftHanging</code></td>
+<td>High five missed</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SalutePlayer</code></td>
+<td>Player salute</td>
+</tr>
+</tbody>
+</table>
+<h3 id="game-state">Game State<a class="headerlink" href="#game-state" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_GamerulesStateChanged</code></td>
+<td>Game state change</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SendFinalGold</code></td>
+<td>Final gold amounts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SelectPenaltyGold</code></td>
+<td>Penalty gold</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_RoshanTimer</code></td>
+<td>Roshan timer</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SendRoshanPopup</code></td>
+<td>Roshan popup</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SendRoshanSpectatorPhase</code></td>
+<td>Roshan phase</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_OutpostCaptured</code></td>
+<td>Outpost captured</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_OutpostGrantedXP</code></td>
+<td>Outpost XP</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_XPAlert</code></td>
+<td>XP alerts</td>
+</tr>
+</tbody>
+</table>
+<h3 id="draft-and-hero-selection">Draft and Hero Selection<a class="headerlink" href="#draft-and-hero-selection" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_AbilityDraftRequestAbility</code></td>
+<td>Ability draft request</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_PlayerDraftPick</code></td>
+<td>Draft pick</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_PlayerDraftSuggestPick</code></td>
+<td>Draft suggestion</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SuggestHeroPick</code></td>
+<td>Hero suggestion</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SuggestHeroRole</code></td>
+<td>Role suggestion</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SwapVerify</code></td>
+<td>Swap verification</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stats-and-progress">Stats and Progress<a class="headerlink" href="#stats-and-progress" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_StatsMatchDetails</code></td>
+<td>Match statistics</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_StatsHeroMinuteDetails</code></td>
+<td>Per-minute hero stats</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_HeroRelicProgress</code></td>
+<td>Hero relic progress</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_QuestStatus</code></td>
+<td>Quest status</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_UpdateQuestProgress</code></td>
+<td>Quest progress update</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_AddQuestLogEntry</code></td>
+<td>Quest log entry</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_GuildChallenge_Progress</code></td>
+<td>Guild challenge</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_CompendiumState</code></td>
+<td>Compendium state</td>
+</tr>
+</tbody>
+</table>
+<h3 id="spectator-and-player-input">Spectator and Player Input<a class="headerlink" href="#spectator-and-player-input" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_SpectatorPlayerClick</code></td>
+<td>Spectator clicks</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SpectatorPlayerUnitOrders</code></td>
+<td><strong>Player commands</strong> - attack, move, cast, items. See <a href="../guides/unit-orders">Unit Orders Guide</a></td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_MoveCameraToUnit</code></td>
+<td>Camera movement</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_CombatHeroPositions</code></td>
+<td>Hero positions</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Creep Aggro Detection</p>
+<p>Use <code>CDOTAUserMsg_SpectatorPlayerUnitOrders</code> with <code>order_type=4</code> (ATTACK_TARGET) to detect attack commands that trigger creep aggro. See the <a href="../guides/unit-orders">Unit Orders Guide</a> for detailed examples.</p>
+</div>
+<h3 id="alerts">Alerts<a class="headerlink" href="#alerts" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_HPManaAlert</code></td>
+<td>HP/Mana alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_GlyphAlert</code></td>
+<td>Glyph alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_NeutralCampAlert</code></td>
+<td>Neutral camp alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_CourierKilledAlert</code></td>
+<td>Courier killed</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_BuyBackStateAlert</code></td>
+<td>Buyback state</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_AghsStatusAlert</code></td>
+<td>Aghanim's status</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TalentTreeAlert</code></td>
+<td>Talent alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TimerAlert</code></td>
+<td>Timer alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TipAlert</code></td>
+<td>Tip alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_MadstoneAlert</code></td>
+<td>Madstone alerts</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_EmptyTeleportAlert</code></td>
+<td>Empty TP scroll</td>
+</tr>
+</tbody>
+</table>
+<h3 id="duel-and-combat">Duel and Combat<a class="headerlink" href="#duel-and-combat" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_DuelRequested</code></td>
+<td>Duel request</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_DuelAccepted</code></td>
+<td>Duel accepted</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_DuelOpponentKilled</code></td>
+<td>Duel kill</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_NevermoreRequiem</code></td>
+<td>SF Requiem</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_MarsArenaOfBloodAttack</code></td>
+<td>Mars Arena</td>
+</tr>
+</tbody>
+</table>
+<h3 id="arcana-and-cosmetics">Arcana and Cosmetics<a class="headerlink" href="#arcana-and-cosmetics" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_ESArcanaCombo</code></td>
+<td>Earth Spirit Arcana</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ESArcanaComboSummary</code></td>
+<td>ES Arcana summary</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_WRArcanaProgress</code></td>
+<td>Windranger Arcana</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_WRArcanaSummary</code></td>
+<td>WR Arcana summary</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_QoP_ArcanaSummary</code></td>
+<td>QoP Arcana</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_OMArcanaCombo</code></td>
+<td>Ogre Magi Arcana</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_WK_Arcana_Progress</code></td>
+<td>Wraith King Arcana</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_MuertaReleaseEvent_AssignedTargetKilled</code></td>
+<td>Muerta event</td>
+</tr>
+</tbody>
+</table>
+<h3 id="voting-and-social">Voting and Social<a class="headerlink" href="#voting-and-social" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_VoteStart</code></td>
+<td>Vote start</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_VoteUpdate</code></td>
+<td>Vote update</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_VoteEnd</code></td>
+<td>Vote end</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_FlipCoinResult</code></td>
+<td>Coin flip</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_RollDiceResult</code></td>
+<td>Dice roll</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_RockPaperScissorsStarted</code></td>
+<td>RPS started</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_RockPaperScissorsFinished</code></td>
+<td>RPS finished</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_GiftPlayer</code></td>
+<td>Gift player</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ui-and-hud">UI and HUD<a class="headerlink" href="#ui-and-hud" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_HudError</code></td>
+<td>HUD errors</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SendStatPopup</code></td>
+<td>Stat popup</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_SendGenericToolTip</code></td>
+<td>Generic tooltip</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ShowGenericPopup</code></td>
+<td>Generic popup</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_DismissAllStatPopups</code></td>
+<td>Dismiss popups</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_CustomMsg</code></td>
+<td>Custom message</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_CustomHeaderMessage</code></td>
+<td>Custom header</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_CustomHudElement_Create</code></td>
+<td>Custom HUD create</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_CustomHudElement_Modify</code></td>
+<td>Custom HUD modify</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_CustomHudElement_Destroy</code></td>
+<td>Custom HUD destroy</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ContextualTip</code></td>
+<td>Contextual tips</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ShowSurvey</code></td>
+<td>Survey popup</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_InvalidCommand</code></td>
+<td>Invalid command</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tutorial">Tutorial<a class="headerlink" href="#tutorial" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_TutorialTipInfo</code></td>
+<td>Tutorial tips</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TutorialFade</code></td>
+<td>Tutorial fade</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TutorialFinish</code></td>
+<td>Tutorial finish</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TutorialMinimapPosition</code></td>
+<td>Minimap position</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TutorialPingMinimap</code></td>
+<td>Minimap ping</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_TutorialRequestExp</code></td>
+<td>Request XP</td>
+</tr>
+</tbody>
+</table>
+<h3 id="misc-dota">Misc Dota<a class="headerlink" href="#misc-dota" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDOTAUserMsg_BoosterState</code></td>
+<td>Booster state</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_HalloweenDrops</code></td>
+<td>Halloween drops</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ReceivedXmasGift</code></td>
+<td>Xmas gift</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_MutedPlayers</code></td>
+<td>Muted players</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_PauseMinigameData</code></td>
+<td>Pause minigame</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ReplaceQueryUnit</code></td>
+<td>Replace query unit</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_UpdateSharedContent</code></td>
+<td>Shared content</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_QueuedOrderRemoved</code></td>
+<td>Queued order</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ProjectionAbility</code></td>
+<td>Projection ability</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ProjectionEvent</code></td>
+<td>Projection event</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_VersusScene_PlayerBehavior</code></td>
+<td>Versus scene</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_AIDebugLine</code></td>
+<td>AI debug</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_CombatLogBulkData</code></td>
+<td>Combat log bulk</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_AllStarEvent</code></td>
+<td>All-Star event</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_DebugChallenge</code></td>
+<td>Debug challenge</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ClientLoadGridNav</code></td>
+<td>Grid nav</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_GlobalLightColor</code></td>
+<td>Global light color</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_GlobalLightDirection</code></td>
+<td>Global light direction</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_ShovelUnearth</code></td>
+<td>Shovel unearth</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_NeutralCraftAvailable</code></td>
+<td>Neutral craft</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_HotPotato_Created</code></td>
+<td>Hot potato created</td>
+</tr>
+<tr>
+<td><code>CDOTAUserMsg_HotPotato_Exploded</code></td>
+<td>Hot potato exploded</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="demo-messages-16">Demo Messages (16)<a class="headerlink" href="#demo-messages-16" title="Permanent link">&para;</a></h2>
+<p>Recording-related messages from the demo file.</p>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CDemoFileHeader</code></td>
+<td>File header</td>
+</tr>
+<tr>
+<td><code>CDemoFileInfo</code></td>
+<td>Match info (picks/bans)</td>
+</tr>
+<tr>
+<td><code>CDemoPacket</code></td>
+<td>Demo packet</td>
+</tr>
+<tr>
+<td><code>CDemoFullPacket</code></td>
+<td>Full state snapshot</td>
+</tr>
+<tr>
+<td><code>CDemoSyncTick</code></td>
+<td>Sync tick</td>
+</tr>
+<tr>
+<td><code>CDemoStop</code></td>
+<td>Demo stop</td>
+</tr>
+<tr>
+<td><code>CDemoStringTables</code></td>
+<td>String tables</td>
+</tr>
+<tr>
+<td><code>CDemoSendTables</code></td>
+<td>Send tables</td>
+</tr>
+<tr>
+<td><code>CDemoClassInfo</code></td>
+<td>Class info</td>
+</tr>
+<tr>
+<td><code>CDemoSignonPacket</code></td>
+<td>Signon packet</td>
+</tr>
+<tr>
+<td><code>CDemoConsoleCmd</code></td>
+<td>Console command</td>
+</tr>
+<tr>
+<td><code>CDemoCustomData</code></td>
+<td>Custom data</td>
+</tr>
+<tr>
+<td><code>CDemoCustomDataCallbacks</code></td>
+<td>Custom callbacks</td>
+</tr>
+<tr>
+<td><code>CDemoUserCmd</code></td>
+<td>User command</td>
+</tr>
+<tr>
+<td><code>CDemoSaveGame</code></td>
+<td>Save game</td>
+</tr>
+<tr>
+<td><code>CDemoSpawnGroups</code></td>
+<td>Spawn groups</td>
+</tr>
+<tr>
+<td><code>CDemoAnimationData</code></td>
+<td>Animation data</td>
+</tr>
+<tr>
+<td><code>CDemoAnimationHeader</code></td>
+<td>Animation header</td>
+</tr>
+<tr>
+<td><code>CDemoRecovery</code></td>
+<td>Recovery data</td>
+</tr>
+<tr>
+<td><code>CDOTAMatchMetadataFile</code></td>
+<td>Match metadata</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="network-messages-31">Network Messages (31)<a class="headerlink" href="#network-messages-31" title="Permanent link">&para;</a></h2>
+<p>Low-level network protocol messages.</p>
+<h3 id="net-messages">NET Messages<a class="headerlink" href="#net-messages" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CNETMsg_Tick</code></td>
+<td>Network tick (very frequent!)</td>
+</tr>
+<tr>
+<td><code>CNETMsg_NOP</code></td>
+<td>No operation</td>
+</tr>
+<tr>
+<td><code>CNETMsg_SetConVar</code></td>
+<td>Set console variable</td>
+</tr>
+<tr>
+<td><code>CNETMsg_SignonState</code></td>
+<td>Signon state</td>
+</tr>
+<tr>
+<td><code>CNETMsg_StringCmd</code></td>
+<td>String command</td>
+</tr>
+<tr>
+<td><code>CNETMsg_SplitScreenUser</code></td>
+<td>Split screen</td>
+</tr>
+<tr>
+<td><code>CNETMsg_DebugOverlay</code></td>
+<td>Debug overlay</td>
+</tr>
+</tbody>
+</table>
+<h3 id="spawn-group-messages">Spawn Group Messages<a class="headerlink" href="#spawn-group-messages" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CNETMsg_SpawnGroup_Load</code></td>
+<td>Load spawn group</td>
+</tr>
+<tr>
+<td><code>CNETMsg_SpawnGroup_Unload</code></td>
+<td>Unload spawn group</td>
+</tr>
+<tr>
+<td><code>CNETMsg_SpawnGroup_LoadCompleted</code></td>
+<td>Load complete</td>
+</tr>
+<tr>
+<td><code>CNETMsg_SpawnGroup_ManifestUpdate</code></td>
+<td>Manifest update</td>
+</tr>
+<tr>
+<td><code>CNETMsg_SpawnGroup_SetCreationTick</code></td>
+<td>Creation tick</td>
+</tr>
+</tbody>
+</table>
+<h3 id="svc-messages">SVC Messages<a class="headerlink" href="#svc-messages" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CSVCMsg_ServerInfo</code></td>
+<td>Server information</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_ClassInfo</code></td>
+<td>Class information</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_CreateStringTable</code></td>
+<td>Create string table</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_UpdateStringTable</code></td>
+<td>Update string table</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_ClearAllStringTables</code></td>
+<td>Clear string tables</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_PacketEntities</code></td>
+<td>Entity updates</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_PacketReliable</code></td>
+<td>Reliable packet</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_FlattenedSerializer</code></td>
+<td>Serializer data</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_Prefetch</code></td>
+<td>Prefetch</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_SetView</code></td>
+<td>Set view</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_SetPause</code></td>
+<td>Set pause</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_Sounds</code></td>
+<td>Sound events</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_VoiceInit</code></td>
+<td>Voice init</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_VoiceData</code></td>
+<td>Voice data</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_Print</code></td>
+<td>Print message</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_Menu</code></td>
+<td>Menu</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_GetCvarValue</code></td>
+<td>Get cvar value</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_UserMessage</code></td>
+<td>User message</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_SplitScreen</code></td>
+<td>Split screen</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_BSPDecal</code></td>
+<td>BSP decal</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_CmdKeyValues</code></td>
+<td>Key values</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_Broadcast_Command</code></td>
+<td>Broadcast command</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_FullFrameSplit</code></td>
+<td>Frame split</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_HLTVStatus</code></td>
+<td>HLTV status</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_HltvFixupOperatorStatus</code></td>
+<td>HLTV fixup</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_PeerList</code></td>
+<td>Peer list</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_RconServerDetails</code></td>
+<td>RCON details</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_ServerSteamID</code></td>
+<td>Server Steam ID</td>
+</tr>
+<tr>
+<td><code>CSVCMsg_StopSound</code></td>
+<td>Stop sound</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="combat-log-message">Combat Log Message<a class="headerlink" href="#combat-log-message" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CMsgDOTACombatLogEntry</code></td>
+<td>Combat log entry</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For structured combat log parsing, use <code>parse_combat_log()</code> instead of <code>parse_universal()</code>.</p>
+</div>
+<hr />
+<h2 id="entity-messages-6">Entity Messages (6)<a class="headerlink" href="#entity-messages-6" title="Permanent link">&para;</a></h2>
+<p>Entity-related messages.</p>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CEntityMessageDoSpark</code></td>
+<td>Spark effect</td>
+</tr>
+<tr>
+<td><code>CEntityMessageFixAngle</code></td>
+<td>Fix angle</td>
+</tr>
+<tr>
+<td><code>CEntityMessagePlayJingle</code></td>
+<td>Play jingle</td>
+</tr>
+<tr>
+<td><code>CEntityMessagePropagateForce</code></td>
+<td>Propagate force</td>
+</tr>
+<tr>
+<td><code>CEntityMessageRemoveAllDecals</code></td>
+<td>Remove decals</td>
+</tr>
+<tr>
+<td><code>CEntityMessageScreenOverlay</code></td>
+<td>Screen overlay</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="general-user-messages-25">General User Messages (25)<a class="headerlink" href="#general-user-messages-25" title="Permanent link">&para;</a></h2>
+<p>Generic Source 2 user messages.</p>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CUserMessageSayText</code></td>
+<td>Say text</td>
+</tr>
+<tr>
+<td><code>CUserMessageSayText2</code></td>
+<td>Say text 2</td>
+</tr>
+<tr>
+<td><code>CUserMessageSayTextChannel</code></td>
+<td>Say text channel</td>
+</tr>
+<tr>
+<td><code>CUserMessageTextMsg</code></td>
+<td>Text message</td>
+</tr>
+<tr>
+<td><code>CUserMessageHudMsg</code></td>
+<td>HUD message</td>
+</tr>
+<tr>
+<td><code>CUserMessageHudText</code></td>
+<td>HUD text</td>
+</tr>
+<tr>
+<td><code>CUserMessageShake</code></td>
+<td>Screen shake</td>
+</tr>
+<tr>
+<td><code>CUserMessageShakeDir</code></td>
+<td>Directional shake</td>
+</tr>
+<tr>
+<td><code>CUserMessageFade</code></td>
+<td>Screen fade</td>
+</tr>
+<tr>
+<td><code>CUserMessageScreenTilt</code></td>
+<td>Screen tilt</td>
+</tr>
+<tr>
+<td><code>CUserMessageRumble</code></td>
+<td>Rumble</td>
+</tr>
+<tr>
+<td><code>CUserMessageCloseCaption</code></td>
+<td>Closed caption</td>
+</tr>
+<tr>
+<td><code>CUserMessageCloseCaptionDirect</code></td>
+<td>Direct caption</td>
+</tr>
+<tr>
+<td><code>CUserMessageCloseCaptionPlaceholder</code></td>
+<td>Caption placeholder</td>
+</tr>
+<tr>
+<td><code>CUserMessageSendAudio</code></td>
+<td>Send audio</td>
+</tr>
+<tr>
+<td><code>CUserMessageAudioParameter</code></td>
+<td>Audio parameter</td>
+</tr>
+<tr>
+<td><code>CUserMessageVoiceMask</code></td>
+<td>Voice mask</td>
+</tr>
+<tr>
+<td><code>CUserMessageRequestState</code></td>
+<td>Request state</td>
+</tr>
+<tr>
+<td><code>CUserMessageRequestInventory</code></td>
+<td>Request inventory</td>
+</tr>
+<tr>
+<td><code>CUserMessageRequestDiagnostic</code></td>
+<td>Request diagnostic</td>
+</tr>
+<tr>
+<td><code>CUserMessageRequestDllStatus</code></td>
+<td>Request DLL status</td>
+</tr>
+<tr>
+<td><code>CUserMessageRequestUtilAction</code></td>
+<td>Request util action</td>
+</tr>
+<tr>
+<td><code>CUserMessageResetHUD</code></td>
+<td>Reset HUD</td>
+</tr>
+<tr>
+<td><code>CUserMessageItemPickup</code></td>
+<td>Item pickup</td>
+</tr>
+<tr>
+<td><code>CUserMessageShowMenu</code></td>
+<td>Show menu</td>
+</tr>
+<tr>
+<td><code>CUserMessageColoredText</code></td>
+<td>Colored text</td>
+</tr>
+<tr>
+<td><code>CUserMessageCreditsMsg</code></td>
+<td>Credits</td>
+</tr>
+<tr>
+<td><code>CUserMessageAchievementEvent</code></td>
+<td>Achievement</td>
+</tr>
+<tr>
+<td><code>CUserMessageCurrentTimescale</code></td>
+<td>Current timescale</td>
+</tr>
+<tr>
+<td><code>CUserMessageDesiredTimescale</code></td>
+<td>Desired timescale</td>
+</tr>
+<tr>
+<td><code>CUserMessageGameTitle</code></td>
+<td>Game title</td>
+</tr>
+<tr>
+<td><code>CUserMessageAmmoDenied</code></td>
+<td>Ammo denied</td>
+</tr>
+<tr>
+<td><code>CUserMessageCameraTransition</code></td>
+<td>Camera transition</td>
+</tr>
+<tr>
+<td><code>CUserMessageHapticsManagerEffect</code></td>
+<td>Haptics effect</td>
+</tr>
+<tr>
+<td><code>CUserMessageHapticsManagerPulse</code></td>
+<td>Haptics pulse</td>
+</tr>
+<tr>
+<td><code>CUserMessageLagCompensationError</code></td>
+<td>Lag compensation</td>
+</tr>
+<tr>
+<td><code>CUserMessageServerFrameTime</code></td>
+<td>Server frame time</td>
+</tr>
+<tr>
+<td><code>CUserMessageUpdateCssClasses</code></td>
+<td>Update CSS</td>
+</tr>
+<tr>
+<td><code>CUserMessageWaterShake</code></td>
+<td>Water shake</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="misc-messages-15">Misc Messages (15)<a class="headerlink" href="#misc-messages-15" title="Permanent link">&para;</a></h2>
+<p>Other message types.</p>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CMsgSource1LegacyGameEvent</code></td>
+<td>Legacy game event</td>
+</tr>
+<tr>
+<td><code>CMsgSource1LegacyGameEventList</code></td>
+<td>Game event list</td>
+</tr>
+<tr>
+<td><code>CMsgSource1LegacyListenEvents</code></td>
+<td>Listen events</td>
+</tr>
+<tr>
+<td><code>CMsgDOTACombatLogEntry</code></td>
+<td>Combat log</td>
+</tr>
+<tr>
+<td><code>CMsgGCToClientTournamentItemDrop</code></td>
+<td>Tournament drop</td>
+</tr>
+<tr>
+<td><code>CMsgVDebugGameSessionIDEvent</code></td>
+<td>Debug session ID</td>
+</tr>
+<tr>
+<td><code>CMsgPlaceDecalEvent</code></td>
+<td>Place decal</td>
+</tr>
+<tr>
+<td><code>CMsgClearWorldDecalsEvent</code></td>
+<td>Clear world decals</td>
+</tr>
+<tr>
+<td><code>CMsgClearEntityDecalsEvent</code></td>
+<td>Clear entity decals</td>
+</tr>
+<tr>
+<td><code>CMsgClearDecalsForSkeletonInstanceEvent</code></td>
+<td>Clear skeleton decals</td>
+</tr>
+<tr>
+<td><code>CMsgSosStartSoundEvent</code></td>
+<td>Start sound</td>
+</tr>
+<tr>
+<td><code>CMsgSosStopSoundEvent</code></td>
+<td>Stop sound</td>
+</tr>
+<tr>
+<td><code>CMsgSosStopSoundEventHash</code></td>
+<td>Stop sound hash</td>
+</tr>
+<tr>
+<td><code>CMsgSosSetSoundEventParams</code></td>
+<td>Sound params</td>
+</tr>
+<tr>
+<td><code>CMsgSosSetLibraryStackFields</code></td>
+<td>Library stack</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">&para;</a></h2>
+<h3 id="common-filters">Common Filters<a class="headerlink" href="#common-filters" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Chat and communication</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">chat</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;ChatMessage&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">pings</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;LocationPing&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">wheel</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;ChatWheel&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Items</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">purchases</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;ItemPurchased&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">alerts</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;ItemAlert&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Combat</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">overhead</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;OverheadEvent&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">unit_events</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;UnitEvent&quot;</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># Game state</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">state_changes</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;GamerulesStateChanged&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="filtering-multiple-types">Filtering Multiple Types<a class="headerlink" href="#filtering-multiple-types" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Substring &quot;Alert&quot; matches many alert types</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">alerts</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_universal</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="s2">&quot;Alert&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Common matched types:</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># - CDOTAUserMsg_ItemAlert</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># - CDOTAUserMsg_EnemyItemAlert</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># - CDOTAUserMsg_GlyphAlert</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># - CDOTAUserMsg_NeutralCampAlert</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># - etc.</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/DeepBlueCoding/python-manta" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/python-manta/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
