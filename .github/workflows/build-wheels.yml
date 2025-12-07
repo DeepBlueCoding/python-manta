@@ -129,7 +129,7 @@ jobs:
           python -m venv wheel_venv
           wheel_venv/bin/pip install --upgrade pip
           wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
-          wheel_venv/bin/python -c "from python_manta import MantaParser; print('wheel import ok')"
+          wheel_venv/bin/python -c "from python_manta import Parser; print('wheel import ok')"
 
       - name: Run pytest unit tests
         run: |
@@ -210,7 +210,7 @@ jobs:
           wheel_venv/bin/python -m pip install --upgrade pip
           echo "=== Attempting install ==="
           wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta --verbose
-          wheel_venv/bin/python -c "from python_manta import MantaParser; print('wheel import ok')"
+          wheel_venv/bin/python -c "from python_manta import Parser; print('wheel import ok')"
 
       - name: Run pytest unit tests
         if: matrix.arch == 'arm64'
@@ -272,7 +272,7 @@ jobs:
           python -m venv wheel_venv
           wheel_venv/Scripts/python -m pip install --upgrade pip
           wheel_venv/Scripts/pip install --find-links=./dist --no-cache-dir python-manta
-          wheel_venv/Scripts/python -c "from python_manta import MantaParser; print('wheel import ok')"
+          wheel_venv/Scripts/python -c "from python_manta import Parser; print('wheel import ok')"
 
       - name: Run pytest unit tests
         shell: bash
