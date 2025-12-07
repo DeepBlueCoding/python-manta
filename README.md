@@ -212,6 +212,7 @@ print(f"Total ticks: {index.total_ticks}, Keyframes: {len(index.keyframes)}")
 snap = parser.snapshot(target_tick=36000)  # 20 minutes
 for hero in snap.heroes:
     print(f"{hero.hero_name}: HP={hero.health}/{hero.max_health} at ({hero.x:.0f}, {hero.y:.0f})")
+    print(f"  LH={hero.last_hits} Gold={hero.gold} NW={hero.net_worth} KDA={hero.kda}")
 
 # Include illusions/clones
 snap = parser.snapshot(target_tick=36000, include_illusions=True)
@@ -948,6 +949,70 @@ class ParserInfo(BaseModel):
     entity_count: int             # Number of entities
     string_tables: List[str]      # List of string table names
     success: bool                 # Parse success flag
+```
+
+### HeroSnapshot
+
+Captured via `parser.snapshot()` for hero state at a specific tick:
+
+```python
+class HeroSnapshot(BaseModel):
+    # Identity
+    hero_name: str                # e.g., "npc_dota_hero_axe"
+    hero_id: int                  # Hero ID
+    player_id: int                # Player index (0-9)
+    team: int                     # 2 = Radiant, 3 = Dire
+    index: int                    # Entity index
+
+    # Position
+    x: float                      # X coordinate
+    y: float                      # Y coordinate
+    z: float                      # Z coordinate
+
+    # Vital stats
+    health: int                   # Current HP
+    max_health: int               # Max HP
+    mana: float                   # Current mana
+    max_mana: float               # Max mana
+    level: int                    # Hero level
+    is_alive: bool                # Whether hero is alive
+
+    # Economy
+    gold: int                     # Current gold
+    net_worth: int                # Total net worth
+    last_hits: int                # Last hits
+    denies: int                   # Denies
+    xp: int                       # Experience points
+
+    # KDA
+    kills: int                    # Kills
+    deaths: int                   # Deaths
+    assists: int                  # Assists
+
+    # Combat stats
+    armor: float                  # Armor value
+    magic_resistance: float       # Magic resistance %
+    damage_min: int               # Min damage
+    damage_max: int               # Max damage
+    attack_range: int             # Attack range
+
+    # Attributes
+    strength: float               # Strength
+    agility: float                # Agility
+    intellect: float              # Intelligence
+
+    # Abilities and talents
+    abilities: List[AbilitySnapshot]  # List of abilities
+    talents: List[TalentChoice]       # Selected talents
+    ability_points: int               # Unspent ability points
+
+    # Clone/illusion flags
+    is_clone: bool                # MK clone, Morph replicate
+    is_illusion: bool             # Regular illusion
+
+    @property
+    def kda(self) -> str:         # Returns "K/D/A" format
+        return f"{self.kills}/{self.deaths}/{self.assists}"
 ```
 
 ---

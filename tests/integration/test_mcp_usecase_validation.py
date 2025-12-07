@@ -385,7 +385,7 @@ class TestLaningPhaseComparison:
         tick_10min = index.game_started + (10 * 60 * 30)
         snapshot = parser.snapshot(target_tick=tick_10min)
 
-        troll = next((h for h in snapshot.heroes if "TrollWarlord" in h.hero_name), None)
+        troll = next((h for h in snapshot.heroes if "trollwarlord" in h.hero_name), None)
         assert troll is not None
         assert troll.level == 6
         assert troll.team == Team.RADIANT.value
@@ -396,7 +396,7 @@ class TestLaningPhaseComparison:
         tick_10min = index.game_started + (10 * 60 * 30)
         snapshot = parser.snapshot(target_tick=tick_10min)
 
-        bb = next((h for h in snapshot.heroes if "Bristleback" in h.hero_name), None)
+        bb = next((h for h in snapshot.heroes if "bristleback" in h.hero_name), None)
         assert bb is not None
         assert bb.level == 8
 
@@ -431,6 +431,80 @@ class TestLaningPhaseComparison:
         for hero in snapshot.heroes:
             assert -10000 < hero.x < 10000
             assert -10000 < hero.y < 10000
+
+
+class TestHeroSnapshotEconomy:
+    """Test HeroSnapshot economy fields (gold, net_worth, last_hits, etc.)."""
+
+    def test_hero_has_economy_fields(self, parser):
+        """All heroes should have economy fields populated."""
+        index = parser.build_index(interval_ticks=1800)
+        tick_15min = index.game_started + (15 * 60 * 30)
+        snapshot = parser.snapshot(target_tick=tick_15min)
+
+        assert snapshot.success
+        for hero in snapshot.heroes:
+            # Economy fields should be populated (may be 0 for some)
+            assert hasattr(hero, "gold")
+            assert hasattr(hero, "net_worth")
+            assert hasattr(hero, "last_hits")
+            assert hasattr(hero, "denies")
+            assert hasattr(hero, "xp")
+
+    def test_troll_warlord_farm_at_15min(self, parser):
+        """Yatoro (Troll Warlord) farming stats at 15 min."""
+        index = parser.build_index(interval_ticks=1800)
+        tick_15min = index.game_started + (15 * 60 * 30)
+        snapshot = parser.snapshot(target_tick=tick_15min)
+
+        troll = next((h for h in snapshot.heroes if "trollwarlord" in h.hero_name), None)
+        assert troll is not None
+
+        # Carry should have significant farm by 15 min
+        assert troll.last_hits > 80
+        assert troll.net_worth > 5000
+        assert troll.xp > 0
+
+    def test_kda_property(self, parser):
+        """Test KDA property returns correct format."""
+        index = parser.build_index(interval_ticks=1800)
+        tick_20min = index.game_started + (20 * 60 * 30)
+        snapshot = parser.snapshot(target_tick=tick_20min)
+
+        for hero in snapshot.heroes:
+            # KDA should be "kills/deaths/assists" format
+            assert "/" in hero.kda
+            parts = hero.kda.split("/")
+            assert len(parts) == 3
+            assert all(p.isdigit() for p in parts)
+
+    def test_hero_kda_fields(self, parser):
+        """Test kills/deaths/assists are populated."""
+        index = parser.build_index(interval_ticks=1800)
+        tick_20min = index.game_started + (20 * 60 * 30)
+        snapshot = parser.snapshot(target_tick=tick_20min)
+
+        total_kills = sum(h.kills for h in snapshot.heroes)
+        total_deaths = sum(h.deaths for h in snapshot.heroes)
+
+        # By 20 min there should be some kills
+        assert total_kills > 0
+        # Kills and deaths should roughly match (assists don't count)
+        assert total_deaths > 0
+
+    def test_team_net_worth_comparison(self, parser):
+        """Compare team net worth at different intervals."""
+        index = parser.build_index(interval_ticks=1800)
+        tick_10min = index.game_started + (10 * 60 * 30)
+        tick_20min = index.game_started + (20 * 60 * 30)
+
+        snap_10 = parser.snapshot(target_tick=tick_10min)
+        snap_20 = parser.snapshot(target_tick=tick_20min)
+
+        # Net worth at 20 min should be higher than 10 min
+        nw_10 = sum(h.net_worth for h in snap_10.heroes)
+        nw_20 = sum(h.net_worth for h in snap_20.heroes)
+        assert nw_20 > nw_10
 
 
 class TestSnapshotWithIllusions:

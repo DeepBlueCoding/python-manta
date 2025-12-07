@@ -15,10 +15,10 @@ import (
 
 // EntitySnapshot represents the state of tracked entities at a specific tick
 type EntitySnapshot struct {
-	Tick       uint32                 `json:"tick"`
-	GameTime   float32                `json:"game_time"`
-	Players    []PlayerState          `json:"players"`
-	Teams      []TeamState            `json:"teams"`
+	Tick        uint32                 `json:"tick"`
+	GameTime    float32                `json:"game_time"`
+	Heroes      []HeroSnapshot         `json:"heroes"`
+	Teams       []TeamState            `json:"teams"`
 	RawEntities map[string]interface{} `json:"raw_entities,omitempty"`
 }
 
@@ -199,7 +199,7 @@ func RunEntityParse(filePath string, config EntityParseConfig) (*EntityParseResu
 
 		// Capture snapshot
 		snapshot := captureSnapshot(parser, gameTime, config)
-		if snapshot != nil && len(snapshot.Players) > 0 {
+		if snapshot != nil && len(snapshot.Heroes) > 0 {
 			result.Snapshots = append(result.Snapshots, *snapshot)
 			lastCaptureTick = currentTick
 		}
@@ -270,7 +270,7 @@ func captureSnapshot(parser *manta.Parser, gameTime float32, config EntityParseC
 	snapshot := &EntitySnapshot{
 		Tick:     parser.Tick,
 		GameTime: gameTime,
-		Players:  make([]PlayerState, 0, 10),
+		Heroes:   make([]HeroSnapshot, 0, 10),
 		Teams:    make([]TeamState, 0, 2),
 	}
 
@@ -311,7 +311,7 @@ func captureSnapshot(parser *manta.Parser, gameTime float32, config EntityParseC
 		}
 	}
 
-	// Find hero entities for position data
+	// Find hero entities
 	heroEntities := parser.FilterEntity(func(e *manta.Entity) bool {
 		if e == nil {
 			return false
@@ -328,59 +328,55 @@ func captureSnapshot(parser *manta.Parser, gameTime float32, config EntityParseC
 		heroByHandle[uint64(hero.GetIndex())] = hero
 	}
 
-	// Extract player data by combining PlayerResource and Data entities
+	// Extract hero data by combining PlayerResource, Data entities, and Hero entities
 	if playerResource != nil {
 		for i := 0; i < 10; i++ {
-			player := extractPlayerStateFromResource(playerResource, i)
-			if player.HeroID > 0 { // Only add if player has a hero
-				// Get team slot (0-4 for each team)
-				teamSlot := i
-				if i >= 5 {
-					teamSlot = i - 5
-				}
+			// Get hero ID from PlayerResource
+			heroID := 0
+			if hid, ok := playerResource.GetUint32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_nSelectedHeroID", i)); ok {
+				heroID = int(hid)
+			}
 
-				// Extract LH/DN/gold from the appropriate Data entity
-				if player.Team == 2 && dataRadiant != nil {
-					extractPlayerStatsFromDataTeam(dataRadiant, teamSlot, &player)
-				} else if player.Team == 3 && dataDire != nil {
-					extractPlayerStatsFromDataTeam(dataDire, teamSlot, &player)
-				}
+			if heroID <= 0 {
+				continue // No hero selected for this player
+			}
 
-				// Extract position and hero name from hero entity
-				var heroClassName string
-				// Look for hero entity by matching player index to hero handle
-				if heroHandle, ok := playerResource.GetUint64(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_hSelectedHero", i)); ok {
-					if heroEntity, found := heroByHandle[heroHandle&0x3FFF]; found {
-						extractHeroPosition(heroEntity, &player)
-						heroClassName = heroEntity.GetClassName()
-						player.HeroName = entityClassToHeroName(heroClassName)
-					}
-				}
+			// Determine team
+			team := 2 // Radiant
+			if i >= 5 {
+				team = 3 // Dire
+			}
 
-				// If hero handle lookup failed, try matching by iterating through heroes
-				if player.PositionX == 0 && player.PositionY == 0 {
-					for _, hero := range heroEntities {
-						if hero == nil {
-							continue
-						}
-						// Match hero to player by checking team and hero ID
-						if heroID, ok := hero.GetUint32("m_pEntity.m_nameStringableIndex"); ok && int(heroID) == player.HeroID {
-							extractHeroPosition(hero, &player)
-							heroClassName = hero.GetClassName()
-							player.HeroName = entityClassToHeroName(heroClassName)
-							break
-						}
-					}
-				}
+			// Get team slot (0-4 for each team)
+			teamSlot := i
+			if i >= 5 {
+				teamSlot = i - 5
+			}
 
-				// Apply target_heroes filter
-				if len(config.TargetHeroes) > 0 {
-					if !shouldIncludeHero(heroClassName, config.TargetHeroes) {
-						continue // Skip this player
-					}
+			// Find hero entity
+			var heroEntity *manta.Entity
+			var heroClassName string
+			if heroHandle, ok := playerResource.GetUint64(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_hSelectedHero", i)); ok {
+				if found, exists := heroByHandle[heroHandle&0x3FFF]; exists {
+					heroEntity = found
+					heroClassName = heroEntity.GetClassName()
 				}
+			}
 
-				snapshot.Players = append(snapshot.Players, player)
+			// Apply target_heroes filter
+			if len(config.TargetHeroes) > 0 {
+				if !shouldIncludeHero(heroClassName, config.TargetHeroes) {
+					continue
+				}
+			}
+
+			// Extract economy data from PlayerResource and Data entities
+			economy := extractEconomyData(playerResource, dataRadiant, dataDire, i, team, teamSlot)
+
+			// Extract full hero snapshot with all data
+			if heroEntity != nil {
+				heroSnapshot := extractFullHeroSnapshot(heroEntity, i, heroID, parser, &economy)
+				snapshot.Heroes = append(snapshot.Heroes, heroSnapshot)
 			}
 		}
 	}
@@ -536,6 +532,71 @@ func extractHeroPosition(hero *manta.Entity, player *PlayerState) {
 	}
 }
 
+// EconomyData holds economy stats extracted from PlayerResource and Data entities
+type EconomyData struct {
+	Level    int
+	Kills    int
+	Deaths   int
+	Assists  int
+	LastHits int
+	Denies   int
+	Gold     int
+	NetWorth int
+	XP       int
+}
+
+// extractEconomyData extracts economy data from PlayerResource and Data entities
+func extractEconomyData(playerResource, dataRadiant, dataDire *manta.Entity, playerIdx, team, teamSlot int) EconomyData {
+	economy := EconomyData{}
+
+	// From PlayerResource
+	if playerResource != nil {
+		if level, ok := playerResource.GetInt32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_iLevel", playerIdx)); ok {
+			economy.Level = int(level)
+		}
+		if kills, ok := playerResource.GetInt32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_iKills", playerIdx)); ok {
+			economy.Kills = int(kills)
+		}
+		if deaths, ok := playerResource.GetInt32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_iDeaths", playerIdx)); ok {
+			economy.Deaths = int(deaths)
+		}
+		if assists, ok := playerResource.GetInt32(fmt.Sprintf("m_vecPlayerTeamData.%04d.m_iAssists", playerIdx)); ok {
+			economy.Assists = int(assists)
+		}
+	}
+
+	// From team Data entity
+	var dataEntity *manta.Entity
+	if team == 2 {
+		dataEntity = dataRadiant
+	} else if team == 3 {
+		dataEntity = dataDire
+	}
+
+	if dataEntity != nil {
+		if lh, ok := dataEntity.GetInt32(fmt.Sprintf("m_vecDataTeam.%04d.m_iLastHitCount", teamSlot)); ok {
+			economy.LastHits = int(lh)
+		}
+		if denies, ok := dataEntity.GetInt32(fmt.Sprintf("m_vecDataTeam.%04d.m_iDenyCount", teamSlot)); ok {
+			economy.Denies = int(denies)
+		}
+		if nw, ok := dataEntity.GetInt32(fmt.Sprintf("m_vecDataTeam.%04d.m_iNetWorth", teamSlot)); ok {
+			economy.NetWorth = int(nw)
+		}
+		if gold, ok := dataEntity.GetInt32(fmt.Sprintf("m_vecDataTeam.%04d.m_iReliableGold", teamSlot)); ok {
+			economy.Gold = int(gold)
+		}
+		if unreliable, ok := dataEntity.GetInt32(fmt.Sprintf("m_vecDataTeam.%04d.m_iUnreliableGold", teamSlot)); ok {
+			economy.Gold += int(unreliable)
+		}
+		if xp, ok := dataEntity.GetInt32(fmt.Sprintf("m_vecDataTeam.%04d.m_iTotalEarnedXP", teamSlot)); ok {
+			economy.XP = int(xp)
+		}
+	}
+
+	return economy
+}
+
 // extractTeamState extracts team-level stats
 func extractTeamState(team *manta.Entity) TeamState {
 	state := TeamState{}
@@ -554,6 +615,244 @@ func extractTeamState(team *manta.Entity) TeamState {
 	}
 
 	return state
+}
+
+// extractFullHeroSnapshot extracts complete hero state including abilities, talents, and economy
+func extractFullHeroSnapshot(entity *manta.Entity, playerIdx int, heroID int, parser *manta.Parser, economy *EconomyData) HeroSnapshot {
+	hero := HeroSnapshot{
+		HeroName:   entityClassToHeroName(entity.GetClassName()),
+		HeroID:     heroID,
+		Index:      int(entity.GetIndex()),
+		PlayerID:   playerIdx,
+		Abilities:  make([]AbilitySnapshot, 0),
+		Talents:    make([]TalentChoice, 0),
+		IsAlive:    true,
+	}
+
+	// Team based on player slot (0-4 = Radiant, 5-9 = Dire)
+	if playerIdx >= 0 && playerIdx < 5 {
+		hero.Team = 2 // Radiant
+	} else if playerIdx >= 5 {
+		hero.Team = 3 // Dire
+	}
+
+	// Economy data (from PlayerResource and Data entities)
+	if economy != nil {
+		hero.Level = economy.Level
+		hero.Kills = economy.Kills
+		hero.Deaths = economy.Deaths
+		hero.Assists = economy.Assists
+		hero.LastHits = economy.LastHits
+		hero.Denies = economy.Denies
+		hero.Gold = economy.Gold
+		hero.NetWorth = economy.NetWorth
+		hero.XP = economy.XP
+	}
+
+	// Override level from hero entity if available (more accurate)
+	if level, ok := entity.GetInt32("m_iCurrentLevel"); ok {
+		hero.Level = int(level)
+	}
+
+	// Health/Mana
+	if health, ok := entity.GetInt32("m_iHealth"); ok {
+		hero.Health = int(health)
+		hero.IsAlive = health > 0
+	}
+	if maxHealth, ok := entity.GetInt32("m_iMaxHealth"); ok {
+		hero.MaxHealth = int(maxHealth)
+	}
+	if mana, ok := entity.GetFloat32("m_flMana"); ok {
+		hero.Mana = mana
+	}
+	if maxMana, ok := entity.GetFloat32("m_flMaxMana"); ok {
+		hero.MaxMana = maxMana
+	}
+
+	// Override team from entity if available
+	if team, ok := entity.GetInt32("m_iTeamNum"); ok {
+		hero.Team = int(team)
+	}
+
+	// Ability points (unspent)
+	if pts, ok := entity.GetInt32("m_iAbilityPoints"); ok {
+		hero.AbilityPoints = int(pts)
+	}
+
+	// Position from cell (world = cell * 128 + vec - 16384)
+	if cellX, ok := entity.GetUint32("CBodyComponent.m_cellX"); ok {
+		if vecX, ok := entity.GetFloat32("CBodyComponent.m_vecX"); ok {
+			hero.X = float32(cellX)*128.0 + vecX - 16384.0
+		}
+	}
+	if cellY, ok := entity.GetUint32("CBodyComponent.m_cellY"); ok {
+		if vecY, ok := entity.GetFloat32("CBodyComponent.m_vecY"); ok {
+			hero.Y = float32(cellY)*128.0 + vecY - 16384.0
+		}
+	}
+	if cellZ, ok := entity.GetUint32("CBodyComponent.m_cellZ"); ok {
+		if vecZ, ok := entity.GetFloat32("CBodyComponent.m_vecZ"); ok {
+			hero.Z = float32(cellZ)*128.0 + vecZ - 16384.0
+		}
+	}
+
+	// Combat stats
+	if armor, ok := entity.GetFloat32("m_flPhysicalArmorValue"); ok {
+		hero.Armor = armor
+	}
+	if magicRes, ok := entity.GetFloat32("m_flMagicalResistanceValue"); ok {
+		hero.MagicResistance = magicRes
+	}
+	if dmgMin, ok := entity.GetInt32("m_iDamageMin"); ok {
+		hero.DamageMin = int(dmgMin)
+	}
+	if dmgMax, ok := entity.GetInt32("m_iDamageMax"); ok {
+		hero.DamageMax = int(dmgMax)
+	}
+	if atkRange, ok := entity.GetInt32("m_iAttackRange"); ok {
+		hero.AttackRange = int(atkRange)
+	}
+
+	// Attributes (total values including bonuses)
+	if str, ok := entity.GetFloat32("m_flStrengthTotal"); ok {
+		hero.Strength = str
+	}
+	if agi, ok := entity.GetFloat32("m_flAgilityTotal"); ok {
+		hero.Agility = agi
+	}
+	if intel, ok := entity.GetFloat32("m_flIntellectTotal"); ok {
+		hero.Intellect = intel
+	}
+
+	// Extract abilities and talents
+	if parser != nil {
+		extractAbilitiesForSnapshot(entity, parser, &hero)
+	}
+
+	return hero
+}
+
+// extractAbilitiesForSnapshot extracts ability and talent data from a hero entity
+func extractAbilitiesForSnapshot(entity *manta.Entity, parser *manta.Parser, hero *HeroSnapshot) {
+	// Track talent slots for tier detection
+	talentSlots := make([]int, 0)
+	talentsBySlot := make(map[int]struct {
+		name  string
+		level int32
+	})
+
+	// First pass: identify all abilities and separate talents
+	for slot := 0; slot < 24; slot++ {
+		key := fmt.Sprintf("m_vecAbilities.%04d", slot)
+		val := entity.Get(key)
+
+		handle, ok := val.(uint32)
+		if !ok || handle == 16777215 { // 16777215 = invalid handle
+			continue
+		}
+
+		abilityEntity := parser.FindEntityByHandle(uint64(handle))
+		if abilityEntity == nil {
+			continue
+		}
+
+		abilityName := abilityEntity.GetClassName()
+		abilityLevel, _ := abilityEntity.GetInt32("m_iLevel")
+		hidden, _ := abilityEntity.GetBool("m_bHidden")
+
+		// Check if this is a talent (name-based detection)
+		if strings.Contains(abilityName, "Special_Bonus") {
+			talentSlots = append(talentSlots, slot)
+			talentsBySlot[slot] = struct {
+				name  string
+				level int32
+			}{abilityName, abilityLevel}
+			continue
+		}
+
+		// Skip hidden abilities with no level
+		if hidden && abilityLevel == 0 {
+			continue
+		}
+
+		// Skip non-hero abilities (shared abilities)
+		if strings.Contains(abilityName, "Capture") ||
+			strings.Contains(abilityName, "Portal_Warp") ||
+			strings.Contains(abilityName, "Lamp_Use") ||
+			strings.Contains(abilityName, "Plus_HighFive") ||
+			strings.Contains(abilityName, "Plus_GuildBanner") {
+			continue
+		}
+
+		// Regular ability
+		cooldown, _ := abilityEntity.GetFloat32("m_fCooldown")
+		maxCooldown, _ := abilityEntity.GetFloat32("m_flCooldownLength")
+		manaCost, _ := abilityEntity.GetInt32("m_iManaCost")
+		charges, _ := abilityEntity.GetInt32("m_nAbilityCurrentCharges")
+
+		ability := AbilitySnapshot{
+			Slot:        slot,
+			Name:        abilityName,
+			Level:       int(abilityLevel),
+			Cooldown:    cooldown,
+			MaxCooldown: maxCooldown,
+			ManaCost:    int(manaCost),
+			Charges:     int(charges),
+			IsUltimate:  slot == 5, // Slot 5 is typically the ultimate
+		}
+		hero.Abilities = append(hero.Abilities, ability)
+	}
+
+	// Second pass: process talents
+	// Talents come in pairs, ordered by tier (10, 15, 20, 25)
+	// Import sort for talent processing
+	sortInts(talentSlots)
+
+	tiers := []int{10, 15, 20, 25}
+	tierIndex := 0
+	for i := 0; i < len(talentSlots) && tierIndex < len(tiers); i += 2 {
+		tier := tiers[tierIndex]
+		tierIndex++
+
+		// Check left talent (first of pair)
+		if i < len(talentSlots) {
+			leftSlot := talentSlots[i]
+			leftData := talentsBySlot[leftSlot]
+			if leftData.level > 0 {
+				hero.Talents = append(hero.Talents, TalentChoice{
+					Tier:   tier,
+					Slot:   leftSlot,
+					IsLeft: true,
+					Name:   leftData.name,
+				})
+			}
+		}
+
+		// Check right talent (second of pair)
+		if i+1 < len(talentSlots) {
+			rightSlot := talentSlots[i+1]
+			rightData := talentsBySlot[rightSlot]
+			if rightData.level > 0 {
+				hero.Talents = append(hero.Talents, TalentChoice{
+					Tier:   tier,
+					Slot:   rightSlot,
+					IsLeft: false,
+					Name:   rightData.name,
+				})
+			}
+		}
+	}
+}
+
+// sortInts sorts a slice of ints in ascending order (simple bubble sort for small slices)
+func sortInts(a []int) {
+	for i := 0; i < len(a); i++ {
+		for j := i + 1; j < len(a); j++ {
+			if a[i] > a[j] {
+				a[i], a[j] = a[j], a[i]
+			}
+		}
+	}
 }
 
 // marshalEntityResult converts result to JSON and returns as C string

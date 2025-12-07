@@ -707,8 +707,8 @@ func setupEntityCollector(parser *manta.Parser, state *entityCollectorState) {
 
 		if shouldCapture {
 			snapshot := captureEntitySnapshot(parser, config, state.gameStartTime, state.gameStartTick)
-			// Only add snapshot if it has players (like RunEntityParse)
-			if len(snapshot.Players) > 0 {
+			// Only add snapshot if it has heroes
+			if len(snapshot.Heroes) > 0 {
 				state.snapshots = append(state.snapshots, snapshot)
 				state.lastCaptureTick = currentTick
 			}
@@ -745,9 +745,9 @@ func captureEntitySnapshot(parser *manta.Parser, config *EntityParseConfig, game
 
 	// Fallback empty snapshot
 	return EntitySnapshot{
-		Tick:    parser.Tick,
-		Players: make([]PlayerState, 0),
-		Teams:   make([]TeamState, 0),
+		Tick:   parser.Tick,
+		Heroes: make([]HeroSnapshot, 0),
+		Teams:  make([]TeamState, 0),
 	}
 }
 

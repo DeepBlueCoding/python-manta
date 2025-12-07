@@ -1337,10 +1337,14 @@ class TeamState(BaseModel):
 
 
 class EntitySnapshot(BaseModel):
-    """Entity state snapshot at a specific tick."""
+    """Entity state snapshot at a specific tick.
+
+    Contains complete hero state including economy, abilities, talents, combat stats,
+    and attributes. All hero data is consolidated in the heroes field.
+    """
     tick: int
     game_time: float
-    players: List[PlayerState] = []
+    heroes: List["HeroSnapshot"] = []
     teams: List[TeamState] = []
     raw_entities: Optional[Dict[str, Any]] = None
 
@@ -1783,36 +1787,69 @@ class TalentChoice(BaseModel):
 
 
 class HeroSnapshot(BaseModel):
-    """Hero state at a specific tick."""
+    """Complete hero state at a specific tick.
+
+    Consolidates all hero data: identity, position, vitals, economy, combat stats,
+    attributes, abilities, and talents. This is the primary model for hero state
+    in entity snapshots.
+    """
+    # Identity
     hero_name: str = ""
     hero_id: int = 0
     player_id: int = 0
     team: int = 0
+    index: int = 0
+
+    # Position
     x: float = 0.0
     y: float = 0.0
     z: float = 0.0
+
+    # Vital stats
     health: int = 0
     max_health: int = 0
     mana: float = 0.0
     max_mana: float = 0.0
     level: int = 0
     is_alive: bool = True
-    is_illusion: bool = False
-    is_clone: bool = False
+
+    # Economy
+    gold: int = 0
+    net_worth: int = 0
+    last_hits: int = 0
+    denies: int = 0
+    xp: int = 0
+
+    # KDA
+    kills: int = 0
+    deaths: int = 0
+    assists: int = 0
+
     # Combat stats
     armor: float = 0.0
     magic_resistance: float = 0.0
     damage_min: int = 0
     damage_max: int = 0
     attack_range: int = 0
+
     # Attributes
     strength: float = 0.0
     agility: float = 0.0
     intellect: float = 0.0
+
     # Abilities and talents
     abilities: List[AbilitySnapshot] = []
     talents: List[TalentChoice] = []
     ability_points: int = 0
+
+    # Clone/illusion flags
+    is_illusion: bool = False
+    is_clone: bool = False
+
+    @property
+    def kda(self) -> str:
+        """Return KDA as a formatted string (e.g., '5/2/10')."""
+        return f"{self.kills}/{self.deaths}/{self.assists}"
 
     @property
     def has_ultimate(self) -> bool:

@@ -78,3 +78,79 @@ type UniversalResult struct {
 	FilteredCount  int            `json:"filtered_count"`
 	CallbacksUsed  []string       `json:"callbacks_used"`
 }
+
+// AbilitySnapshot captures an ability's state (shared between entity_parser and index)
+type AbilitySnapshot struct {
+	Slot        int     `json:"slot"`
+	Name        string  `json:"name"`
+	Level       int     `json:"level"`
+	Cooldown    float32 `json:"cooldown"`
+	MaxCooldown float32 `json:"max_cooldown"`
+	ManaCost    int     `json:"mana_cost"`
+	Charges     int     `json:"charges"`
+	IsUltimate  bool    `json:"is_ultimate"`
+}
+
+// TalentChoice captures a talent tier selection
+type TalentChoice struct {
+	Tier   int    `json:"tier"`
+	Slot   int    `json:"slot"`
+	IsLeft bool   `json:"is_left"`
+	Name   string `json:"name"`
+}
+
+// HeroSnapshot captures a hero's complete state (shared between entity_parser and index)
+type HeroSnapshot struct {
+	// Identity
+	Index    int    `json:"index"`
+	PlayerID int    `json:"player_id"`
+	HeroID   int    `json:"hero_id"`
+	HeroName string `json:"hero_name"`
+	Team     int    `json:"team"`
+
+	// Position
+	X float32 `json:"x"`
+	Y float32 `json:"y"`
+	Z float32 `json:"z"`
+
+	// Vital stats
+	Level     int     `json:"level"`
+	Health    int     `json:"health"`
+	MaxHealth int     `json:"max_health"`
+	Mana      float32 `json:"mana"`
+	MaxMana   float32 `json:"max_mana"`
+	IsAlive   bool    `json:"is_alive"`
+
+	// Economy (from CDOTA_PlayerResource / CDOTA_Data*)
+	Gold     int `json:"gold"`
+	NetWorth int `json:"net_worth"`
+	LastHits int `json:"last_hits"`
+	Denies   int `json:"denies"`
+	XP       int `json:"xp"`
+
+	// KDA
+	Kills   int `json:"kills"`
+	Deaths  int `json:"deaths"`
+	Assists int `json:"assists"`
+
+	// Combat stats
+	Armor           float32 `json:"armor"`
+	MagicResistance float32 `json:"magic_resistance"`
+	DamageMin       int     `json:"damage_min"`
+	DamageMax       int     `json:"damage_max"`
+	AttackRange     int     `json:"attack_range"`
+
+	// Attributes
+	Strength  float32 `json:"strength"`
+	Agility   float32 `json:"agility"`
+	Intellect float32 `json:"intellect"`
+
+	// Abilities and talents
+	Abilities     []AbilitySnapshot `json:"abilities,omitempty"`
+	Talents       []TalentChoice    `json:"talents,omitempty"`
+	AbilityPoints int               `json:"ability_points"`
+
+	// Clone/illusion flags
+	IsClone    bool `json:"is_clone,omitempty"`
+	IsIllusion bool `json:"is_illusion,omitempty"`
+}
