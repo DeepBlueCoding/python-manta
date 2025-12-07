@@ -47,6 +47,7 @@ Users should build analysis logic on top of the raw data we provide.
 - [Versioning](#versioning)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [V2 Parser API (Recommended)](#v2-parser-api-recommended)
 - [API Reference](#api-reference)
 - [Game Events](#game-events)
 - [Modifiers](#modifiers)
@@ -104,6 +105,18 @@ Pre-built wheels are available for:
 
 **No Go installation required** - wheels include pre-compiled binaries.
 
+### Version Pinning
+
+**Always use the latest release for your target Manta version** to get bug fixes and improvements:
+
+```bash
+# Latest release for Manta 1.4.5.x (recommended)
+pip install "python-manta>=1.4.5,<1.4.6"
+
+# Or use compatible release operator
+pip install "python-manta~=1.4.5"
+```
+
 ### From Source
 
 See [Building from Source](#building-from-source) section below.
@@ -115,39 +128,41 @@ See [Building from Source](#building-from-source) section below.
 ### Parse Demo Header
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
-header = parser.parse_header("match.dem")
+parser = Parser("match.dem")
+result = parser.parse(header=True)
 
-print(f"Map: {header.map_name}")
-print(f"Server: {header.server_name}")
-print(f"Build: {header.build_num}")
-print(f"Network Protocol: {header.network_protocol}")
+print(f"Map: {result.header.map_name}")
+print(f"Server: {result.header.server_name}")
+print(f"Build: {result.header.build_num}")
+print(f"Network Protocol: {result.header.network_protocol}")
 ```
 
 ### Parse Specific Messages
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-# Initialize parser
-parser = MantaParser()
+parser = Parser("match.dem")
 
 # Extract chat messages (limit to 100)
-result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 100)
+result = parser.parse(messages={"filter": "CDOTAUserMsg_ChatMessage", "max_messages": 100})
 
 if result.success:
-    for msg in result.messages:
+    for msg in result.messages.messages:
         print(f"[Tick {msg.tick}] Player {msg.data['source_player_id']}: {msg.data['message_text']}")
 ```
 
 ### Parse Draft (Picks & Bans)
 
 ```python
-draft = parser.parse_game_info("match.dem")
+from python_manta import Parser
 
-for pick_ban in draft.picks_bans:
+parser = Parser("match.dem")
+result = parser.parse(game_info=True)
+
+for pick_ban in result.game_info.picks_bans:
     action = "PICK" if pick_ban.is_pick else "BAN"
     team = "Radiant" if pick_ban.team == 2 else "Dire"
     print(f"{team} {action}: Hero ID {pick_ban.hero_id}")
@@ -155,69 +170,132 @@ for pick_ban in draft.picks_bans:
 
 ---
 
-## API Reference
+## Parser API
 
-### MantaParser Class
+The `Parser` class provides **single-pass parsing** - all data collected in one file traversal. This is much more efficient when extracting multiple data types.
+
+### Single-Pass Parsing
+
+```python
+from python_manta import Parser
+
+# Create parser bound to file
+parser = Parser("match.dem")
+
+# Collect all data types in ONE parse (instead of 5 separate parses)
+result = parser.parse(
+    header=True,
+    game_info=True,
+    combat_log={"types": [0, 4], "max_entries": 100},
+    entities={"interval_ticks": 1800, "max_snapshots": 50},
+    messages={"filter": "ChatMessage", "max_messages": 100},
+)
+
+# Access all results
+print(result.header.map_name)
+print(result.game_info.match_id)
+print(len(result.combat_log.entries))
+```
+
+### Index/Seek API (Random Access)
+
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+
+# Build keyframe index for seeking
+index = parser.build_index(interval_ticks=1800)  # Every 60 seconds
+print(f"Total ticks: {index.total_ticks}, Keyframes: {len(index.keyframes)}")
+
+# Get hero state at specific tick
+snap = parser.snapshot(target_tick=36000)  # 20 minutes
+for hero in snap.heroes:
+    print(f"{hero.hero_name}: HP={hero.health}/{hero.max_health} at ({hero.x:.0f}, {hero.y:.0f})")
+    print(f"  LH={hero.last_hits} Gold={hero.gold} NW={hero.net_worth} KDA={hero.kda}")
+
+# Include illusions/clones
+snap = parser.snapshot(target_tick=36000, include_illusions=True)
+for hero in snap.heroes:
+    if hero.is_clone:
+        print(f"Clone: {hero.hero_name}")
+    elif hero.is_illusion:
+        print(f"Illusion: {hero.hero_name}")
+
+# Parse events in tick range
+result = parser.parse_range(start_tick=25000, end_tick=35000, combat_log=True)
+for entry in result.combat_log:
+    print(f"Tick {entry['tick']}: {entry['target_name']}")
+```
+
+### API Reference
+
+| Method | Description |
+|--------|-------------|
+| `Parser(demo_path)` | Create parser bound to file |
+| `parse(**collectors)` | Single-pass parsing with multiple collectors |
+| `build_index(interval_ticks)` | Build keyframe index for seeking |
+| `snapshot(target_tick, include_illusions=False)` | Get hero state at tick |
+| `find_keyframe(index, target_tick)` | Find nearest keyframe |
+| `parse_range(start, end, **collectors)` | Parse events in tick range |
+| `stream(**options)` | Stream events from demo |
+
+### Parser Class
 
 The main class for parsing Dota 2 replay files.
 
 ```python
-class MantaParser:
-    def __init__(self, library_path: Optional[str] = None)
+class Parser:
+    def __init__(self, demo_path: str, library_path: Optional[str] = None)
 
-    # Basic parsing
-    def parse_header(self, demo_file_path: str) -> HeaderInfo
-    def parse_game_info(self, demo_file_path: str) -> CDotaGameInfo
-    def parse_universal(self, demo_file_path: str, message_filter: str = "", max_messages: int = 0) -> UniversalParseResult
+    # Main parsing method
+    def parse(
+        self,
+        header: bool = False,
+        game_info: bool = False,
+        combat_log: Optional[Dict] = None,
+        entities: Optional[Dict] = None,
+        game_events: Optional[Dict] = None,
+        modifiers: Optional[Dict] = None,
+        string_tables: Optional[Dict] = None,
+        messages: Optional[Dict] = None,
+        parser_info: bool = False,
+    ) -> ParseResult
 
     # Advanced features
-    def parse_game_events(self, demo_file_path: str, ...) -> GameEventsResult
-    def parse_modifiers(self, demo_file_path: str, ...) -> ModifiersResult
-    def query_entities(self, demo_file_path: str, ...) -> EntitiesResult
-    def get_string_tables(self, demo_file_path: str, ...) -> StringTablesResult
-    def parse_combat_log(self, demo_file_path: str, ...) -> CombatLogResult
-    def get_parser_info(self, demo_file_path: str) -> ParserInfo
+    def build_index(self, interval_ticks: int = 1800) -> DemoIndex
+    def snapshot(self, target_tick: int, include_illusions: bool = False) -> EntityStateSnapshot
+    def parse_range(self, start_tick: int, end_tick: int, ...) -> RangeParseResult
+    def stream(self, combat_log: bool = False, messages: bool = False, ...) -> Iterator[StreamEvent]
 ```
 
 #### Constructor
 
 ```python
-parser = MantaParser()  # Uses bundled library
-parser = MantaParser("/path/to/libmanta_wrapper.so")  # Custom library path
+parser = Parser("match.dem")  # Uses bundled library
+parser = Parser("match.dem", library_path="/path/to/libmanta_wrapper.so")  # Custom library
 ```
 
-#### parse_header(demo_file_path: str) -> HeaderInfo
+#### parse(**collectors) -> ParseResult
 
-Parses the demo file header containing match metadata.
+Single-pass parsing with multiple data collectors. Collects all requested data in ONE file traversal.
 
-**Parameters:**
-- `demo_file_path`: Path to the `.dem` replay file
+**Parameters (all optional):**
+- `header`: Set to `True` to collect header metadata
+- `game_info`: Set to `True` to collect draft/game info
+- `combat_log`: Dict with `types`, `max_entries`, `heroes_only`
+- `entities`: Dict with `interval_ticks`, `max_snapshots`, `target_heroes`
+- `game_events`: Dict with `event_filter`, `max_events`
+- `modifiers`: Dict with `max_modifiers`, `debuffs_only`, `auras_only`
+- `string_tables`: Dict with `table_names`, `include_values`, `max_entries`
+- `messages`: Dict with `filter`, `max_messages`
+- `parser_info`: Set to `True` to collect parser state
 
-**Returns:** `HeaderInfo` with match metadata
+**Returns:** `ParseResult` with all requested data
 
 **Raises:**
 - `FileNotFoundError`: If demo file doesn't exist
 - `ValueError`: If parsing fails
-
-#### parse_game_info(demo_file_path: str) -> CDotaGameInfo
-
-Extracts draft phase information (picks and bans).
-
-**Parameters:**
-- `demo_file_path`: Path to the `.dem` replay file
-
-**Returns:** `CDotaGameInfo` with picks/bans list
-
-#### parse_universal(demo_file_path: str, message_filter: str = "", max_messages: int = 0) -> UniversalParseResult
-
-Universal parser for any Manta callback/message type.
-
-**Parameters:**
-- `demo_file_path`: Path to the `.dem` replay file
-- `message_filter`: Callback name filter (e.g., `"CDOTAUserMsg_ChatMessage"`)
-- `max_messages`: Maximum messages to return (0 = unlimited)
-
-**Returns:** `UniversalParseResult` with matched messages
 
 ---
 
@@ -226,17 +304,13 @@ Universal parser for any Manta callback/message type.
 Parse Source 1 legacy game events with typed field access:
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
-
-# Get all event type definitions
-result = parser.parse_game_events("match.dem", max_events=0, capture_types=True)
-print(f"Found {len(result.event_types)} event types")
+parser = Parser("match.dem")
 
 # Parse specific events
-result = parser.parse_game_events("match.dem", event_filter="dota_combatlog", max_events=100)
-for event in result.events:
+result = parser.parse(game_events={"event_filter": "dota_combatlog", "max_events": 100})
+for event in result.game_events.events:
     print(f"[{event.tick}] {event.name}: {event.fields}")
 ```
 
@@ -247,15 +321,17 @@ for event in result.events:
 Track buffs, debuffs, and auras on units:
 
 ```python
-parser = MantaParser()
+from python_manta import Parser
+
+parser = Parser("match.dem")
 
 # Get all modifiers
-result = parser.parse_modifiers("match.dem", max_modifiers=100)
-for mod in result.modifiers:
+result = parser.parse(modifiers={"max_modifiers": 100})
+for mod in result.modifiers.modifiers:
     print(f"[{mod.tick}] {mod.name} on entity {mod.parent}, duration={mod.duration}, stacks={mod.stack_count}")
 
 # Filter for auras only
-result = parser.parse_modifiers("match.dem", max_modifiers=100, auras_only=True)
+result = parser.parse(modifiers={"max_modifiers": 100, "auras_only": True})
 ```
 
 ---
@@ -265,28 +341,28 @@ result = parser.parse_modifiers("match.dem", max_modifiers=100, auras_only=True)
 Query entities by class name and extract properties:
 
 ```python
-parser = MantaParser()
+from python_manta import Parser
+
+parser = Parser("match.dem")
 
 # Query hero entities
-result = parser.query_entities("match.dem", class_filter="Hero", max_entities=10)
-for entity in result.entities:
+result = parser.parse(entities={"class_filter": "Hero", "max_entities": 10})
+for entity in result.entities.entities:
     print(f"{entity.class_name} (index={entity.index})")
     print(f"  Health: {entity.properties.get('m_iHealth')}")
 
 # Query specific properties only
-result = parser.query_entities(
-    "match.dem",
-    class_filter="Hero",
-    property_filter=["m_iHealth", "m_iMaxHealth", "m_vecOrigin"],
-    max_entities=10
-)
+result = parser.parse(entities={
+    "class_filter": "Hero",
+    "property_filter": ["m_iHealth", "m_iMaxHealth", "m_vecOrigin"],
+    "max_entities": 10
+})
 
 # Query by exact class names
-result = parser.query_entities(
-    "match.dem",
-    class_names=["CDOTA_Unit_Hero_Invoker", "CDOTA_Unit_Hero_Pudge"],
-    max_entities=20
-)
+result = parser.parse(entities={
+    "class_names": ["CDOTA_Unit_Hero_Invoker", "CDOTA_Unit_Hero_Pudge"],
+    "max_entities": 20
+})
 ```
 
 ---
@@ -296,15 +372,13 @@ result = parser.query_entities(
 Extract string tables (userinfo, instancebaseline, etc.):
 
 ```python
-parser = MantaParser()
+from python_manta import Parser
 
-# Get all string tables
-result = parser.get_string_tables("match.dem")
-print(f"Tables: {result.table_names}")
+parser = Parser("match.dem")
 
 # Get specific table
-result = parser.get_string_tables("match.dem", table_names=["userinfo"], max_entries=50)
-for entry in result.entries:
+result = parser.parse(string_tables={"table_names": ["userinfo"], "max_entries": 50})
+for entry in result.string_tables.entries:
     print(f"[{entry.table}] {entry.key}: {entry.value[:50]}...")
 ```
 
@@ -315,18 +389,20 @@ for entry in result.entries:
 Parse combat log with filtering and typed entries:
 
 ```python
-parser = MantaParser()
+from python_manta import Parser
+
+parser = Parser("match.dem")
 
 # Get all combat log entries
-result = parser.parse_combat_log("match.dem", max_entries=100)
-for entry in result.entries:
+result = parser.parse(combat_log={"max_entries": 100})
+for entry in result.combat_log.entries:
     print(f"[{entry.timestamp:.1f}s] {entry.type_name}: {entry.attacker_name} -> {entry.target_name}")
 
 # Filter by type (0=DAMAGE, 1=HEAL, 2=MODIFIER_ADD, etc.)
-result = parser.parse_combat_log("match.dem", types=[0], max_entries=100)  # Damage only
+result = parser.parse(combat_log={"types": [0], "max_entries": 100})  # Damage only
 
 # Filter for hero-related entries
-result = parser.parse_combat_log("match.dem", heroes_only=True, max_entries=100)
+result = parser.parse(combat_log={"heroes_only": True, "max_entries": 100})
 ```
 
 ---
@@ -336,9 +412,12 @@ result = parser.parse_combat_log("match.dem", heroes_only=True, max_entries=100)
 Get parser metadata and state:
 
 ```python
-parser = MantaParser()
+from python_manta import Parser
 
-info = parser.get_parser_info("match.dem")
+parser = Parser("match.dem")
+result = parser.parse(parser_info=True)
+info = result.parser_info
+
 print(f"Final tick: {info.tick}")
 print(f"Entity count: {info.entity_count}")
 print(f"String tables: {info.string_tables}")
@@ -872,6 +951,70 @@ class ParserInfo(BaseModel):
     success: bool                 # Parse success flag
 ```
 
+### HeroSnapshot
+
+Captured via `parser.snapshot()` for hero state at a specific tick:
+
+```python
+class HeroSnapshot(BaseModel):
+    # Identity
+    hero_name: str                # e.g., "npc_dota_hero_axe"
+    hero_id: int                  # Hero ID
+    player_id: int                # Player index (0-9)
+    team: int                     # 2 = Radiant, 3 = Dire
+    index: int                    # Entity index
+
+    # Position
+    x: float                      # X coordinate
+    y: float                      # Y coordinate
+    z: float                      # Z coordinate
+
+    # Vital stats
+    health: int                   # Current HP
+    max_health: int               # Max HP
+    mana: float                   # Current mana
+    max_mana: float               # Max mana
+    level: int                    # Hero level
+    is_alive: bool                # Whether hero is alive
+
+    # Economy
+    gold: int                     # Current gold
+    net_worth: int                # Total net worth
+    last_hits: int                # Last hits
+    denies: int                   # Denies
+    xp: int                       # Experience points
+
+    # KDA
+    kills: int                    # Kills
+    deaths: int                   # Deaths
+    assists: int                  # Assists
+
+    # Combat stats
+    armor: float                  # Armor value
+    magic_resistance: float       # Magic resistance %
+    damage_min: int               # Min damage
+    damage_max: int               # Max damage
+    attack_range: int             # Attack range
+
+    # Attributes
+    strength: float               # Strength
+    agility: float                # Agility
+    intellect: float              # Intelligence
+
+    # Abilities and talents
+    abilities: List[AbilitySnapshot]  # List of abilities
+    talents: List[TalentChoice]       # Selected talents
+    ability_points: int               # Unspent ability points
+
+    # Clone/illusion flags
+    is_clone: bool                # MK clone, Morph replicate
+    is_illusion: bool             # Regular illusion
+
+    @property
+    def kda(self) -> str:         # Returns "K/D/A" format
+        return f"{self.kills}/{self.deaths}/{self.assists}"
+```
+
 ---
 
 ## Common Use Cases
@@ -879,12 +1022,12 @@ class ParserInfo(BaseModel):
 ### Extract All Chat Messages
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
-result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 0)
+parser = Parser("match.dem")
+result = parser.parse(messages={"filter": "CDOTAUserMsg_ChatMessage", "max_messages": 1000})
 
-for msg in result.messages:
+for msg in result.messages.messages:
     player_id = msg.data.get('source_player_id', 'Unknown')
     text = msg.data.get('message_text', '')
     print(f"Player {player_id}: {text}")
@@ -893,12 +1036,12 @@ for msg in result.messages:
 ### Track Item Purchases
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
-result = parser.parse_universal("match.dem", "CDOTAUserMsg_ItemPurchased", 0)
+parser = Parser("match.dem")
+result = parser.parse(messages={"filter": "CDOTAUserMsg_ItemPurchased", "max_messages": 1000})
 
-for msg in result.messages:
+for msg in result.messages.messages:
     player_id = msg.data.get('player_id')
     item_id = msg.data.get('item_ability_id')
     tick = msg.tick
@@ -908,12 +1051,12 @@ for msg in result.messages:
 ### Analyze Location Pings
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
-result = parser.parse_universal("match.dem", "CDOTAUserMsg_LocationPing", 0)
+parser = Parser("match.dem")
+result = parser.parse(messages={"filter": "CDOTAUserMsg_LocationPing", "max_messages": 1000})
 
-for msg in result.messages:
+for msg in result.messages.messages:
     ping_data = msg.data.get('location_ping', {})
     x = ping_data.get('x', 0)
     y = ping_data.get('y', 0)
@@ -921,52 +1064,50 @@ for msg in result.messages:
     print(f"Player {player_id} pinged at ({x}, {y})")
 ```
 
-### Extract Combat Log
+### Extract Combat Log (Structured)
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
-result = parser.parse_universal("match.dem", "CMsgDOTACombatLogEntry", 1000)
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"max_entries": 1000})
 
-for msg in result.messages:
-    entry = msg.data
-    # Combat log entries contain damage, healing, XP, gold, etc.
-    print(f"[{msg.tick}] Combat event: {entry}")
+for entry in result.combat_log.entries:
+    print(f"[{entry.timestamp:.1f}s] {entry.attacker_name} -> {entry.target_name}: {entry.value} damage")
 ```
 
 ### Get Match Statistics
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
+parser = Parser("match.dem")
+result = parser.parse(messages={"filter": "CDOTAUserMsg_StatsMatchDetails", "max_messages": 10})
 
-# Get stats details
-result = parser.parse_universal("match.dem", "CDOTAUserMsg_StatsMatchDetails", 10)
-
-if result.success and result.messages:
-    stats = result.messages[0].data
+if result.success and result.messages.messages:
+    stats = result.messages.messages[0].data
     print(f"Match stats: {stats}")
 ```
 
-### Multiple Message Types
+### Multiple Data Types in Single Pass
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
+parser = Parser("match.dem")
 
-# Parse multiple message types
-message_types = [
-    ("CDOTAUserMsg_ChatMessage", 100),
-    ("CDOTAUserMsg_LocationPing", 50),
-    ("CDOTAUserMsg_ItemPurchased", 200),
-]
+# Collect ALL data in ONE parse instead of multiple passes
+result = parser.parse(
+    header=True,
+    game_info=True,
+    messages={"filter": "ChatMessage", "max_messages": 100},
+    combat_log={"heroes_only": True, "max_entries": 500},
+)
 
-for msg_type, limit in message_types:
-    result = parser.parse_universal("match.dem", msg_type, limit)
-    print(f"{msg_type}: {result.count} messages")
+print(f"Map: {result.header.map_name}")
+print(f"Picks: {len([p for p in result.game_info.picks_bans if p.is_pick])}")
+print(f"Chat messages: {len(result.messages.messages)}")
+print(f"Combat entries: {len(result.combat_log.entries)}")
 ```
 
 ---
@@ -999,7 +1140,7 @@ pip install -e '.[dev]'
 ### Verify Installation
 
 ```bash
-python -c "from python_manta import MantaParser; print('Success!')"
+python -c "from python_manta import Parser; print('Success!')"
 ```
 
 ### Running Tests
@@ -1024,12 +1165,12 @@ python run_tests.py --all --coverage
 │                      Python Application                      │
 ├─────────────────────────────────────────────────────────────┤
 │  python_manta Package                                        │
-│  ├── MantaParser (main interface)                           │
+│  ├── Parser (main interface)                                │
 │  ├── Pydantic Models (type-safe data structures)            │
 │  └── ctypes bindings (FFI to shared library)                │
 ├─────────────────────────────────────────────────────────────┤
 │  libmanta_wrapper.so (CGO Shared Library)                   │
-│  ├── CGO exports (ParseHeader, ParseDraft, ParseUniversal)  │
+│  ├── CGO exports (Parse, BuildIndex, GetSnapshot, etc.)     │
 │  ├── 272 callback implementations                           │
 │  └── JSON serialization                                      │
 ├─────────────────────────────────────────────────────────────┤
@@ -1048,13 +1189,13 @@ python run_tests.py --all --coverage
 
 ### Data Flow
 
-1. Python calls `parse_universal()` with demo path and filter
+1. Python creates `Parser("match.dem")` and calls `parse(**collectors)`
 2. ctypes marshals parameters to C strings
 3. CGO wrapper receives call, opens file
 4. Manta Go library parses the binary .dem file
-5. Registered callbacks capture matching messages
-6. Messages serialized to JSON
-7. JSON returned to Python via ctypes
+5. Registered callbacks capture matching messages based on collectors
+6. All data collected in single pass
+7. Data serialized to JSON and returned to Python
 8. Pydantic models validate and structure the data
 
 ---
@@ -1079,67 +1220,78 @@ Python Manta is a **low-level data extraction library**, not an analytics tool.
 ### Quick Reference
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
+parser = Parser("match.dem")
 
-# Basic parsing
-header = parser.parse_header("match.dem")           # Match metadata
-draft = parser.parse_game_info("match.dem")             # Picks and bans
-match = parser.parse_game_info("match.dem")        # Pro match data (teams, league)
-result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 100)
+# Single-pass parsing - collect ALL data at once
+result = parser.parse(
+    header=True,                                         # Match metadata
+    game_info=True,                                      # Picks, bans, teams
+    messages={"filter": "ChatMessage", "max_messages": 100},  # Chat messages
+    combat_log={"heroes_only": True, "max_entries": 100},     # Combat events
+    entities={"interval_ticks": 900, "max_snapshots": 50},    # Hero positions
+    game_events={"event_filter": "dota_combatlog", "max_events": 100},
+    modifiers={"max_modifiers": 100},
+    parser_info=True,
+)
 
-# Hero positions over time
-entities = parser.parse_entities("match.dem", interval_ticks=900, max_snapshots=100)
-
-# Advanced features
-events = parser.parse_game_events("match.dem", event_filter="dota_combatlog", max_events=100)
-modifiers = parser.parse_modifiers("match.dem", max_modifiers=100)
-hero_state = parser.query_entities("match.dem", class_filter="Hero", max_entities=10)
-combat = parser.parse_combat_log("match.dem", heroes_only=True, max_entries=100)
-info = parser.get_parser_info("match.dem")
+# Access all results from the single parse
+print(result.header.map_name)
+print(len(result.game_info.picks_bans))
+print(len(result.messages.messages))
+print(len(result.combat_log.entries))
 ```
 
 ### Which API to Use
 
-| Task | Method | Notes |
-|------|--------|-------|
-| Match metadata | `parse_header()` | Build number, map, server |
-| Draft sequence | `parse_game_info()` | Picks/bans with hero IDs |
-| Pro match info | `parse_game_info()` | Teams, league, players, winner |
-| Hero positions over time | `parse_entities()` | Position, stats at intervals |
-| Chat messages | `parse_universal("CDOTAUserMsg_ChatMessage")` | Player text chat |
-| Item purchases | `parse_universal("CDOTAUserMsg_ItemPurchased")` | Item buy events |
-| Map pings | `parse_universal("CDOTAUserMsg_LocationPing")` | Ping coordinates |
-| Combat damage | `parse_combat_log(types=[0])` | Structured damage events |
-| Hero kills | `parse_combat_log(heroes_only=True)` | Hero-related combat |
-| Buff tracking | `parse_modifiers()` | Active buffs/debuffs |
-| Hero state (end) | `query_entities(class_filter="Hero")` | Entity state at end of replay |
-| Game events | `parse_game_events()` | 364 named event types |
-| Player info | `get_string_tables(table_names=["userinfo"])` | Steam IDs, names |
+| Task | Collector Config | Notes |
+|------|-----------------|-------|
+| Match metadata | `header=True` | Build number, map, server |
+| Draft sequence | `game_info=True` | Picks/bans with hero IDs |
+| Pro match info | `game_info=True` | Teams, league, players, winner |
+| Hero positions | `entities={"interval_ticks": 900}` | Position, stats at intervals |
+| Chat messages | `messages={"filter": "ChatMessage"}` | Player text chat |
+| Item purchases | `messages={"filter": "ItemPurchased"}` | Item buy events |
+| Map pings | `messages={"filter": "LocationPing"}` | Ping coordinates |
+| Combat damage | `combat_log={"types": [0]}` | Structured damage events |
+| Hero kills | `combat_log={"heroes_only": True}` | Hero-related combat |
+| Buff tracking | `modifiers={}` | Active buffs/debuffs |
+| Hero state | `entities={}` | Entity state snapshots |
+| Game events | `game_events={}` | 364 named event types |
+| Player info | `string_tables={"table_names": ["userinfo"]}` | Steam IDs, names |
 
 ### Common Patterns
 
-**Extract hero stats at end of game:**
+**Extract multiple data types in single pass:**
 ```python
-result = parser.query_entities("match.dem", class_filter="Hero", max_entities=10)
-for hero in result.entities:
-    health = hero.properties.get("m_iHealth", 0)
-    max_health = hero.properties.get("m_iMaxHealth", 0)
-    print(f"{hero.class_name}: {health}/{max_health} HP")
+from python_manta import Parser
+
+parser = Parser("match.dem")
+result = parser.parse(
+    header=True,
+    game_info=True,
+    combat_log={"heroes_only": True, "max_entries": 500},
+)
+
+print(f"Map: {result.header.map_name}")
+for entry in result.combat_log.entries:
+    print(f"{entry.attacker_name} hit {entry.target_name} for {entry.value}")
 ```
 
 **Track all damage to heroes:**
 ```python
-result = parser.parse_combat_log("match.dem", types=[0], heroes_only=True, max_entries=1000)
-for entry in result.entries:
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [0], "heroes_only": True, "max_entries": 1000})
+for entry in result.combat_log.entries:
     print(f"{entry.attacker_name} hit {entry.target_name} for {entry.value} damage")
 ```
 
 **Find specific game events:**
 ```python
-result = parser.parse_game_events("match.dem", event_filter="dota_player_kill", max_events=100)
-for event in result.events:
+parser = Parser("match.dem")
+result = parser.parse(game_events={"event_filter": "dota_player_kill", "max_events": 100})
+for event in result.game_events.events:
     print(f"Kill at tick {event.tick}: {event.fields}")
 ```
 
@@ -1175,7 +1327,7 @@ FileNotFoundError: Demo file not found: match.dem
 
 1. Check the callback name is exact (case-sensitive)
 2. The message type may not exist in that replay
-3. Try without a filter to see all messages: `parser.parse_universal("match.dem", "", 100)`
+3. Try without a filter to see all messages: `parser.parse(messages={"filter": "", "max_messages": 100})`
 
 ### Memory Issues with Large Replays
 

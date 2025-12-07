@@ -254,7 +254,7 @@ if unique_ticks:
 
     for snapshot in snapshots.snapshots:
         # Get hero positions
-        heroes = {p.hero: (p.x, p.y) for p in snapshot.players if p.hero}
+        heroes = {h.hero_name: (h.x, h.y) for h in snapshot.heroes if h.hero_name}
 
         # Would need creep positions from entity data
         # This is a simplified example

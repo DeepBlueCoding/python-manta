@@ -439,8 +439,8 @@ result = parser.parse_entities("match.dem", interval_ticks=900, max_snapshots=10
 
 for snapshot in result.snapshots:
     print(f"Game time: {snapshot.game_time:.1f}s")
-    for player in snapshot.players:
-        print(f"  {player.hero_name}: ({player.position_x:.0f}, {player.position_y:.0f})")
+    for hero in snapshot.heroes:
+        print(f"  {hero.hero_name}: ({hero.x:.0f}, {hero.y:.0f})")
 ```
 
 ### Position at Specific Ticks
@@ -453,8 +453,8 @@ result = parser.parse_entities("match.dem", target_ticks=[30000, 45000, 60000])
 
 for snapshot in result.snapshots:
     print(f"Tick {snapshot.tick}:")
-    for player in snapshot.players:
-        print(f"  {player.hero_name}: ({player.position_x:.0f}, {player.position_y:.0f})")
+    for hero in snapshot.heroes:
+        print(f"  {hero.hero_name}: ({hero.x:.0f}, {hero.y:.0f})")
 ```
 
 ### Filtering by Hero
@@ -486,9 +486,9 @@ for death in combat.entries:
         target_heroes=[death.target_name]  # e.g., "npc_dota_hero_axe"
     )
 
-    if result.snapshots and result.snapshots[0].players:
-        victim = result.snapshots[0].players[0]
-        print(f"{victim.hero_name} died at ({victim.position_x:.0f}, {victim.position_y:.0f})")
+    if result.snapshots and result.snapshots[0].heroes:
+        victim = result.snapshots[0].heroes[0]
+        print(f"{victim.hero_name} died at ({victim.x:.0f}, {victim.y:.0f})")
 ```
 
 ### Position Coordinate System
@@ -500,9 +500,9 @@ Hero positions use world coordinates centered on the map:
 - **Origin (0,0)**: Center of the map
 - **Range**: Approximately -8000 to +8000 for both axes
 
-### PlayerState Fields
+### HeroSnapshot Fields
 
-Each player in a snapshot includes:
+Each hero in a snapshot includes:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -510,19 +510,33 @@ Each player in a snapshot includes:
 | `hero_id` | int | Hero ID |
 | `hero_name` | str | Hero name (`npc_dota_hero_*` format) |
 | `team` | int | 2=Radiant, 3=Dire |
-| `position_x` | float | X world coordinate |
-| `position_y` | float | Y world coordinate |
+| `x` | float | X world coordinate |
+| `y` | float | Y world coordinate |
 | `health` | int | Current health |
 | `max_health` | int | Maximum health |
 | `mana` | float | Current mana |
 | `max_mana` | float | Maximum mana |
+| `level` | int | Hero level |
 | `last_hits` | int | Last hits |
 | `denies` | int | Denies |
 | `gold` | int | Current gold |
 | `net_worth` | int | Net worth |
+| `gpm` | int | Gold per minute |
+| `xpm` | int | XP per minute |
 | `kills` | int | Kills |
 | `deaths` | int | Deaths |
 | `assists` | int | Assists |
+| `armor` | float | Current armor |
+| `magic_resistance` | float | Magic resistance (0-1) |
+| `damage_min` | int | Minimum damage |
+| `damage_max` | int | Maximum damage |
+| `strength` | float | Strength attribute |
+| `agility` | float | Agility attribute |
+| `intellect` | float | Intellect attribute |
+| `abilities` | list | List of `AbilitySnapshot` |
+| `talents` | list | List of `TalentChoice` |
+| `is_illusion` | bool | True if illusion |
+| `is_clone` | bool | True if clone (e.g., Meepo) |
 
 ### Position Data Sources Comparison
 
@@ -531,3 +545,134 @@ Each player in a snapshot includes:
 | `parse_entities()` | Time-series or specific ticks | ✅ `position_x`, `position_y` |
 | `query_entities()` | End-of-game state | ✅ Raw `CBodyComponent.m_cellX/Y` |
 | `parse_combat_log()` | Combat events | ❌ `location_x/y` always 0 |
+
+---
+
+## Hero Abilities and Talents
+
+The `parser.snapshot()` method returns hero state including abilities and talent choices.
+
+### Basic Ability Tracking
+
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+snap = parser.snapshot(target_tick=60000)  # ~33 minutes
+
+for hero in snap.heroes:
+    print(f"{hero.hero_name} (Level {hero.level})")
+
+    # Show all abilities
+    for ability in hero.abilities:
+        if ability.level > 0:
+            print(f"  {ability.short_name}: Level {ability.level}")
+```
+
+### Ability Properties
+
+Each `AbilitySnapshot` includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `slot` | int | Ability slot (0-5 for regular abilities) |
+| `name` | str | Full ability class name |
+| `level` | int | Current ability level (0-4) |
+| `cooldown` | float | Current cooldown remaining |
+| `max_cooldown` | float | Maximum cooldown length |
+| `mana_cost` | int | Mana cost |
+| `charges` | int | Current charges |
+| `is_ultimate` | bool | True if slot 5 (ultimate) |
+
+**Helper Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `short_name` | str | Name without "CDOTA_Ability_" prefix |
+| `is_maxed` | bool | True if at max level |
+| `is_on_cooldown` | bool | True if cooldown > 0 |
+
+### Talent Tracking
+
+Talents are tracked separately from abilities:
+
+```python
+snap = parser.snapshot(target_tick=120000)  # Late game
+
+for hero in snap.heroes:
+    print(f"{hero.hero_name}: {hero.talents_chosen}/4 talents")
+
+    for talent in hero.talents:
+        print(f"  Level {talent.tier}: {talent.side}")
+```
+
+Each `TalentChoice` includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `tier` | int | Talent tier (10, 15, 20, or 25) |
+| `slot` | int | Raw ability slot index |
+| `is_left` | bool | True if left talent chosen |
+| `name` | str | Talent ability name |
+| `side` | str | "left" or "right" |
+
+### Finding Specific Abilities
+
+Use helper methods to find abilities:
+
+```python
+for hero in snap.heroes:
+    # Find ability by name (partial match)
+    omnislash = hero.get_ability("Omnislash")
+    if omnislash and omnislash.level > 0:
+        print(f"Omnislash level {omnislash.level}")
+
+    # Check if ultimate is learned
+    if hero.has_ultimate:
+        print("Has ultimate!")
+
+    # Get talent at specific tier
+    lvl20_talent = hero.get_talent_at_tier(20)
+    if lvl20_talent:
+        print(f"Level 20 talent: {lvl20_talent.side}")
+```
+
+### Tracking Skill Builds Over Time
+
+Combine multiple snapshots to track skill progression:
+
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+
+# Get snapshots at different times
+ticks = [30000, 60000, 90000, 120000]
+
+for tick in ticks:
+    snap = parser.snapshot(target_tick=tick)
+
+    for hero in snap.heroes:
+        if "Juggernaut" in hero.hero_name:
+            print(f"Tick {tick} - Level {hero.level}")
+            for ab in hero.abilities:
+                if ab.level > 0:
+                    print(f"  {ab.short_name}: {ab.level}")
+            break
+```
+
+### Cooldown Analysis
+
+Track ability cooldowns for timing analysis:
+
+```python
+snap = parser.snapshot(target_tick=60000)
+
+for hero in snap.heroes:
+    print(f"\n{hero.hero_name} cooldowns:")
+    for ability in hero.abilities:
+        if ability.is_on_cooldown:
+            print(f"  {ability.short_name}: {ability.cooldown:.1f}s remaining")
+        elif ability.level > 0:
+            print(f"  {ability.short_name}: ready")
+```

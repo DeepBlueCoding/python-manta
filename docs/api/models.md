@@ -2,7 +2,7 @@
 # Data Models
 
 ??? info "AI Summary"
-    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` (rune tracking), `EntityType` (hero, creep, summon, building), `CombatLogType` (45 combat log event types), `DamageType` (physical/magical/pure), `Team` (Radiant/Dire), `NeutralItemTier` (tier unlock times), `NeutralItem` (100+ neutral items), `ChatWheelMessage` (voice line IDs), and `GameActivity` (animation/taunt detection). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `HeroSnapshot`/`EntityStateSnapshot` (hero state with armor, damage, attributes at specific ticks), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` (rune tracking), `EntityType` (hero, creep, summon, building), `CombatLogType` (45 combat log event types), `DamageType` (physical/magical/pure/hp_removal), `Team` (Radiant/Dire/Neutral), `NeutralCampType` (small/medium/hard/ancient camps for multi-camp farming detection), `NeutralItemTier` (tier unlock times), `NeutralItem` (100+ neutral items), `ChatWheelMessage` (voice line IDs), and `GameActivity` (animation/taunt detection). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
 
 ---
 
@@ -221,9 +221,11 @@ Enum for Dota 2 damage types.
 
 ```python
 class DamageType(int, Enum):
-    PHYSICAL = 0
-    MAGICAL = 1
-    PURE = 2
+    PHYSICAL = 0    # Right-click attacks, physical spells
+    MAGICAL = 1     # Most spells, reduced by magic resistance
+    PURE = 2        # Ignores armor and magic resistance
+    COMPOSITE = 3   # Legacy: removed from Dota 2, was reduced by both armor and magic resistance
+    HP_REMOVAL = 4  # Blood Grenade, Heart stopper aura, etc.
 ```
 
 **Properties:**
@@ -240,15 +242,17 @@ class DamageType(int, Enum):
 
 **Example:**
 ```python
-from python_manta import MantaParser, DamageType, CombatLogType
+from python_manta import Parser, DamageType, CombatLogType
 
-parser = MantaParser()
-result = parser.parse_combat_log(demo_path, types=[CombatLogType.DAMAGE], max_entries=100)
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [CombatLogType.DAMAGE.value], "max_entries": 100})
 
-for entry in result.entries:
+for entry in result.combat_log.entries:
     dmg_type = DamageType.from_value(entry.damage_type)
     if dmg_type == DamageType.PURE:
         print(f"Pure damage: {entry.value} from {entry.inflictor_name}")
+    elif dmg_type == DamageType.HP_REMOVAL:
+        print(f"HP Removal: {entry.value} from {entry.inflictor_name}")
 ```
 
 ---
@@ -259,10 +263,11 @@ Enum for Dota 2 team identifiers.
 
 ```python
 class Team(int, Enum):
-    SPECTATOR = 0
-    UNASSIGNED = 1
-    RADIANT = 2
-    DIRE = 3
+    SPECTATOR = 0   # Spectator/observer
+    UNASSIGNED = 1  # Not yet assigned
+    RADIANT = 2     # Radiant team (bottom-left)
+    DIRE = 3        # Dire team (top-right)
+    NEUTRAL = 4     # Neutral creeps, Roshan, jungle camps
 ```
 
 **Properties:**
@@ -270,7 +275,8 @@ class Team(int, Enum):
 | Property | Type | Description |
 |----------|------|-------------|
 | `display_name` | str | Human-readable name (e.g., "Radiant") |
-| `is_playing` | bool | True if this is an actual playing team |
+| `is_playing` | bool | True if Radiant or Dire |
+| `is_neutral` | bool | True if neutral unit |
 | `opposite` | `Team \| None` | The opposing team (None for non-playing) |
 
 **Class Methods:**
@@ -281,21 +287,114 @@ class Team(int, Enum):
 
 **Example:**
 ```python
-from python_manta import MantaParser, Team, CombatLogType
+from python_manta import Parser, Team, CombatLogType
 
-parser = MantaParser()
-result = parser.parse_combat_log(demo_path, types=[CombatLogType.DEATH], heroes_only=True)
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [CombatLogType.DEATH.value], "heroes_only": True})
 
-for entry in result.entries:
+for entry in result.combat_log.entries:
     attacker_team = Team.from_value(entry.attacker_team)
     target_team = Team.from_value(entry.target_team)
 
     if attacker_team and target_team and attacker_team != target_team:
         print(f"{attacker_team.display_name} killed {target_team.display_name} hero")
 
+    # Check for neutral creep kills
+    if target_team == Team.NEUTRAL:
+        print(f"{attacker_team.display_name} killed neutral creep")
+
     # Use opposite property
     if attacker_team == Team.RADIANT:
         enemy = attacker_team.opposite  # Team.DIRE
+```
+
+---
+
+### NeutralCampType
+
+Enum for neutral creep camp types. Used in combat log events (DEATH, MODIFIER_ADD, etc.) to identify which type of neutral camp a creep belongs to. Useful for detecting multi-camp farming.
+
+```python
+class NeutralCampType(int, Enum):
+    SMALL = 0   # Small camps: kobolds, harpies, ghosts, forest trolls, gnolls
+    MEDIUM = 1  # Medium camps: wolves, ogres, mud golems
+    HARD = 2    # Hard/Large camps: hellbears, dark trolls, wildkin, satyr hellcaller, centaurs
+    ANCIENT = 3 # Ancient camps: dragons, thunderhides, prowlers, rock golems
+```
+
+!!! warning "SMALL (0) includes non-neutrals"
+    The value 0 is also used for non-neutral units (lane creeps, wards). Filter by `"neutral" in target_name` to get only neutral creeps.
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `display_name` | str | Human-readable name (e.g., "Hard Camp") |
+| `is_ancient` | bool | True if this is an ancient camp |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_value(int)` | `NeutralCampType` | Get NeutralCampType from integer value |
+
+**Example - Multi-camp farming detection:**
+```python
+from python_manta import Parser, NeutralCampType
+from collections import defaultdict
+
+parser = Parser("match.dem")
+result = parser.parse(combat_log={})
+
+# Filter neutral creep deaths by heroes
+neutral_deaths = [
+    e for e in result.combat_log.entries
+    if e.type_name == "DOTA_COMBATLOG_DEATH"
+    and "npc_dota_neutral" in e.target_name
+    and e.attacker_name.startswith("npc_dota_hero_")
+]
+
+# Group by time window (2 seconds) + attacker
+def time_bucket(game_time):
+    return int(game_time / 2.0)
+
+kills_by_window = defaultdict(list)
+for e in neutral_deaths:
+    key = (time_bucket(e.game_time), e.attacker_name)
+    kills_by_window[key].append(e)
+
+# Detect multi-camp: different camp_types in same window
+for (bucket, attacker), kills in kills_by_window.items():
+    camp_types = set(NeutralCampType.from_value(e.neutral_camp_type) for e in kills)
+
+    if len(camp_types) >= 2:
+        hero = attacker.replace("npc_dota_hero_", "")
+        types = [ct.display_name for ct in camp_types]
+        print(f"{hero} multi-camp farming: {types}")
+```
+
+**Example - Camp type breakdown:**
+```python
+from python_manta import Parser, NeutralCampType, Team
+from collections import Counter
+
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [1]})  # DEATH events
+
+# Count neutral kills by camp type
+neutral_deaths = [
+    e for e in result.combat_log.entries
+    if "npc_dota_neutral" in e.target_name
+]
+
+by_type = Counter(NeutralCampType.from_value(e.neutral_camp_type) for e in neutral_deaths)
+for camp_type, count in by_type.most_common():
+    print(f"{camp_type.display_name}: {count} kills")
+
+# Also available: neutral_camp_team (2=Radiant jungle, 3=Dire jungle)
+radiant_jungle = sum(1 for e in neutral_deaths if e.neutral_camp_team == Team.RADIANT)
+dire_jungle = sum(1 for e in neutral_deaths if e.neutral_camp_team == Team.DIRE)
+print(f"Radiant jungle: {radiant_jungle}, Dire jungle: {dire_jungle}")
 ```
 
 ---
@@ -647,7 +746,11 @@ game_info = parser.parse_game_info("match.dem")
 
 # Basic match info
 print(f"Match {game_info.match_id}")
-print(f"Duration: {game_info.playback_time / 60:.1f} minutes")
+# Convert to proper time format (H:MM:SS)
+hours = int(game_info.playback_time // 3600)
+mins = int((game_info.playback_time % 3600) // 60)
+secs = int(game_info.playback_time % 60)
+print(f"Duration: {hours}:{mins:02d}:{secs:02d}")
 winner = "Radiant" if game_info.game_winner == 2 else "Dire"
 print(f"Winner: {winner}")
 
@@ -915,6 +1018,157 @@ for entity in result.entities:
     print(f"\n{entity.class_name} (index={entity.index})")
     print(f"  Health: {entity.properties.get('m_iHealth')}/{entity.properties.get('m_iMaxHealth')}")
     print(f"  Level: {entity.properties.get('m_iCurrentLevel')}")
+```
+
+---
+
+## Snapshot Models
+
+### AbilitySnapshot
+
+State of a single hero ability at a specific tick.
+
+```python
+class AbilitySnapshot(BaseModel):
+    slot: int = 0                 # Ability slot index (0-5 for regular abilities)
+    name: str = ""                # Full ability class name (e.g., "CDOTA_Ability_Juggernaut_BladeFury")
+    level: int = 0                # Current ability level (0-4 typically)
+    cooldown: float = 0.0         # Current cooldown remaining
+    max_cooldown: float = 0.0     # Maximum cooldown length
+    mana_cost: int = 0            # Mana cost
+    charges: int = 0              # Current charges (for charge-based abilities)
+    is_ultimate: bool = False     # True if slot 5 (ultimate)
+
+    # Properties
+    short_name: str               # Name without "CDOTA_Ability_" prefix
+    is_maxed: bool                # True if at max level (4 for regular, 3 for ultimate)
+    is_on_cooldown: bool          # True if cooldown > 0
+```
+
+### TalentChoice
+
+Represents a talent selection at levels 10, 15, 20, or 25.
+
+```python
+class TalentChoice(BaseModel):
+    tier: int = 0                 # Talent tier (10, 15, 20, or 25)
+    slot: int = 0                 # Raw ability slot index
+    is_left: bool = True          # True if left talent was chosen
+    name: str = ""                # Talent ability name
+
+    # Properties
+    side: str                     # "left" or "right"
+```
+
+### HeroSnapshot
+
+Hero state captured at a specific tick via `parser.snapshot()`.
+
+```python
+class HeroSnapshot(BaseModel):
+    hero_name: str = ""           # Hero class name (e.g., "CDOTA_Unit_Hero_Axe")
+    hero_id: int = 0              # Hero ID
+    player_id: int = 0            # Player slot (0-9)
+    team: int = 0                 # Team (2=Radiant, 3=Dire)
+    x: float = 0.0                # World X position
+    y: float = 0.0                # World Y position
+    z: float = 0.0                # World Z position
+    health: int = 0               # Current health
+    max_health: int = 0           # Maximum health
+    mana: float = 0.0             # Current mana
+    max_mana: float = 0.0         # Maximum mana
+    level: int = 0                # Hero level (1-30)
+    is_alive: bool = True         # Alive status
+    is_illusion: bool = False     # True if illusion
+    is_clone: bool = False        # True if clone (Meepo, Arc Warden)
+    # Combat stats
+    armor: float = 0.0            # Physical armor value
+    magic_resistance: float = 0.0 # Magic resistance percentage
+    damage_min: int = 0           # Minimum attack damage
+    damage_max: int = 0           # Maximum attack damage
+    attack_range: int = 0         # Attack range
+    # Attributes
+    strength: float = 0.0         # Total strength (base + bonuses)
+    agility: float = 0.0          # Total agility (base + bonuses)
+    intellect: float = 0.0        # Total intellect (base + bonuses)
+    # Abilities and talents
+    abilities: List[AbilitySnapshot] = []  # All hero abilities with levels
+    talents: List[TalentChoice] = []       # Chosen talents
+    ability_points: int = 0                # Unspent ability points
+
+    # Properties and methods
+    has_ultimate: bool            # True if ultimate ability has been learned
+    talents_chosen: int           # Number of talents selected (0-4)
+    get_ability(name) -> Optional[AbilitySnapshot]  # Find ability by name (partial match)
+    get_talent_at_tier(tier) -> Optional[TalentChoice]  # Get talent at tier (10/15/20/25)
+```
+
+### EntityStateSnapshot
+
+Result container for `parser.snapshot()`.
+
+```python
+class EntityStateSnapshot(BaseModel):
+    tick: int = 0                   # Tick when snapshot was captured
+    game_time: float = 0.0          # Game time in seconds
+    heroes: List[HeroSnapshot] = [] # All hero states
+    success: bool = True            # Parse success flag
+    error: Optional[str] = None     # Error message if failed
+```
+
+**Example - Basic Hero State:**
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+index = parser.build_index(interval_ticks=1800)
+
+# Get hero state at 10 minutes
+target_tick = index.game_started + (10 * 60 * 30)
+snap = parser.snapshot(target_tick=target_tick)
+
+for hero in snap.heroes:
+    name = hero.hero_name.replace("CDOTA_Unit_Hero_", "")
+    print(f"{name}: Lvl {hero.level}, HP {hero.health}/{hero.max_health}")
+    print(f"  Armor: {hero.armor:.1f}, Magic Resist: {hero.magic_resistance:.0f}%")
+    print(f"  Damage: {hero.damage_min}-{hero.damage_max}")
+    print(f"  STR: {hero.strength:.1f}, AGI: {hero.agility:.1f}, INT: {hero.intellect:.1f}")
+```
+
+**Example - Abilities and Talents:**
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+snap = parser.snapshot(target_tick=60000)  # ~33 minutes
+
+for hero in snap.heroes:
+    print(f"{hero.hero_name} (Level {hero.level})")
+
+    # Show all abilities with levels
+    for ability in hero.abilities:
+        status = "[MAX]" if ability.is_maxed else ""
+        cd = f" (CD: {ability.cooldown:.1f}s)" if ability.is_on_cooldown else ""
+        print(f"  {ability.short_name}: Level {ability.level}{status}{cd}")
+
+    # Show talent choices
+    print(f"  Talents: {hero.talents_chosen}/4")
+    for talent in hero.talents:
+        print(f"    Level {talent.tier}: {talent.side}")
+
+    # Find specific ability by name
+    omnislash = hero.get_ability("Omnislash")
+    if omnislash and omnislash.level > 0:
+        print(f"  Has Omnislash level {omnislash.level}")
+
+    # Check if ultimate is learned
+    if hero.has_ultimate:
+        print("  Ultimate learned!")
+
+    # Get talent at specific tier
+    lvl20_talent = hero.get_talent_at_tier(20)
+    if lvl20_talent:
+        print(f"  Level 20 talent: {lvl20_talent.side}")
 ```
 
 ---

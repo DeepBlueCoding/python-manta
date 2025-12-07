@@ -1,7 +1,7 @@
 # Getting Started
 
 ??? info "AI Summary"
-        This page covers installation and basic usage of Python Manta. Install via `pip install python-manta` (no Go required). For development from source, either download pre-built libraries with `python scripts/download_library.py` or build with Go using `./build.sh`. The main entry point is `MantaParser()` which provides methods for parsing headers, drafts, and any message type from .dem replay files.
+        This page covers installation and basic usage of Python Manta. Install via `pip install python-manta` (no Go required). For development from source, either download pre-built libraries with `python scripts/download_library.py` or build with Go using `./build.sh`. The main entry point is `Parser(demo_path)` which provides methods for parsing headers, drafts, and any message type from .dem replay files.
 
 ---
 
@@ -20,6 +20,27 @@ Pre-built wheels include the compiled library for:
 - **Windows** AMD64
 
 No Go installation required when installing from PyPI.
+
+### Version Pinning
+
+Python Manta versions follow the format `X.Y.Z.M-devN` where:
+
+- `X.Y.Z` - Python Manta major/minor/patch
+- `M` - Manta (Go) library version compatibility
+- `devN` - Development release number
+
+**Always use the latest release for your target Manta version** to get bug fixes and improvements:
+
+```bash
+# Latest release for Manta 1.4.5.x (recommended)
+pip install "python-manta>=1.4.5,<1.4.6"
+
+# Or use compatible release operator
+pip install "python-manta~=1.4.5"
+
+# Exact version (not recommended - misses updates)
+pip install "python-manta==1.4.5.2"
+```
 
 ### From Source
 
@@ -49,7 +70,7 @@ pip install -e '.[dev]'
 ### Verify Installation
 
 ```bash
-python -c "from python_manta import MantaParser; print('Success!')"
+python -c "from python_manta import Parser; print('Success!')"
 ```
 
 ---
@@ -59,10 +80,10 @@ python -c "from python_manta import MantaParser; print('Success!')"
 ### Import the Library
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-# Create a parser instance
-parser = MantaParser()
+# Create a parser instance for a demo file
+parser = Parser("match.dem")
 ```
 
 ### Parse Match Header
@@ -70,7 +91,8 @@ parser = MantaParser()
 The header contains match metadata available without parsing the full replay:
 
 ```python
-header = parser.parse_header("match.dem")
+result = parser.parse(header=True)
+header = result.header
 
 print(f"Map: {header.map_name}")
 print(f"Server: {header.server_name}")
@@ -81,7 +103,8 @@ print(f"Network Protocol: {header.network_protocol}")
 ### Parse Game Info (Draft, Players, Teams)
 
 ```python
-game_info = parser.parse_game_info("match.dem")
+result = parser.parse(game_info=True)
+game_info = result.game_info
 
 # Match basics
 print(f"Match ID: {game_info.match_id}")
@@ -104,15 +127,28 @@ for player in game_info.players:
     print(f"  {player.player_name} ({team}): {player.hero_name}")
 ```
 
-### Parse Any Message Type
+### Parse Multiple Data Types in Single Pass
 
-Use `parse_universal()` to capture any of the 272 supported message types:
+```python
+# Parse header and game info together
+result = parser.parse(header=True, game_info=True)
+
+print(f"Map: {result.header.map_name}")
+print(f"Match ID: {result.game_info.match_id}")
+```
+
+### Parse Messages
+
+Use the messages collector to capture any of the 272 supported message types:
 
 ```python
 # Get chat messages
-result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 100)
+result = parser.parse(messages={
+    "filter": "CDOTAUserMsg_ChatMessage",
+    "max_messages": 100
+})
 
-for msg in result.messages:
+for msg in result.messages.messages:
     player = msg.data.get('source_player_id', 'Unknown')
     text = msg.data.get('message_text', '')
     print(f"[{msg.tick}] Player {player}: {text}")
@@ -123,17 +159,16 @@ for msg in result.messages:
 ## Error Handling
 
 ```python
-from python_manta import MantaParser
-
-parser = MantaParser()
+from python_manta import Parser
 
 try:
-    header = parser.parse_header("match.dem")
+    parser = Parser("match.dem")
+    result = parser.parse(header=True)
 
-    if header.success:
-        print(f"Parsed: {header.map_name}")
+    if result.success:
+        print(f"Parsed: {result.header.map_name}")
     else:
-        print(f"Parse error: {header.error}")
+        print("Parse failed")
 
 except FileNotFoundError:
     print("Demo file not found")
@@ -158,6 +193,4 @@ Replay files are typically 100-200MB for a full match.
 ## Next Steps
 
 - [API Reference](api/index.md) - Complete method documentation
-- [Game Events Guide](guides/game-events.md) - Parse 364 event types
-- [Combat Log Guide](guides/combat-log.md) - Analyze damage and kills
 - [Examples](examples.md) - Real-world code samples

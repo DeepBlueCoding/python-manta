@@ -10,6 +10,7 @@
 
 | Guide | Description |
 |-------|-------------|
+| [MCP Use Cases](use-cases) | Teamfight, farm tracking, gank, objective, laning analysis |
 | [Unit Orders](unit-orders) | Detect attack commands, creep aggro triggers, and player inputs |
 | [Game Events](game-events) | Parse 364 Source 1 game event types |
 | [Combat Log](combat-log) | Analyze damage, heals, deaths, and kills |

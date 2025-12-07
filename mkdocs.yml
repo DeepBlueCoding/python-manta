@@ -58,18 +58,20 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
-  - API Reference:
-    - Overview: api/index.md
-    - MantaParser: api/manta-parser.md
-    - Data Models: api/models.md
   - Guides:
     - Overview: guides/index.md
+    - MCP Use Cases: guides/use-cases.md
+    - Unit Orders: guides/unit-orders.md
     - Game Events: guides/game-events.md
     - Combat Log: guides/combat-log.md
-    - Entity Queries: guides/entities.md
+    - Entities: guides/entities.md
     - Modifiers: guides/modifiers.md
     - Universal Messages: guides/universal.md
   - Examples: examples.md
+  - API Reference:
+    - Overview: api/index.md
+    - Parser: api/parser.md
+    - Data Models: api/models.md
   - Reference:
     - Overview: reference/index.md
     - Callbacks: reference/callbacks.md

@@ -7,12 +7,16 @@ from pathlib import Path
 
 import pytest
 
+# Module-level marker: golang tests requiring Go toolchain (~1min)
+pytestmark = pytest.mark.golang
+
 ROOT_DIR = Path(__file__).resolve().parents[1]
 SRC_DIR = ROOT_DIR / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from python_manta import MantaParser
+from python_manta import Parser
+
 GO_WRAPPER_DIR = ROOT_DIR / "go_wrapper"
 DEFAULT_CALLBACKS = (
     ("CDemoFileHeader", 1),
@@ -97,7 +101,7 @@ def manta_parser(replay_path):  # noqa: ARG001
         pytest.skip(
             "Shared library libmanta_wrapper.so not found. Run ./build.sh or tools/before_build_linux.sh first."
         )
-    return MantaParser(str(candidate))
+    return Parser(str(replay_path), library_path=str(candidate))
 
 
 @pytest.fixture()
@@ -144,8 +148,8 @@ def test_python_matches_go(callback, limit, replay_path, manta_parser, go_parity
     go_result = go_parity_runner(callback, limit, replay_path)
     assert go_result.get("success", False), go_result.get("error")
 
-    python_result = manta_parser.parse_universal(
-        str(replay_path), message_filter=callback, max_messages=limit
+    python_result = manta_parser.parse(
+        messages={"filter": callback, "max_messages": limit}
     )
     assert python_result.success, python_result.error
 
@@ -156,7 +160,7 @@ def test_python_matches_go(callback, limit, replay_path, manta_parser, go_parity
             "net_tick": message.net_tick,
             "data": _canonicalize(message.data),
         }
-        for message in python_result.messages
+        for message in python_result.messages.messages
     ]
 
     go_messages = [

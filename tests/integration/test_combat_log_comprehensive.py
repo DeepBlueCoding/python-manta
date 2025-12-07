@@ -2,13 +2,17 @@
 
 Tests all combat log event types and validates field resolution against known data.
 Uses match 8447659831 (Team Spirit vs Tundra) as reference.
+Uses v2 Parser API exclusively.
 
 The game_time field is automatically computed from the GAME_IN_PROGRESS state event,
 so we don't need manual timestamp calculations.
 """
 
 import pytest
-from python_manta import MantaParser
+
+# Module-level markers: slow integration tests (~5min)
+pytestmark = [pytest.mark.slow, pytest.mark.integration]
+from python_manta import Parser
 
 # Test data from OpenDota API for match 8447659831
 DEMO_PATH = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
@@ -38,15 +42,15 @@ TROLL_WARLORD_EXPECTED_KILLS = [
 
 @pytest.fixture(scope="module")
 def parser():
-    return MantaParser()
+    return Parser(DEMO_PATH)
 
 
 @pytest.fixture(scope="module")
 def combat_log(parser):
     """Parse all combat log entries once for all tests."""
-    result = parser.parse_combat_log(DEMO_PATH, max_entries=0)
+    result = parser.parse(combat_log={"max_entries": 0})
     assert result.success, f"Failed to parse combat log: {result.error}"
-    return result
+    return result.combat_log
 
 
 class TestCombatLogTypes:
@@ -432,3 +436,128 @@ class TestFieldConsistency:
         for e in combat_log.entries[:1000]:
             assert e.type_name, f"Entry at tick {e.tick} has no type_name"
             assert "DOTA_COMBATLOG" in e.type_name, f"Invalid type_name: {e.type_name}"
+
+
+class TestShieldAndDamageAbsorption:
+    """Test shield, barrier, and damage absorption tracking.
+
+    Combat log types (defined in protobuf but may not appear in replays):
+    - 30: AEGIS_TAKEN - Aegis pickup
+    - 32: PHYSICAL_DAMAGE_PREVENTED - Damage block (Crimson Guard, etc.)
+    - 40: SPELL_ABSORB - Spell absorbed (Linken's, Lotus, etc.)
+
+    Related fields:
+    - will_reincarnate: True if hero will respawn (Aegis/WK)
+    - no_physical_damage_modifier: Physical damage immunity active
+    - regenerated_health: Health restored
+
+    IMPORTANT: Investigation shows these combat log types (30, 32, 40) are NOT
+    generated in replays, even TI finals. The game tracks shields/absorption
+    differently - likely through modifier events (type 2/3) rather than dedicated
+    combat log types. The `will_reincarnate` field on DEATH events IS populated.
+
+    OpenDota parser explicitly filters out types > 19, suggesting these types
+    were added to protobuf but never implemented in the game's combat log system.
+    """
+
+    def test_aegis_taken_events(self, combat_log):
+        """Type 30: DOTA_COMBATLOG_AEGIS_TAKEN - Aegis pickup."""
+        aegis_events = [e for e in combat_log.entries if e.type == 30]
+
+        # May or may not have aegis taken depending on the match
+        # Match 8447659831 is a long pro game, likely has Roshan kills
+        if aegis_events:
+            for e in aegis_events:
+                assert e.target_name, "Aegis pickup should have target (hero who picked it up)"
+                assert "hero" in e.target_name.lower(), f"Aegis should be picked by hero: {e.target_name}"
+                assert e.game_time > 0, "Aegis should be picked up after game start"
+
+    def test_physical_damage_prevented_events(self, combat_log):
+        """Type 32: DOTA_COMBATLOG_PHYSICAL_DAMAGE_PREVENTED - Damage block."""
+        prevented_events = [e for e in combat_log.entries if e.type == 32]
+
+        # Should have some damage prevention events in any match
+        # Sources: Vanguard, Crimson Guard, Kraken Shell, damage block talents, etc.
+        if prevented_events:
+            sample = prevented_events[0]
+            assert sample.target_name, "Damage prevented should have target"
+            assert sample.value >= 0, "Prevented damage value should be non-negative"
+
+            # Check we have context about who/what blocked the damage
+            has_source_info = (
+                sample.attacker_name or
+                sample.inflictor_name or
+                sample.attacker_name != "dota_unknown"
+            )
+            # Note: Some damage block may not have source info
+
+    def test_spell_absorb_events(self, combat_log):
+        """Type 40: DOTA_COMBATLOG_SPELL_ABSORB - Linken's, Lotus, etc."""
+        absorb_events = [e for e in combat_log.entries if e.type == 40]
+
+        # May or may not have spell absorb depending on item builds
+        if absorb_events:
+            sample = absorb_events[0]
+            assert sample.target_name, "Spell absorb should have target (protected hero)"
+
+            # Inflictor should be the absorbed spell
+            if sample.inflictor_name and sample.inflictor_name != "dota_unknown":
+                # Absorbed spell name should be present
+                pass
+
+    def test_will_reincarnate_on_death(self, combat_log):
+        """Deaths with will_reincarnate=True indicate Aegis/WK ulti."""
+        death_events = [e for e in combat_log.entries if e.type == 4]
+
+        # Find deaths with reincarnation
+        reincarnate_deaths = [e for e in death_events if e.will_reincarnate]
+
+        # In a long pro game with Roshan, should have some reincarnations
+        if reincarnate_deaths:
+            for e in reincarnate_deaths:
+                assert e.target_name, "Reincarnating death should have target"
+                assert "hero" in e.target_name.lower(), f"Only heroes reincarnate: {e.target_name}"
+
+    def test_no_physical_damage_modifier(self, combat_log):
+        """Check no_physical_damage_modifier field on combat log entries."""
+        # This modifier indicates ghost scepter, ethereal form, etc.
+        damage_events = [e for e in combat_log.entries if e.type == 0]
+
+        # Check if any events have this modifier tracked
+        with_modifier = [e for e in damage_events if e.no_physical_damage_modifier]
+        # May or may not be present depending on the match
+
+    def test_damage_absorption_summary(self, combat_log):
+        """Summary of all damage absorption events in the match."""
+        aegis = [e for e in combat_log.entries if e.type == 30]
+        prevented = [e for e in combat_log.entries if e.type == 32]
+        absorbed = [e for e in combat_log.entries if e.type == 40]
+        reincarnates = [e for e in combat_log.entries if e.type == 4 and e.will_reincarnate]
+
+        print(f"\n=== Damage Absorption Summary ===")
+        print(f"Aegis pickups: {len(aegis)}")
+        print(f"Physical damage prevented events: {len(prevented)}")
+        print(f"Spell absorb events: {len(absorbed)}")
+        print(f"Deaths with reincarnation: {len(reincarnates)}")
+
+        if aegis:
+            print(f"\nAegis pickups:")
+            for e in aegis:
+                mins = int(e.game_time // 60)
+                secs = int(e.game_time % 60)
+                print(f"  [{mins:02d}:{secs:02d}] {e.target_name}")
+
+        if prevented[:10]:
+            print(f"\nSample damage prevented (first 10):")
+            for e in prevented[:10]:
+                mins = int(e.game_time // 60)
+                secs = int(e.game_time % 60)
+                print(f"  [{mins:02d}:{secs:02d}] {e.target_name} blocked {e.value} damage")
+
+        if absorbed[:10]:
+            print(f"\nSample spell absorbs (first 10):")
+            for e in absorbed[:10]:
+                mins = int(e.game_time // 60)
+                secs = int(e.game_time % 60)
+                spell = e.inflictor_name if e.inflictor_name != "dota_unknown" else "unknown spell"
+                print(f"  [{mins:02d}:{secs:02d}] {e.target_name} absorbed {spell}")

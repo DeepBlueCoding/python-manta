@@ -3,9 +3,44 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+with [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
-## [Unreleased]
+## [1.4.5.2] - 2025-12-07
+
+### Added
+- **Parser v2 API**: Unified single-pass parsing with `parser.parse(**collectors)`
+- **Entity snapshots**: `parser.snapshot(target_tick=...)` for hero state at any tick
+- **Index/Seek API**: `parser.build_index()` for random access to replay data
+- **GameInfo model**: Complete game info with draft, teams, players, and winner
+- **HeroSnapshot combat stats**: `armor`, `magic_resistance`, `damage_min`, `damage_max`, `attack_range`
+- **HeroSnapshot attributes**: `strength`, `agility`, `intellect`
+- **HeroSnapshot economy data**: `gold`, `net_worth`, `last_hits`, `denies`, `gpm`, `xpm`
+- **Hero ability tracking**: `abilities` list with `level`, `cooldown`, `max_cooldown`, `slot`, `is_ultimate`
+- **Hero talent tracking**: `talents` list with `tier`, `is_left`, `name`
+- **NeutralCampType enum**: Camp types (`SMALL=0`, `MEDIUM=1`, `HARD=2`, `ANCIENT=3`)
+- **ChatWheelMessage enum**: Chat wheel phrases
+- **GameActivity enum**: Game activity types
+- **EntityType enum**: Entity classification
+- **RuneType enum**: Rune types
+- **Hero enum**: All 145 heroes with ID/name lookup
+- **NeutralItem and NeutralItemTier enums**: Neutral items with tier classification
+- `DamageType.COMPOSITE = 3` (legacy damage type)
+- `DamageType.HP_REMOVAL = 4`
+- `Team.NEUTRAL = 4`
+- **MCP use-case documentation**: 5 validated examples in docs/guides/use-cases.md
+
+### Changed
+- **Version format**: Migrated to PEP 440 format (4-part: `manta_major.manta_minor.manta_patch.python_release`)
+- Refactored to Pythonic model names (e.g., `HeroSnapshot` instead of `hero_snapshot`)
+- Removed convenience functions in favor of `Parser` class methods
+- Removed legacy `PlayerState` class (consolidated into `HeroSnapshot`)
+- Optimized test suite with module-scoped fixtures for faster test execution
+
+### Fixed
+- Entity parsing now correctly populates player positions and hero names
+- Python 3.8 compatibility with future annotations import
+- Field aliases for game_info.players mapping
 
 ## [1.4.5] - 2024-11-30
 
@@ -63,8 +98,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ctypes interface for shared library loading
 - Platform-specific build scripts for reproducible builds
 
-[Unreleased]: https://github.com/equilibrium-coach/python-manta/compare/v1.4.5...HEAD
-[1.4.5]: https://github.com/equilibrium-coach/python-manta/compare/v1.4.0...v1.4.5
-[1.4.0]: https://github.com/equilibrium-coach/python-manta/compare/v0.1.0...v1.4.0
-[0.1.0]: https://github.com/equilibrium-coach/python-manta/compare/v0.0.1...v0.1.0
-[0.0.1]: https://github.com/equilibrium-coach/python-manta/releases/tag/v0.0.1
+[1.4.5.2]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.5...v1.4.5.2
+[1.4.5]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.0...v1.4.5
+[1.4.0]: https://github.com/DeepBlueCoding/python-manta/compare/v0.1.0...v1.4.0
+[0.1.0]: https://github.com/DeepBlueCoding/python-manta/compare/v0.0.1...v0.1.0
+[0.0.1]: https://github.com/DeepBlueCoding/python-manta/releases/tag/v0.0.1

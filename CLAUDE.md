@@ -35,12 +35,12 @@ When adding new features, ask: "Is this raw data access or analysis?" Only raw d
 │                      Python Application                      │
 ├─────────────────────────────────────────────────────────────┤
 │  python_manta Package (src/python_manta/)                   │
-│  ├── MantaParser (main interface)                           │
+│  ├── Parser (main interface)                                │
 │  ├── Pydantic Models (HeaderInfo, MessageEvent, etc.)       │
 │  └── ctypes bindings (FFI to shared library)                │
 ├─────────────────────────────────────────────────────────────┤
 │  libmanta_wrapper.so (go_wrapper/)                          │
-│  ├── CGO exports (ParseHeader, ParseMatchInfo, ParseUniversal)  │
+│  ├── CGO exports (Parse, BuildIndex, GetSnapshot, etc.)     │
 │  ├── 272 callback implementations (callbacks_*.go)          │
 │  └── JSON serialization                                      │
 ├─────────────────────────────────────────────────────────────┤
@@ -55,9 +55,9 @@ When adding new features, ask: "Is this raw data access or analysis?" Only raw d
 
 | File | Purpose |
 |------|---------|
-| `src/python_manta/manta_python.py` | Main Python API - `MantaParser` class |
+| `src/python_manta/manta_python.py` | Main Python API - `Parser` class |
 | `src/python_manta/__init__.py` | Public exports |
-| `go_wrapper/manta_wrapper.go` | CGO exports (ParseHeader, ParseMatchInfo) |
+| `go_wrapper/manta_wrapper.go` | CGO exports (Parse, BuildIndex, GetSnapshot) |
 | `go_wrapper/universal_parser.go` | Universal parsing with callback filtering |
 | `go_wrapper/data_parser.go` | Game events, modifiers, entities, combat log, string tables |
 | `go_wrapper/entity_parser.go` | Entity state snapshot tracking |
@@ -67,12 +67,12 @@ When adding new features, ask: "Is this raw data access or analysis?" Only raw d
 
 ### Data Flow
 
-1. Python calls `parse_universal("demo.dem", "CDOTAUserMsg_ChatMessage", 100)`
+1. Python creates `Parser("demo.dem")` and calls `parse(**collectors)`
 2. ctypes marshals parameters to C strings
 3. CGO wrapper opens file, creates Manta parser
 4. Manta Go library parses binary .dem file
-5. Registered callbacks capture matching messages
-6. Messages serialized to JSON
+5. Registered callbacks capture matching messages based on collectors
+6. All data collected in single pass
 7. JSON returned to Python via ctypes
 8. Pydantic models validate and structure data
 
@@ -114,22 +114,27 @@ python simple_example.py
 
 ```python
 from python_manta import (
-    MantaParser,           # Main parser class
+    # Main parser class
+    Parser,                # Unified API - single-pass parsing
     # Enums for type-safe filtering
     RuneType,              # Rune types (DOUBLE_DAMAGE, HASTE, etc.)
     EntityType,            # Entity types (HERO, LANE_CREEP, BUILDING, etc.)
     CombatLogType,         # Combat log types (DAMAGE, HEAL, PURCHASE, etc.)
     DamageType,            # Damage types (PHYSICAL, MAGICAL, PURE)
     Team,                  # Team identifiers (RADIANT, DIRE)
+    Hero,                  # All heroes with ID/name lookup (145 heroes)
     NeutralItemTier,       # Neutral item tiers (TIER_1 through TIER_5)
     NeutralItem,           # All neutral items (100+ including retired)
+    ChatWheelMessage,      # Chat wheel phrases
+    GameActivity,          # Game activity types
     # Data models
     HeaderInfo,            # Demo header metadata
     DraftEvent,            # Draft pick/ban event
     PlayerInfo,            # Player info from match
     GameInfo,              # Complete game info (draft, teams, players)
     MessageEvent,          # Universal message wrapper
-    UniversalParseResult,  # Parse result container
+    MessagesResult,        # Messages collector result
+    ParseResult,           # Main parse result container
     # Entity snapshots (positions, stats over time)
     PlayerState,           # Player state with position
     TeamState,             # Team state
@@ -144,61 +149,72 @@ from python_manta import (
 )
 ```
 
-### Basic Usage
+### Parser API
+
+The `Parser` class provides single-pass parsing - all data collected in one file traversal.
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
+# Create parser bound to file
+parser = Parser("match.dem")
 
-# Header metadata
-header = parser.parse_header("match.dem")
+# Single-pass parsing - collect all data types at once
+result = parser.parse(
+    header=True,
+    game_info=True,
+    combat_log={"types": [0, 4], "max_entries": 100},
+    entities={"interval_ticks": 1800, "max_snapshots": 50},
+    messages={"filter": "ChatMessage", "max_messages": 100},
+)
 
-# Game info (draft, players, teams)
-game_info = parser.parse_game_info("match.dem")
-print(f"Match {game_info.match_id}: {game_info.radiant_team_tag} vs {game_info.dire_team_tag}")
+# Access all results from single parse
+print(result.header.map_name)
+print(result.game_info.match_id)
+print(len(result.combat_log.entries))
 
-# Hero positions over time (see docs/guides/entities.md for details)
-snapshots = parser.parse_entities("match.dem", interval_ticks=900, max_snapshots=100)
-# Supports target_ticks=[tick1, tick2] and target_heroes=["npc_dota_hero_axe"]
+# Index/Seek API for random access
+index = parser.build_index(interval_ticks=1800)  # Build keyframes
+snap = parser.snapshot(target_tick=36000)         # Get hero state at tick
+for hero in snap.heroes:
+    print(f"{hero.hero_name}: HP={hero.health}/{hero.max_health} at ({hero.x:.0f}, {hero.y:.0f})")
 
-# Universal message parsing
-result = parser.parse_universal("match.dem", "CDOTAUserMsg_ChatMessage", 100)
+# Include illusions/clones in snapshot
+snap = parser.snapshot(target_tick=36000, include_illusions=True)
+for hero in snap.heroes:
+    if hero.is_clone:
+        print(f"Clone: {hero.hero_name}")
 
-# Game events (364 event types)
-events = parser.parse_game_events("match.dem", event_filter="dota_combatlog", max_events=100)
-
-# Modifiers/buffs
-modifiers = parser.parse_modifiers("match.dem", max_modifiers=100, auras_only=True)
-
-# Entity queries (end-of-game state)
-entities = parser.query_entities("match.dem", class_filter="Hero", max_entities=10)
-
-# String tables
-tables = parser.get_string_tables("match.dem", table_names=["userinfo"])
-
-# Combat log (structured)
-combat = parser.parse_combat_log("match.dem", types=[0], heroes_only=True, max_entries=100)
-
-# Parser info
-info = parser.get_parser_info("match.dem")
+# Parse specific tick range
+result = parser.parse_range(start_tick=25000, end_tick=35000, combat_log=True)
 ```
 
 ### Which API to Use
 
+| Task | Collector Config | Notes |
+|------|-----------------|-------|
+| Match metadata | `header=True` | Build number, map, server |
+| Draft picks/bans | `game_info=True` | Picks/bans with hero IDs |
+| Pro match info | `game_info=True` | Teams, league, players, winner |
+| Hero positions | `entities={"interval_ticks": 900}` | Position, stats at intervals |
+| Chat messages | `messages={"filter": "ChatMessage"}` | Player text chat |
+| Item purchases | `messages={"filter": "ItemPurchased"}` | Item buy events |
+| Map pings | `messages={"filter": "LocationPing"}` | Ping coordinates |
+| Combat damage | `combat_log={"types": [0]}` | Structured damage events |
+| Hero kills | `combat_log={"heroes_only": True}` | Hero-related combat |
+| Buff tracking | `modifiers={}` | Active buffs/debuffs |
+| Game events | `game_events={}` | 364 named event types |
+| Player info | `string_tables={"table_names": ["userinfo"]}` | Steam IDs, names |
+
+**Advanced Operations:**
+
 | Task | Method |
 |------|--------|
-| Match metadata | `parse_header()` |
-| Draft picks/bans | `parse_game_info()` |
-| Pro match info | `parse_game_info()` |
-| Hero positions | `parse_entities()` |
-| Chat messages | `parse_universal("CDOTAUserMsg_ChatMessage")` |
-| Item purchases | `parse_universal("CDOTAUserMsg_ItemPurchased")` |
-| Combat damage | `parse_combat_log(types=[0])` |
-| Buff tracking | `parse_modifiers()` |
-| Hero state (end) | `query_entities(class_filter="Hero")` |
-| Game events | `parse_game_events()` |
-| Player info | `get_string_tables(table_names=["userinfo"])` |
+| Multiple data types | `parser.parse(header=True, game_info=True, ...)` |
+| Hero state at tick | `parser.snapshot(target_tick=36000)` |
+| Hero state with illusions | `parser.snapshot(target_tick=36000, include_illusions=True)` |
+| Build keyframe index | `parser.build_index(interval_ticks=1800)` |
+| Events in tick range | `parser.parse_range(start_tick=..., end_tick=..., combat_log=True)` |
 
 See README.md for complete list of all 272 callbacks.
 
@@ -226,6 +242,26 @@ All Go→Python data exchange uses JSON to avoid complex struct marshaling.
 ### Callback Registration
 All 272 callbacks are registered on every parse, but filtering happens in `addFilteredMessage()` which skips non-matching types.
 
+### Time Formatting in Documentation
+**NEVER** display time as decimal minutes (e.g., "77.9 minutes"). Always use proper human-readable formats:
+
+```python
+# ❌ WRONG - "77.9 minutes" is not valid time
+print(f"Duration: {seconds / 60:.1f} minutes")
+
+# ✅ CORRECT - H:MM:SS format
+hours = int(seconds // 3600)
+mins = int((seconds % 3600) // 60)
+secs = int(seconds % 60)
+print(f"Duration: {hours}:{mins:02d}:{secs:02d}")  # "1:17:54"
+
+# ✅ CORRECT - MM:SS format for game time
+mins = int(abs(game_time) // 60)
+secs = int(abs(game_time) % 60)
+sign = "-" if game_time < 0 else ""
+print(f"[{sign}{mins:02d}:{secs:02d}]")  # "[05:32]" or "[-01:30]"
+```
+
 ## Common Development Tasks
 
 ### Adding a new callback
@@ -245,19 +281,60 @@ parser.Callbacks.OnNewCallbackName(func(m *dota.NewCallbackName) error {
 4. Try empty filter `""` to see all messages
 5. Check Go build for CGO warnings
 
-### Releasing a new version (CRITICAL - follow exactly)
-1. **Read `pyproject.toml`** to check the current version
-2. **Increment the version** appropriately (e.g., `1.4.5.1-dev11` → `1.4.5.1-dev12`)
-3. **Update `pyproject.toml`** with the new version
-4. **Commit the version bump**: `git commit -m "chore: bump version to X.Y.Z"`
-5. **Push to master**: `git push origin master`
-6. **Create git tag** matching the version: `git tag vX.Y.Z` (note the `v` prefix)
-7. **Push the tag**: `git push origin vX.Y.Z`
+### Releasing a new version
 
-**Version format**: `MAJOR.MINOR.PATCH.BUILD-devN` (e.g., `1.4.5.1-dev12`)
-**Tag format**: `v` + version (e.g., `v1.4.5.1-dev12`)
+All versions follow **PEP 440** format with a 4-part scheme: `{manta_major}.{manta_minor}.{manta_patch}.{python_manta_release}`.
 
-⚠️ **NEVER guess the version number** - always read pyproject.toml first!
+#### Version Types
+| Type | Example | Tag | Publish To |
+|------|---------|-----|------------|
+| Development | `1.4.5.2.dev11` | `v1.4.5.2.dev11` | TestPyPI |
+| Final Release | `1.4.5.2` | `v1.4.5.2` | PyPI |
+
+#### Development Workflow
+
+```bash
+# 1. Make changes and commit
+git add .
+git commit -m "feat: add new feature"
+
+# 2. Update version in pyproject.toml (e.g., dev10 → dev11)
+sed -i 's/1.4.5.2.dev10/1.4.5.2.dev11/g' pyproject.toml
+
+# 3. Commit version bump
+git add pyproject.toml
+git commit -m "bump: version 1.4.5.2.dev10 → 1.4.5.2.dev11"
+
+# 4. Tag and push
+git tag v1.4.5.2.dev11
+git push origin master --tags
+```
+
+#### Release Workflow
+
+```bash
+# 1. Update version (remove .devN suffix)
+sed -i 's/1.4.5.2.dev11/1.4.5.2/g' pyproject.toml
+
+# 2. Commit, tag, and push
+git add pyproject.toml
+git commit -m "bump: version 1.4.5.2.dev11 → 1.4.5.2"
+git tag v1.4.5.2
+git push origin master --tags
+```
+
+#### Commit Message Convention
+```
+<type>: <description>
+```
+
+**Types:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation
+- `refactor:` - Code refactoring
+- `test:` - Tests
+- `bump:` - Version bump
 
 ## Dependencies
 
