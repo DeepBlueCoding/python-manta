@@ -10,11 +10,16 @@
     "aliases": []
   },
   {
-    "version": "1.4.5.2.dev10",
-    "title": "1.4.5.2.dev10",
+    "version": "1.4.5.2.dev11",
+    "title": "1.4.5.2.dev11",
     "aliases": [
       "latest"
     ]
+  },
+  {
+    "version": "1.4.5.2.dev10",
+    "title": "1.4.5.2.dev10",
+    "aliases": []
   },
   {
     "version": "1.4.5.2.dev9",
