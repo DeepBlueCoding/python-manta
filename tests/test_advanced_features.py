@@ -2,6 +2,9 @@
 Test advanced parser features with REAL VALUES from actual demo files.
 Focus on game events, modifiers, string tables, combat log, and parser info.
 Uses v2 Parser API exclusively.
+
+Note: Fixtures from conftest.py provide cached parsed results to avoid
+redundant parsing and improve test performance significantly.
 """
 
 import pytest
@@ -18,7 +21,8 @@ from python_manta import (
     ParserInfo,
 )
 
-DEMO_FILE = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
+# Import DEMO_FILE from conftest for tests that need to create their own Parser
+from tests.conftest import DEMO_FILE
 
 
 class TestGameEvents:

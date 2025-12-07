@@ -2,7 +2,7 @@
 # Data Models
 
 ??? info "AI Summary"
-    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `HeroSnapshot`/`EntityStateSnapshot` (hero state with armor, damage, attributes at specific ticks), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` (rune tracking), `EntityType` (hero, creep, summon, building), `CombatLogType` (45 combat log event types), `DamageType` (physical/magical/pure/hp_removal), `Team` (Radiant/Dire/Neutral), `NeutralItemTier` (tier unlock times), `NeutralItem` (100+ neutral items), `ChatWheelMessage` (voice line IDs), and `GameActivity` (animation/taunt detection). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `HeroSnapshot`/`EntityStateSnapshot` (hero state with armor, damage, attributes at specific ticks), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` (rune tracking), `EntityType` (hero, creep, summon, building), `CombatLogType` (45 combat log event types), `DamageType` (physical/magical/pure/hp_removal), `Team` (Radiant/Dire/Neutral), `NeutralCampType` (small/medium/hard/ancient camps for multi-camp farming detection), `NeutralItemTier` (tier unlock times), `NeutralItem` (100+ neutral items), `ChatWheelMessage` (voice line IDs), and `GameActivity` (animation/taunt detection). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
 
 ---
 
@@ -306,6 +306,95 @@ for entry in result.combat_log.entries:
     # Use opposite property
     if attacker_team == Team.RADIANT:
         enemy = attacker_team.opposite  # Team.DIRE
+```
+
+---
+
+### NeutralCampType
+
+Enum for neutral creep camp types. Used in combat log events (DEATH, MODIFIER_ADD, etc.) to identify which type of neutral camp a creep belongs to. Useful for detecting multi-camp farming.
+
+```python
+class NeutralCampType(int, Enum):
+    SMALL = 0   # Small camps: kobolds, harpies, ghosts, forest trolls, gnolls
+    MEDIUM = 1  # Medium camps: wolves, ogres, mud golems
+    HARD = 2    # Hard/Large camps: hellbears, dark trolls, wildkin, satyr hellcaller, centaurs
+    ANCIENT = 3 # Ancient camps: dragons, thunderhides, prowlers, rock golems
+```
+
+!!! warning "SMALL (0) includes non-neutrals"
+    The value 0 is also used for non-neutral units (lane creeps, wards). Filter by `"neutral" in target_name` to get only neutral creeps.
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `display_name` | str | Human-readable name (e.g., "Hard Camp") |
+| `is_ancient` | bool | True if this is an ancient camp |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_value(int)` | `NeutralCampType` | Get NeutralCampType from integer value |
+
+**Example - Multi-camp farming detection:**
+```python
+from python_manta import Parser, NeutralCampType
+from collections import defaultdict
+
+parser = Parser("match.dem")
+result = parser.parse(combat_log={})
+
+# Filter neutral creep deaths by heroes
+neutral_deaths = [
+    e for e in result.combat_log.entries
+    if e.type_name == "DOTA_COMBATLOG_DEATH"
+    and "npc_dota_neutral" in e.target_name
+    and e.attacker_name.startswith("npc_dota_hero_")
+]
+
+# Group by time window (2 seconds) + attacker
+def time_bucket(game_time):
+    return int(game_time / 2.0)
+
+kills_by_window = defaultdict(list)
+for e in neutral_deaths:
+    key = (time_bucket(e.game_time), e.attacker_name)
+    kills_by_window[key].append(e)
+
+# Detect multi-camp: different camp_types in same window
+for (bucket, attacker), kills in kills_by_window.items():
+    camp_types = set(NeutralCampType.from_value(e.neutral_camp_type) for e in kills)
+
+    if len(camp_types) >= 2:
+        hero = attacker.replace("npc_dota_hero_", "")
+        types = [ct.display_name for ct in camp_types]
+        print(f"{hero} multi-camp farming: {types}")
+```
+
+**Example - Camp type breakdown:**
+```python
+from python_manta import Parser, NeutralCampType, Team
+from collections import Counter
+
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [1]})  # DEATH events
+
+# Count neutral kills by camp type
+neutral_deaths = [
+    e for e in result.combat_log.entries
+    if "npc_dota_neutral" in e.target_name
+]
+
+by_type = Counter(NeutralCampType.from_value(e.neutral_camp_type) for e in neutral_deaths)
+for camp_type, count in by_type.most_common():
+    print(f"{camp_type.display_name}: {count} kills")
+
+# Also available: neutral_camp_team (2=Radiant jungle, 3=Dire jungle)
+radiant_jungle = sum(1 for e in neutral_deaths if e.neutral_camp_team == Team.RADIANT)
+dire_jungle = sum(1 for e in neutral_deaths if e.neutral_camp_team == Team.DIRE)
+print(f"Radiant jungle: {radiant_jungle}, Dire jungle: {dire_jungle}")
 ```
 
 ---

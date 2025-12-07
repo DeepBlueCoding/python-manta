@@ -441,6 +441,55 @@ class Team(int, Enum):
         return None
 
 
+class NeutralCampType(int, Enum):
+    """Neutral creep camp types.
+
+    Used in combat log events (DEATH, MODIFIER_ADD, etc.) to identify
+    which type of neutral camp a creep belongs to.
+
+    Note: SMALL (0) is also used for non-neutral units (lane creeps, wards).
+    Filter by target_name containing "neutral" to get only neutral creeps.
+
+    Usage:
+        if entry.neutral_camp_type == NeutralCampType.ANCIENT:
+            print("Ancient camp creep killed")
+
+        # Detect multi-camp farming (filter for neutrals first)
+        neutral_deaths = [e for e in deaths if "neutral" in e.target_name]
+        camp_types = {e.neutral_camp_type for e in neutral_deaths}
+        if len(camp_types) >= 2:
+            print("Multi-camp farming detected!")
+    """
+    SMALL = 0      # Small camps: kobolds, harpies, ghosts, forest trolls, gnolls (also default for non-neutrals)
+    MEDIUM = 1     # Medium camps: wolves, ogres, mud golems
+    HARD = 2       # Hard/Large camps: hellbears, dark trolls, wildkin, satyr hellcaller, centaurs
+    ANCIENT = 3    # Ancient camps: dragons, thunderhides, prowlers, rock golems
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable camp type name."""
+        names = {
+            0: "Small Camp",
+            1: "Medium Camp",
+            2: "Hard Camp",
+            3: "Ancient Camp",
+        }
+        return names.get(self.value, "Unknown")
+
+    @property
+    def is_ancient(self) -> bool:
+        """True if this is an ancient camp."""
+        return self == NeutralCampType.ANCIENT
+
+    @classmethod
+    def from_value(cls, value: int) -> "NeutralCampType":
+        """Get NeutralCampType from integer value."""
+        for t in cls:
+            if t.value == value:
+                return t
+        return cls.SMALL
+
+
 class Hero(int, Enum):
     """Dota 2 hero IDs."""
     ANTI_MAGE = 1

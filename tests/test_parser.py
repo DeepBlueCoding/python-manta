@@ -2,6 +2,9 @@
 Test Parser class business logic with REAL VALUES.
 Focus on parser behavior, business rules, and data consistency.
 Uses v2 Parser API exclusively.
+
+Note: Fixtures from conftest.py provide cached parsed results to avoid
+redundant parsing and improve test performance significantly.
 """
 
 import pytest
@@ -10,8 +13,8 @@ import pytest
 pytestmark = pytest.mark.core
 from python_manta import Parser, HeaderInfo, GameInfo, ParseResult
 
-# Real demo file path
-DEMO_FILE = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
+# Import DEMO_FILE from conftest for tests that need to create their own Parser
+from tests.conftest import DEMO_FILE
 
 
 class TestParserBusinessLogic:

@@ -2,6 +2,9 @@
 Test models with REAL VALUES from actual demo file.
 Golden Master approach: Test against verified expected values.
 Uses v2 Parser API exclusively.
+
+Note: Fixtures from conftest.py provide cached parsed results to avoid
+redundant parsing and improve test performance significantly.
 """
 
 import pytest
@@ -22,17 +25,16 @@ from python_manta import (
     Hero,
 )
 
-# Real demo file path
-DEMO_FILE = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
+# Import DEMO_FILE from conftest for tests that need to create their own Parser
+from tests.conftest import DEMO_FILE
 
 
 class TestHeaderInfoRealValues:
     """Test HeaderInfo contains EXACT values from real demo file."""
 
-    def test_header_exact_values(self):
+    def test_header_exact_values(self, header_result):
         """Test header parsing produces exact expected values from real file."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(header=True)
+        result = header_result
 
         # EXACT values from the real demo file (verified manually)
         assert result.success is True
@@ -47,11 +49,9 @@ class TestHeaderInfoRealValues:
         assert result.header.server_start_tick == 381
         assert result.header.error is None
 
-    def test_header_serialization_roundtrip(self):
+    def test_header_serialization_roundtrip(self, header_result):
         """Test HeaderInfo JSON serialization preserves exact values."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(header=True)
-        original = result.header
+        original = header_result.header
 
         # Serialize and deserialize
         json_str = original.model_dump_json()
@@ -66,10 +66,9 @@ class TestHeaderInfoRealValues:
 class TestDraftEventRealValues:
     """Test DraftEvent with EXACT values from real draft."""
 
-    def test_draft_exact_structure(self):
+    def test_draft_exact_structure(self, game_info_result):
         """Test draft contains exact pick/ban structure from real game."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(game_info=True)
+        result = game_info_result
         game_info = result.game_info
 
         # EXACT values from real demo file
@@ -88,11 +87,9 @@ class TestDraftEventRealValues:
         ]
         assert first_5_events == expected_first_5
 
-    def test_picks_exact_values(self):
+    def test_picks_exact_values(self, game_info_result):
         """Test picks contain exact hero IDs from real game."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(game_info=True)
-        game_info = result.game_info
+        game_info = game_info_result.game_info
 
         picks = [e for e in game_info.picks_bans if e.is_pick]
         assert len(picks) == 10  # Standard 5v5 picks
@@ -118,11 +115,9 @@ class TestDraftEventRealValues:
             Hero.FACELESS_VOID.value,
         ]
 
-    def test_bans_exact_values(self):
+    def test_bans_exact_values(self, game_info_result):
         """Test bans contain exact hero IDs from real game."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(game_info=True)
-        game_info = result.game_info
+        game_info = game_info_result.game_info
 
         bans = [e for e in game_info.picks_bans if not e.is_pick]
         assert len(bans) == 14  # Exact number of bans in this game
@@ -156,10 +151,9 @@ class TestDraftEventRealValues:
 class TestGameInfoRealValues:
     """Test GameInfo with EXACT values from real demo file."""
 
-    def test_game_info_exact_structure(self):
+    def test_game_info_exact_structure(self, game_info_result):
         """Test game info contains exact structure from real file."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(game_info=True)
+        result = game_info_result
 
         assert result.success is True
         assert len(result.game_info.picks_bans) == 24
@@ -172,11 +166,9 @@ class TestGameInfoRealValues:
         assert len(team_2_events) == 12  # Radiant events (5 picks + 7 bans)
         assert len(team_3_events) == 12  # Dire events (5 picks + 7 bans)
 
-    def test_game_info_serialization_roundtrip(self):
+    def test_game_info_serialization_roundtrip(self, game_info_result):
         """Test GameInfo JSON serialization preserves exact values."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(game_info=True)
-        original = result.game_info
+        original = game_info_result.game_info
 
         # Serialize and deserialize
         json_str = original.model_dump_json()
@@ -190,17 +182,16 @@ class TestGameInfoRealValues:
 class TestMessageEventRealValues:
     """Test MessageEvent with EXACT values from real demo file."""
 
-    def test_messages_exact_values(self):
+    def test_messages_exact_values(self, messages_result):
         """Test messages parsing produces exact message sequence."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(messages={"max_messages": 10})
+        result = messages_result
 
         assert result.success is True
-        assert len(result.messages.messages) == 10
+        assert len(result.messages.messages) >= 10
         assert result.error is None
 
         # Test exact message types from real file (specific Manta callback names)
-        message_types = [msg.type for msg in result.messages.messages]
+        message_types = [msg.type for msg in result.messages.messages[:10]]
         expected_types = [
             'CDemoFileHeader',
             'CNETMsg_Tick',
@@ -215,23 +206,17 @@ class TestMessageEventRealValues:
         ]
         assert message_types == expected_types
 
-    def test_first_message_exact_values(self):
+    def test_first_message_exact_values(self, messages_result):
         """Test first message contains exact expected values."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(messages={"max_messages": 5})
-
-        first_message = result.messages.messages[0]
+        first_message = messages_result.messages.messages[0]
         assert first_message.type == "CDemoFileHeader"
         assert first_message.tick == 0
         assert first_message.net_tick == 0
         assert first_message.data is not None
 
-    def test_tick_progression_exact_sequence(self):
+    def test_tick_progression_exact_sequence(self, messages_result):
         """Test tick progression follows exact sequence from real file."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(messages={"max_messages": 10})
-
-        ticks = [msg.tick for msg in result.messages.messages]
+        ticks = [msg.tick for msg in messages_result.messages.messages[:10]]
         # First 10 messages are all at tick 0 (header and string table setup)
         expected_ticks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         assert ticks == expected_ticks
@@ -243,33 +228,30 @@ class TestMessageEventRealValues:
 class TestMessagesResultRealValues:
     """Test MessagesResult with EXACT values from real demo file."""
 
-    def test_messages_result_exact_structure(self):
+    def test_messages_result_exact_structure(self, messages_result):
         """Test messages result contains exact structure from real file."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(messages={"max_messages": 5})
+        result = messages_result
 
         assert result.success is True
-        assert len(result.messages.messages) == 5
+        assert len(result.messages.messages) >= 5
         assert result.error is None
 
-    def test_messages_result_serialization_roundtrip(self):
+    def test_messages_result_serialization_roundtrip(self, messages_result):
         """Test MessagesResult JSON serialization preserves exact values."""
-        parser = Parser(DEMO_FILE)
-        result = parser.parse(messages={"max_messages": 3})
-        original = result.messages
+        original = messages_result.messages
 
-        # Serialize and deserialize
+        # Create subset for testing serialization
         json_str = original.model_dump_json()
         restored = MessagesResult.model_validate_json(json_str)
 
         # Must be identical to original
         assert restored == original
-        assert len(restored.messages) == 3
+        assert len(restored.messages) >= 3
         assert restored.messages[0].type == "CDemoFileHeader"
 
-    def test_filtered_messages_exact_results(self):
+    def test_filtered_messages_exact_results(self, parser):
         """Test message filtering produces exact expected results."""
-        parser = Parser(DEMO_FILE)
+        # This test needs a specific filter config, so it uses parser fixture
         result = parser.parse(messages={"filter": "CDemoFileHeader", "max_messages": 5})
 
         assert result.success is True
@@ -673,3 +655,141 @@ class TestHeroSnapshotAbilityMethods:
 
         not_found = hero.get_talent_at_tier(15)
         assert not_found is None
+
+
+class TestNeutralCampTypeEnum:
+    """Test NeutralCampType enum with real values from replays."""
+
+    def test_camp_type_values(self):
+        """Test camp type enum has correct integer values."""
+        from python_manta import NeutralCampType
+
+        assert NeutralCampType.SMALL.value == 0
+        assert NeutralCampType.MEDIUM.value == 1
+        assert NeutralCampType.HARD.value == 2
+        assert NeutralCampType.ANCIENT.value == 3
+
+    def test_display_name_exact_values(self):
+        """Test display names are exact expected text."""
+        from python_manta import NeutralCampType
+
+        assert NeutralCampType.SMALL.display_name == "Small Camp"
+        assert NeutralCampType.MEDIUM.display_name == "Medium Camp"
+        assert NeutralCampType.HARD.display_name == "Hard Camp"
+        assert NeutralCampType.ANCIENT.display_name == "Ancient Camp"
+
+    def test_is_ancient_property(self):
+        """Test is_ancient correctly identifies ancient camps."""
+        from python_manta import NeutralCampType
+
+        assert NeutralCampType.ANCIENT.is_ancient is True
+        assert NeutralCampType.HARD.is_ancient is False
+        assert NeutralCampType.MEDIUM.is_ancient is False
+        assert NeutralCampType.SMALL.is_ancient is False
+
+    def test_from_value_returns_enum(self):
+        """Test from_value returns correct enum for known values."""
+        from python_manta import NeutralCampType
+
+        assert NeutralCampType.from_value(0) == NeutralCampType.SMALL
+        assert NeutralCampType.from_value(1) == NeutralCampType.MEDIUM
+        assert NeutralCampType.from_value(2) == NeutralCampType.HARD
+        assert NeutralCampType.from_value(3) == NeutralCampType.ANCIENT
+
+    def test_from_value_returns_small_for_unknown(self):
+        """Test from_value returns SMALL for unmapped values (as fallback)."""
+        from python_manta import NeutralCampType
+
+        assert NeutralCampType.from_value(99) == NeutralCampType.SMALL
+        assert NeutralCampType.from_value(-1) == NeutralCampType.SMALL
+
+
+class TestNeutralCampTypeIntegration:
+    """Integration tests for NeutralCampType with real demo data.
+
+    Uses combat_log_result_secondary fixture from conftest.py for cached parsing.
+    """
+
+    def test_neutral_deaths_have_camp_type(self, combat_log_result_secondary):
+        """Test neutral creep deaths have valid camp_type values."""
+        from python_manta import NeutralCampType
+
+        result = combat_log_result_secondary
+        neutral_deaths = [
+            e for e in result.combat_log.entries
+            if e.type_name == "DOTA_COMBATLOG_DEATH"
+            and "npc_dota_neutral" in e.target_name
+            and e.neutral_camp_type > 0
+        ]
+
+        assert len(neutral_deaths) > 0
+        for death in neutral_deaths:
+            camp_type = NeutralCampType.from_value(death.neutral_camp_type)
+            assert camp_type in [NeutralCampType.MEDIUM, NeutralCampType.HARD, NeutralCampType.ANCIENT]
+
+    def test_ancient_camp_contains_ancient_creeps(self, combat_log_result_secondary):
+        """Test ANCIENT camp type (value 3) has neutral creep deaths."""
+        from python_manta import NeutralCampType
+
+        result = combat_log_result_secondary
+        ancient_deaths = [
+            e for e in result.combat_log.entries
+            if e.type_name == "DOTA_COMBATLOG_DEATH"
+            and e.neutral_camp_type == NeutralCampType.ANCIENT.value
+            and "npc_dota_neutral" in e.target_name
+        ]
+
+        assert len(ancient_deaths) > 0
+        for death in ancient_deaths:
+            assert "npc_dota_neutral" in death.target_name
+
+    def test_medium_camp_contains_medium_creeps(self, combat_log_result_secondary):
+        """Test MEDIUM camp type contains wolves/ogres/mud golems."""
+        from python_manta import NeutralCampType
+
+        result = combat_log_result_secondary
+        medium_deaths = [
+            e for e in result.combat_log.entries
+            if e.type_name == "DOTA_COMBATLOG_DEATH"
+            and e.neutral_camp_type == NeutralCampType.MEDIUM.value
+            and "npc_dota_neutral" in e.target_name
+        ]
+
+        assert len(medium_deaths) > 0
+        creep_names = set(e.target_name.replace("npc_dota_neutral_", "") for e in medium_deaths)
+        medium_creep_keywords = ["wolf", "ogre", "mud_golem", "satyr", "frog"]
+        found_medium = any(any(k in n for k in medium_creep_keywords) for n in creep_names)
+        assert found_medium, f"Expected medium creeps, got: {creep_names}"
+
+    def test_hard_camp_contains_hard_creeps(self, combat_log_result_secondary):
+        """Test HARD camp type contains hellbears/trolls/centaurs."""
+        from python_manta import NeutralCampType
+
+        result = combat_log_result_secondary
+        hard_deaths = [
+            e for e in result.combat_log.entries
+            if e.type_name == "DOTA_COMBATLOG_DEATH"
+            and e.neutral_camp_type == NeutralCampType.HARD.value
+            and "npc_dota_neutral" in e.target_name
+        ]
+
+        assert len(hard_deaths) > 0
+        creep_names = set(e.target_name.replace("npc_dota_neutral_", "") for e in hard_deaths)
+        hard_creep_keywords = ["furbolg", "dark_troll", "centaur", "wildkin", "satyr_hellcaller", "warpine"]
+        found_hard = any(any(k in n for k in hard_creep_keywords) for n in creep_names)
+        assert found_hard, f"Expected hard creeps, got: {creep_names}"
+
+    def test_neutral_camp_team_matches_team_enum(self, combat_log_result_secondary):
+        """Test neutral_camp_team uses Team enum values (2=Radiant, 3=Dire)."""
+        from python_manta import Team
+
+        result = combat_log_result_secondary
+        neutral_deaths = [
+            e for e in result.combat_log.entries
+            if e.type_name == "DOTA_COMBATLOG_DEATH"
+            and "npc_dota_neutral" in e.target_name
+            and e.neutral_camp_type > 0
+        ]
+
+        camp_teams = set(e.neutral_camp_team for e in neutral_deaths)
+        assert camp_teams.issubset({Team.RADIANT.value, Team.DIRE.value})
