@@ -1062,10 +1062,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#playerstate-fields" class="md-nav__link">
+  <a href="#herosnapshot-fields" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PlayerState Fields
+        HeroSnapshot Fields
       
     </span>
   </a>
@@ -1077,6 +1077,89 @@
     <span class="md-ellipsis">
       
         Position Data Sources Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hero-abilities-and-talents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero Abilities and Talents
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hero Abilities and Talents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-ability-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Ability Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ability-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ability Properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talent-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talent Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-specific-abilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding Specific Abilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tracking-skill-builds-over-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tracking Skill Builds Over Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cooldown-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cooldown Analysis
       
     </span>
   </a>
@@ -1999,10 +2082,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#playerstate-fields" class="md-nav__link">
+  <a href="#herosnapshot-fields" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PlayerState Fields
+        HeroSnapshot Fields
       
     </span>
   </a>
@@ -2014,6 +2097,89 @@
     <span class="md-ellipsis">
       
         Position Data Sources Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hero-abilities-and-talents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero Abilities and Talents
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hero Abilities and Talents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-ability-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Ability Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ability-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ability Properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talent-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talent Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finding-specific-abilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding Specific Abilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tracking-skill-builds-over-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tracking Skill Builds Over Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cooldown-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cooldown Analysis
       
     </span>
   </a>
@@ -2592,8 +2758,8 @@
 <a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
 <a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="k">for</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span><span class="p">:</span>
 <a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Game time: </span><span class="si">{</span><span class="n">snapshot</span><span class="o">.</span><span class="n">game_time</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="k">for</span> <span class="n">player</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">players</span><span class="p">:</span>
-<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2">: (</span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">position_x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">position_y</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="k">for</span> <span class="n">hero</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">heroes</span><span class="p">:</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2">: (</span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">y</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="position-at-specific-ticks">Position at Specific Ticks<a class="headerlink" href="#position-at-specific-ticks" title="Permanent link">&para;</a></h3>
 <p>Use <code>target_ticks</code> to capture state at exact moments:</p>
@@ -2602,8 +2768,8 @@
 <a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
 <a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="k">for</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span><span class="p">:</span>
 <a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tick </span><span class="si">{</span><span class="n">snapshot</span><span class="o">.</span><span class="n">tick</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
-<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="k">for</span> <span class="n">player</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">players</span><span class="p">:</span>
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2">: (</span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">position_x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">position_y</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="k">for</span> <span class="n">hero</span> <span class="ow">in</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">heroes</span><span class="p">:</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2">: (</span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">y</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="filtering-by-hero">Filtering by Hero<a class="headerlink" href="#filtering-by-hero" title="Permanent link">&para;</a></h3>
 <p>Use <code>target_heroes</code> to only get specific heroes. Use the <code>npc_dota_hero_*</code> format (same as combat log):</p>
@@ -2627,9 +2793,9 @@
 <a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>        <span class="n">target_heroes</span><span class="o">=</span><span class="p">[</span><span class="n">death</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span>  <span class="c1"># e.g., &quot;npc_dota_hero_axe&quot;</span>
 <a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>    <span class="p">)</span>
 <a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>
-<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">players</span><span class="p">:</span>
-<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>        <span class="n">victim</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">players</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">victim</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2"> died at (</span><span class="si">{</span><span class="n">victim</span><span class="o">.</span><span class="n">position_x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">victim</span><span class="o">.</span><span class="n">position_y</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">heroes</span><span class="p">:</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>        <span class="n">victim</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">snapshots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">heroes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">victim</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2"> died at (</span><span class="si">{</span><span class="n">victim</span><span class="o">.</span><span class="n">x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">victim</span><span class="o">.</span><span class="n">y</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="position-coordinate-system">Position Coordinate System<a class="headerlink" href="#position-coordinate-system" title="Permanent link">&para;</a></h3>
 <p>Hero positions use world coordinates centered on the map:</p>
@@ -2639,8 +2805,8 @@
 <li><strong>Origin (0,0)</strong>: Center of the map</li>
 <li><strong>Range</strong>: Approximately -8000 to +8000 for both axes</li>
 </ul>
-<h3 id="playerstate-fields">PlayerState Fields<a class="headerlink" href="#playerstate-fields" title="Permanent link">&para;</a></h3>
-<p>Each player in a snapshot includes:</p>
+<h3 id="herosnapshot-fields">HeroSnapshot Fields<a class="headerlink" href="#herosnapshot-fields" title="Permanent link">&para;</a></h3>
+<p>Each hero in a snapshot includes:</p>
 <table>
 <thead>
 <tr>
@@ -2671,12 +2837,12 @@
 <td>2=Radiant, 3=Dire</td>
 </tr>
 <tr>
-<td><code>position_x</code></td>
+<td><code>x</code></td>
 <td>float</td>
 <td>X world coordinate</td>
 </tr>
 <tr>
-<td><code>position_y</code></td>
+<td><code>y</code></td>
 <td>float</td>
 <td>Y world coordinate</td>
 </tr>
@@ -2701,6 +2867,11 @@
 <td>Maximum mana</td>
 </tr>
 <tr>
+<td><code>level</code></td>
+<td>int</td>
+<td>Hero level</td>
+</tr>
+<tr>
 <td><code>last_hits</code></td>
 <td>int</td>
 <td>Last hits</td>
@@ -2721,6 +2892,16 @@
 <td>Net worth</td>
 </tr>
 <tr>
+<td><code>gpm</code></td>
+<td>int</td>
+<td>Gold per minute</td>
+</tr>
+<tr>
+<td><code>xpm</code></td>
+<td>int</td>
+<td>XP per minute</td>
+</tr>
+<tr>
 <td><code>kills</code></td>
 <td>int</td>
 <td>Kills</td>
@@ -2734,6 +2915,61 @@
 <td><code>assists</code></td>
 <td>int</td>
 <td>Assists</td>
+</tr>
+<tr>
+<td><code>armor</code></td>
+<td>float</td>
+<td>Current armor</td>
+</tr>
+<tr>
+<td><code>magic_resistance</code></td>
+<td>float</td>
+<td>Magic resistance (0-1)</td>
+</tr>
+<tr>
+<td><code>damage_min</code></td>
+<td>int</td>
+<td>Minimum damage</td>
+</tr>
+<tr>
+<td><code>damage_max</code></td>
+<td>int</td>
+<td>Maximum damage</td>
+</tr>
+<tr>
+<td><code>strength</code></td>
+<td>float</td>
+<td>Strength attribute</td>
+</tr>
+<tr>
+<td><code>agility</code></td>
+<td>float</td>
+<td>Agility attribute</td>
+</tr>
+<tr>
+<td><code>intellect</code></td>
+<td>float</td>
+<td>Intellect attribute</td>
+</tr>
+<tr>
+<td><code>abilities</code></td>
+<td>list</td>
+<td>List of <code>AbilitySnapshot</code></td>
+</tr>
+<tr>
+<td><code>talents</code></td>
+<td>list</td>
+<td>List of <code>TalentChoice</code></td>
+</tr>
+<tr>
+<td><code>is_illusion</code></td>
+<td>bool</td>
+<td>True if illusion</td>
+</tr>
+<tr>
+<td><code>is_clone</code></td>
+<td>bool</td>
+<td>True if clone (e.g., Meepo)</td>
 </tr>
 </tbody>
 </table>
@@ -2764,6 +3000,199 @@
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="hero-abilities-and-talents">Hero Abilities and Talents<a class="headerlink" href="#hero-abilities-and-talents" title="Permanent link">&para;</a></h2>
+<p>The <code>parser.snapshot()</code> method returns hero state including abilities and talent choices.</p>
+<h3 id="basic-ability-tracking">Basic Ability Tracking<a class="headerlink" href="#basic-ability-tracking" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parser</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">snap</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">target_tick</span><span class="o">=</span><span class="mi">60000</span><span class="p">)</span>  <span class="c1"># ~33 minutes</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="k">for</span> <span class="n">hero</span> <span class="ow">in</span> <span class="n">snap</span><span class="o">.</span><span class="n">heroes</span><span class="p">:</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2"> (Level </span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">level</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="c1"># Show all abilities</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    <span class="k">for</span> <span class="n">ability</span> <span class="ow">in</span> <span class="n">hero</span><span class="o">.</span><span class="n">abilities</span><span class="p">:</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>        <span class="k">if</span> <span class="n">ability</span><span class="o">.</span><span class="n">level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">ability</span><span class="o">.</span><span class="n">short_name</span><span class="si">}</span><span class="s2">: Level </span><span class="si">{</span><span class="n">ability</span><span class="o">.</span><span class="n">level</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="ability-properties">Ability Properties<a class="headerlink" href="#ability-properties" title="Permanent link">&para;</a></h3>
+<p>Each <code>AbilitySnapshot</code> includes:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>slot</code></td>
+<td>int</td>
+<td>Ability slot (0-5 for regular abilities)</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>str</td>
+<td>Full ability class name</td>
+</tr>
+<tr>
+<td><code>level</code></td>
+<td>int</td>
+<td>Current ability level (0-4)</td>
+</tr>
+<tr>
+<td><code>cooldown</code></td>
+<td>float</td>
+<td>Current cooldown remaining</td>
+</tr>
+<tr>
+<td><code>max_cooldown</code></td>
+<td>float</td>
+<td>Maximum cooldown length</td>
+</tr>
+<tr>
+<td><code>mana_cost</code></td>
+<td>int</td>
+<td>Mana cost</td>
+</tr>
+<tr>
+<td><code>charges</code></td>
+<td>int</td>
+<td>Current charges</td>
+</tr>
+<tr>
+<td><code>is_ultimate</code></td>
+<td>bool</td>
+<td>True if slot 5 (ultimate)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Helper Properties:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>short_name</code></td>
+<td>str</td>
+<td>Name without "CDOTA_Ability_" prefix</td>
+</tr>
+<tr>
+<td><code>is_maxed</code></td>
+<td>bool</td>
+<td>True if at max level</td>
+</tr>
+<tr>
+<td><code>is_on_cooldown</code></td>
+<td>bool</td>
+<td>True if cooldown &gt; 0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="talent-tracking">Talent Tracking<a class="headerlink" href="#talent-tracking" title="Permanent link">&para;</a></h3>
+<p>Talents are tracked separately from abilities:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">snap</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">target_tick</span><span class="o">=</span><span class="mi">120000</span><span class="p">)</span>  <span class="c1"># Late game</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="k">for</span> <span class="n">hero</span> <span class="ow">in</span> <span class="n">snap</span><span class="o">.</span><span class="n">heroes</span><span class="p">:</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">talents_chosen</span><span class="si">}</span><span class="s2">/4 talents&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>    <span class="k">for</span> <span class="n">talent</span> <span class="ow">in</span> <span class="n">hero</span><span class="o">.</span><span class="n">talents</span><span class="p">:</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Level </span><span class="si">{</span><span class="n">talent</span><span class="o">.</span><span class="n">tier</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">talent</span><span class="o">.</span><span class="n">side</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Each <code>TalentChoice</code> includes:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tier</code></td>
+<td>int</td>
+<td>Talent tier (10, 15, 20, or 25)</td>
+</tr>
+<tr>
+<td><code>slot</code></td>
+<td>int</td>
+<td>Raw ability slot index</td>
+</tr>
+<tr>
+<td><code>is_left</code></td>
+<td>bool</td>
+<td>True if left talent chosen</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>str</td>
+<td>Talent ability name</td>
+</tr>
+<tr>
+<td><code>side</code></td>
+<td>str</td>
+<td>"left" or "right"</td>
+</tr>
+</tbody>
+</table>
+<h3 id="finding-specific-abilities">Finding Specific Abilities<a class="headerlink" href="#finding-specific-abilities" title="Permanent link">&para;</a></h3>
+<p>Use helper methods to find abilities:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="k">for</span> <span class="n">hero</span> <span class="ow">in</span> <span class="n">snap</span><span class="o">.</span><span class="n">heroes</span><span class="p">:</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>    <span class="c1"># Find ability by name (partial match)</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    <span class="n">omnislash</span> <span class="o">=</span> <span class="n">hero</span><span class="o">.</span><span class="n">get_ability</span><span class="p">(</span><span class="s2">&quot;Omnislash&quot;</span><span class="p">)</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="k">if</span> <span class="n">omnislash</span> <span class="ow">and</span> <span class="n">omnislash</span><span class="o">.</span><span class="n">level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Omnislash level </span><span class="si">{</span><span class="n">omnislash</span><span class="o">.</span><span class="n">level</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>    <span class="c1"># Check if ultimate is learned</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a>    <span class="k">if</span> <span class="n">hero</span><span class="o">.</span><span class="n">has_ultimate</span><span class="p">:</span>
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Has ultimate!&quot;</span><span class="p">)</span>
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a>
+<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a>    <span class="c1"># Get talent at specific tier</span>
+<a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a>    <span class="n">lvl20_talent</span> <span class="o">=</span> <span class="n">hero</span><span class="o">.</span><span class="n">get_talent_at_tier</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a>    <span class="k">if</span> <span class="n">lvl20_talent</span><span class="p">:</span>
+<a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Level 20 talent: </span><span class="si">{</span><span class="n">lvl20_talent</span><span class="o">.</span><span class="n">side</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="tracking-skill-builds-over-time">Tracking Skill Builds Over Time<a class="headerlink" href="#tracking-skill-builds-over-time" title="Permanent link">&para;</a></h3>
+<p>Combine multiple snapshots to track skill progression:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parser</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="c1"># Get snapshots at different times</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="n">ticks</span> <span class="o">=</span> <span class="p">[</span><span class="mi">30000</span><span class="p">,</span> <span class="mi">60000</span><span class="p">,</span> <span class="mi">90000</span><span class="p">,</span> <span class="mi">120000</span><span class="p">]</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="n">ticks</span><span class="p">:</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>    <span class="n">snap</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">target_tick</span><span class="o">=</span><span class="n">tick</span><span class="p">)</span>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>    <span class="k">for</span> <span class="n">hero</span> <span class="ow">in</span> <span class="n">snap</span><span class="o">.</span><span class="n">heroes</span><span class="p">:</span>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>        <span class="k">if</span> <span class="s2">&quot;Juggernaut&quot;</span> <span class="ow">in</span> <span class="n">hero</span><span class="o">.</span><span class="n">hero_name</span><span class="p">:</span>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tick </span><span class="si">{</span><span class="n">tick</span><span class="si">}</span><span class="s2"> - Level </span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">level</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>            <span class="k">for</span> <span class="n">ab</span> <span class="ow">in</span> <span class="n">hero</span><span class="o">.</span><span class="n">abilities</span><span class="p">:</span>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>                <span class="k">if</span> <span class="n">ab</span><span class="o">.</span><span class="n">level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">ab</span><span class="o">.</span><span class="n">short_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">ab</span><span class="o">.</span><span class="n">level</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a>            <span class="k">break</span>
+</code></pre></div>
+<h3 id="cooldown-analysis">Cooldown Analysis<a class="headerlink" href="#cooldown-analysis" title="Permanent link">&para;</a></h3>
+<p>Track ability cooldowns for timing analysis:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">snap</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">target_tick</span><span class="o">=</span><span class="mi">60000</span><span class="p">)</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="k">for</span> <span class="n">hero</span> <span class="ow">in</span> <span class="n">snap</span><span class="o">.</span><span class="n">heroes</span><span class="p">:</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2"> cooldowns:&quot;</span><span class="p">)</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>    <span class="k">for</span> <span class="n">ability</span> <span class="ow">in</span> <span class="n">hero</span><span class="o">.</span><span class="n">abilities</span><span class="p">:</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>        <span class="k">if</span> <span class="n">ability</span><span class="o">.</span><span class="n">is_on_cooldown</span><span class="p">:</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">ability</span><span class="o">.</span><span class="n">short_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">ability</span><span class="o">.</span><span class="n">cooldown</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s remaining&quot;</span><span class="p">)</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>        <span class="k">elif</span> <span class="n">ability</span><span class="o">.</span><span class="n">level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">ability</span><span class="o">.</span><span class="n">short_name</span><span class="si">}</span><span class="s2">: ready&quot;</span><span class="p">)</span>
+</code></pre></div>
 
 
 
