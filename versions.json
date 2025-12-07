@@ -2,49 +2,7 @@
   {
     "version": "master",
     "title": "master",
-    "aliases": []
-  },
-  {
-    "version": "1.5.0.dev0",
-    "title": "1.5.0.dev0",
-    "aliases": []
-  },
-  {
-    "version": "1.4.5.2.dev11",
-    "title": "1.4.5.2.dev11",
-    "aliases": [
-      "latest"
-    ]
-  },
-  {
-    "version": "1.4.5.2.dev10",
-    "title": "1.4.5.2.dev10",
-    "aliases": []
-  },
-  {
-    "version": "1.4.5.2.dev9",
-    "title": "1.4.5.2.dev9",
-    "aliases": []
-  },
-  {
-    "version": "1.4.5.2.dev8",
-    "title": "1.4.5.2.dev8",
-    "aliases": []
-  },
-  {
-    "version": "1.4.5.2.dev7",
-    "title": "1.4.5.2.dev7",
-    "aliases": []
-  },
-  {
-    "version": "1.4.5.2.dev6",
-    "title": "1.4.5.2.dev6",
-    "aliases": []
-  },
-  {
-    "version": "1.4.5.2.dev5",
-    "title": "1.4.5.2.dev5",
-    "aliases": []
+    "aliases": ["latest"]
   },
   {
     "version": "1.4.5.1",
