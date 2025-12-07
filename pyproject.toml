@@ -37,7 +37,6 @@ dev = [
     "black>=22.0.0",
     "isort>=5.0.0",
     "mypy>=1.0.0",
-    "commitizen>=3.0.0",
 ]
 build = [
     "cibuildwheel>=2.17.0",
@@ -73,12 +72,3 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 
-[tool.commitizen]
-name = "cz_conventional_commits"
-version = "1.4.5.2.dev11"
-version_scheme = "pep440"
-version_provider = "pep621"
-tag_format = "v$version"
-update_changelog_on_bump = true
-changelog_incremental = true
-major_version_zero = true

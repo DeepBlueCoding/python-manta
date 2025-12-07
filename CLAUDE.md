@@ -281,73 +281,60 @@ parser.Callbacks.OnNewCallbackName(func(m *dota.NewCallbackName) error {
 4. Try empty filter `""` to see all messages
 5. Check Go build for CGO warnings
 
-### Releasing a new version (CRITICAL - use commitizen)
+### Releasing a new version
 
-This project uses **commitizen** for version management and changelog generation.
-All versions follow **PEP 440** format.
+All versions follow **PEP 440** format with a 4-part scheme: `{manta_major}.{manta_minor}.{manta_patch}.{python_manta_release}`.
 
-#### Version Types (PEP 440)
+#### Version Types
 | Type | Example | Tag | Publish To |
 |------|---------|-----|------------|
-| Development | `1.4.5.2.dev0` | `v1.4.5.2.dev0` | TestPyPI |
+| Development | `1.4.5.2.dev11` | `v1.4.5.2.dev11` | TestPyPI |
 | Final Release | `1.4.5.2` | `v1.4.5.2` | PyPI |
 
 #### Development Workflow
 
-During development, commits can be low-level/messy. Use any commit style:
 ```bash
-git commit -m "wip: trying new approach"
-git commit -m "fix typo"
-git commit -m "more changes"
+# 1. Make changes and commit
+git add .
+git commit -m "feat: add new feature"
 
-# Bump dev version (no changelog update for dev)
-cz bump --devrelease
+# 2. Update version in pyproject.toml (e.g., dev10 → dev11)
+sed -i 's/1.4.5.2.dev10/1.4.5.2.dev11/g' pyproject.toml
+
+# 3. Commit version bump
+git add pyproject.toml
+git commit -m "bump: version 1.4.5.2.dev10 → 1.4.5.2.dev11"
+
+# 4. Tag and push
+git tag v1.4.5.2.dev11
 git push origin master --tags
 ```
 
-#### Release Workflow (with squash)
-
-When ready to release, squash dev commits into clean conventional commits:
+#### Release Workflow
 
 ```bash
-# 1. Find last release tag
-git log --oneline
+# 1. Update version (remove .devN suffix)
+sed -i 's/1.4.5.2.dev11/1.4.5.2/g' pyproject.toml
 
-# 2. Interactive rebase to squash commits since last release
-git rebase -i <last-release-tag>
-# Mark commits as "squash" (s), keep one as "pick"
-# Write a clean conventional commit message:
-#   feat: add HeroSnapshot combat stats
-#   fix: resolve field mapping issues
-
-# 3. Bump to release (auto-generates changelog from squashed commits)
-cz bump
+# 2. Commit, tag, and push
+git add pyproject.toml
+git commit -m "bump: version 1.4.5.2.dev11 → 1.4.5.2"
+git tag v1.4.5.2
 git push origin master --tags
 ```
 
-#### Conventional Commit Format (for release commits)
+#### Commit Message Convention
 ```
-<type>(<scope>): <description>
-```
-
-**Types that appear in changelog:**
-- `feat:` → **Added** section, bumps MINOR
-- `fix:` → **Fixed** section, bumps PATCH
-- `perf:` → **Performance** section
-
-**Types excluded from changelog:**
-- `docs:`, `style:`, `refactor:`, `test:`, `build:`, `ci:`, `chore:`
-
-#### Quick Reference
-```bash
-cz version              # Check current version
-cz bump --dry-run       # Preview next version
-cz bump --devrelease    # Dev bump (no changelog)
-cz bump                 # Release bump (with changelog)
-cz bump --increment MINOR  # Force minor bump
+<type>: <description>
 ```
 
-⚠️ **NEVER manually edit version in pyproject.toml** - always use `cz bump`
+**Types:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation
+- `refactor:` - Code refactoring
+- `test:` - Tests
+- `bump:` - Version bump
 
 ## Dependencies
 
@@ -365,7 +352,6 @@ cz bump --increment MINOR  # Force minor bump
 - black>=22.0.0
 - isort>=5.0.0
 - mypy>=1.0.0
-- commitizen>=3.0.0
 
 ## Project Links
 
