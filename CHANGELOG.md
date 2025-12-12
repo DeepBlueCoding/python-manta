@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 with [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## [1.4.5.3] - 2025-12-12
+
+### Added
+- **Python 3.13 support**: Pre-built wheels now available for Python 3.13 on Linux, macOS (Intel & Apple Silicon), and Windows
+
 ## [1.4.5.2] - 2025-12-07
 
 ### Added
@@ -98,6 +103,7 @@ with [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 - ctypes interface for shared library loading
 - Platform-specific build scripts for reproducible builds
 
+[1.4.5.3]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.5.2...v1.4.5.3
 [1.4.5.2]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.5...v1.4.5.2
 [1.4.5]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.0...v1.4.5
 [1.4.0]: https://github.com/DeepBlueCoding/python-manta/compare/v0.1.0...v1.4.0
