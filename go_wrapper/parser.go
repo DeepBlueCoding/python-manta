@@ -75,6 +75,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 	var messagesResult *UniversalResult
 	var parserInfoResult *ParserInfo
 	var attacksResult *AttacksResult
+	var entityDeathsResult *EntityDeathsResult
 
 	// Hero level tracking for combat log enrichment
 	// Maps hero name (e.g., "npc_dota_hero_axe") to current level
@@ -484,6 +485,119 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		})
 	}
 
+	// Entity deaths collector (tracks entity removals)
+	if config.EntityDeaths != nil {
+		entityDeathsConfig := config.EntityDeaths
+		entityDeathsResult = &EntityDeathsResult{
+			Events: make([]EntityDeath, 0),
+		}
+
+		parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
+			// Only track deletions
+			if !op.Flag(manta.EntityOpDeleted) {
+				return nil
+			}
+			if e == nil {
+				return nil
+			}
+
+			if entityDeathsConfig.MaxEvents > 0 && len(entityDeathsResult.Events) >= entityDeathsConfig.MaxEvents {
+				return nil
+			}
+
+			className := e.GetClassName()
+
+			// Determine entity type
+			isHero := strings.Contains(className, "CDOTA_Unit_Hero_")
+			isLaneCreep := strings.Contains(className, "Creep_Lane") || strings.Contains(className, "BaseNPC_Creep_Lane")
+			isNeutralCreep := strings.Contains(className, "Neutral") || strings.Contains(className, "NeutralCreep")
+			isCreep := isLaneCreep || isNeutralCreep
+			isBuilding := strings.Contains(className, "Tower") || strings.Contains(className, "Barracks") || strings.Contains(className, "Fort")
+			isSummon := strings.Contains(className, "CDOTA_BaseNPC") && !isCreep && !isHero && !isBuilding
+
+			// Skip items, abilities, and other non-unit entities
+			if strings.HasPrefix(className, "CDOTA_Item") || strings.HasPrefix(className, "CDOTA_Ability") {
+				return nil
+			}
+
+			// Apply filters
+			if entityDeathsConfig.HeroesOnly {
+				if !isHero {
+					return nil
+				}
+			} else if entityDeathsConfig.CreepsOnly {
+				if !isCreep {
+					return nil
+				}
+			} else if entityDeathsConfig.IncludeCreeps {
+				// Include heroes, creeps, buildings, summons
+				if !isHero && !isCreep && !isBuilding && !isSummon {
+					return nil
+				}
+			} else {
+				// Default: only heroes and buildings
+				if !isHero && !isBuilding {
+					return nil
+				}
+			}
+
+			// Extract entity data
+			var name string
+			if n, ok := e.GetString("m_iszUnitName"); ok {
+				name = n
+			} else if isHero {
+				// Build hero name from class name
+				parts := strings.Split(className, "CDOTA_Unit_Hero_")
+				if len(parts) >= 2 {
+					name = "npc_dota_hero_" + strings.ToLower(parts[1])
+				}
+			}
+
+			var team int
+			if t, ok := e.GetInt32("m_iTeamNum"); ok {
+				team = int(t)
+			}
+
+			var x, y float32
+			if cellX, ok := e.GetUint64("CBodyComponent.m_cellX"); ok {
+				if cellY, ok2 := e.GetUint64("CBodyComponent.m_cellY"); ok2 {
+					if vecX, ok3 := e.GetFloat32("CBodyComponent.m_vecX"); ok3 {
+						if vecY, ok4 := e.GetFloat32("CBodyComponent.m_vecY"); ok4 {
+							x = float32(cellX)*128.0 + vecX - 8192.0
+							y = float32(cellY)*128.0 + vecY - 8192.0
+						}
+					}
+				}
+			}
+
+			var health, maxHealth int
+			if h, ok := e.GetInt32("m_iHealth"); ok {
+				health = int(h)
+			}
+			if mh, ok := e.GetInt32("m_iMaxHealth"); ok {
+				maxHealth = int(mh)
+			}
+
+			entityDeathsResult.Events = append(entityDeathsResult.Events, EntityDeath{
+				Tick:       int(parser.Tick),
+				EntityID:   int(e.GetIndex()),
+				ClassName:  className,
+				Name:       name,
+				Team:       team,
+				X:          x,
+				Y:          y,
+				Health:     health,
+				MaxHealth:  maxHealth,
+				IsHero:     isHero,
+				IsCreep:    isCreep,
+				IsBuilding: isBuilding,
+				IsNeutral:  isNeutralCreep,
+			})
+
+			return nil
+		})
+	}
+
 	// Run the parser ONCE
 	if err := parser.Start(); err != nil {
 		return nil, fmt.Errorf("error parsing file: %w", err)
@@ -557,6 +671,17 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		}
 		attacksResult.TotalEvents = len(attacksResult.Events)
 		result.Attacks = attacksResult
+	}
+
+	// Entity deaths
+	if entityDeathsResult != nil {
+		// Post-process: add game time to events
+		for i := range entityDeathsResult.Events {
+			entityDeathsResult.Events[i].GameTime = TickToGameTime(uint32(entityDeathsResult.Events[i].Tick), gameStartTick)
+			entityDeathsResult.Events[i].GameTimeStr = FormatGameTime(entityDeathsResult.Events[i].GameTime)
+		}
+		entityDeathsResult.TotalEvents = len(entityDeathsResult.Events)
+		result.EntityDeaths = entityDeathsResult
 	}
 
 	return result, nil

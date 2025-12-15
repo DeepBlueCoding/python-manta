@@ -1758,6 +1758,40 @@ class AttacksResult(BaseModel):
 
 
 # ============================================================================
+# ENTITY DEATHS (from entity lifecycle tracking)
+# ============================================================================
+
+
+class EntityDeath(BaseModel):
+    """Represents an entity being removed from the game.
+
+    This captures when entities are deleted, which typically means they died.
+    Useful for tracking creep deaths with entity_id for correlation with attacks.
+    """
+    tick: int                        # Tick when entity was removed
+    entity_id: int                   # Entity index (for correlation with attacks/snapshots)
+    class_name: str                  # e.g., "CDOTA_BaseNPC_Creep_Lane"
+    name: str = ""                   # e.g., "npc_dota_creep_goodguys_melee"
+    team: int = 0                    # 2=Radiant, 3=Dire
+    x: float = 0.0                   # Last known X position
+    y: float = 0.0                   # Last known Y position
+    health: int = 0                  # Health at removal (usually 0)
+    max_health: int = 0              # Max health
+    is_hero: bool = False            # Is a hero entity
+    is_creep: bool = False           # Is a creep (lane or neutral)
+    is_building: bool = False        # Is a building (tower, barracks)
+    is_neutral: bool = False         # Is a neutral creep
+    game_time: float = 0.0           # Game time in seconds
+    game_time_str: str = ""          # Formatted game time (e.g., "12:34")
+
+
+class EntityDeathsResult(BaseModel):
+    """Result from entity deaths tracking."""
+    events: List[EntityDeath] = []
+    total_events: int = 0
+
+
+# ============================================================================
 # HERO RESPAWN EVENT MODEL AND UTILITY
 # ============================================================================
 
@@ -1930,6 +1964,14 @@ class AttacksConfig(BaseModel):
     max_events: int = 0  # Max events (0 = unlimited)
 
 
+class EntityDeathsConfig(BaseModel):
+    """Config for entity deaths tracking."""
+    max_events: int = 0       # Max events (0 = unlimited)
+    heroes_only: bool = False # Only track hero deaths
+    creeps_only: bool = False # Only track creep deaths
+    include_creeps: bool = False  # Include creeps (default False for performance)
+
+
 class ParseConfig(BaseModel):
     """Configuration for single-pass parsing with multiple collectors."""
     header: Optional[HeaderCollectorConfig] = None
@@ -1942,6 +1984,7 @@ class ParseConfig(BaseModel):
     messages: Optional[MessagesCollectorConfig] = None
     parser_info: Optional[ParserInfoCollectorConfig] = None
     attacks: Optional[AttacksConfig] = None
+    entity_deaths: Optional[EntityDeathsConfig] = None
 
 
 class MessagesResult(BaseModel):
@@ -1969,6 +2012,7 @@ class ParseResult(BaseModel):
     messages: Optional[MessagesResult] = None
     parser_info: Optional[ParserInfo] = None
     attacks: Optional[AttacksResult] = None
+    entity_deaths: Optional[EntityDeathsResult] = None
 
 
 class StreamConfig(BaseModel):
@@ -2068,11 +2112,12 @@ class HeroSnapshot(BaseModel):
     in entity snapshots.
     """
     # Identity
+    entity_id: int = 0
     hero_name: str = ""
     hero_id: int = 0
     player_id: int = 0
     team: int = 0
-    index: int = 0
+    index: int = 0  # Deprecated: use entity_id instead
 
     # Position
     x: float = 0.0
@@ -2304,6 +2349,7 @@ class Parser:
         messages: Optional[Dict[str, Any]] = None,
         parser_info: bool = False,
         attacks: Optional[Dict[str, Any]] = None,
+        entity_deaths: Optional[Dict[str, Any]] = None,
     ) -> ParseResult:
         """Parse the demo file with specified collectors.
 
@@ -2321,6 +2367,7 @@ class Parser:
             messages: Universal messages config (filter, max_messages)
             parser_info: Collect parser state info
             attacks: Attacks config (max_events) - captures TE_Projectile attacks
+            entity_deaths: Entity deaths config (include_creeps, heroes_only, etc.)
 
         Returns:
             ParseResult with all requested data
@@ -2361,6 +2408,9 @@ class Parser:
 
         if attacks is not None:
             config.attacks = AttacksConfig(**attacks)
+
+        if entity_deaths is not None:
+            config.entity_deaths = EntityDeathsConfig(**entity_deaths)
 
         path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json(exclude_none=True).encode('utf-8')

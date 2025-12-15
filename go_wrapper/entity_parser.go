@@ -723,10 +723,12 @@ func extractTeamState(team *manta.Entity) TeamState {
 
 // extractFullHeroSnapshot extracts complete hero state including abilities, talents, and economy
 func extractFullHeroSnapshot(entity *manta.Entity, playerIdx int, heroID int, parser *manta.Parser, economy *EconomyData) HeroSnapshot {
+	entityID := int(entity.GetIndex())
 	hero := HeroSnapshot{
 		HeroName:   entityClassToHeroName(entity.GetClassName()),
 		HeroID:     heroID,
-		Index:      int(entity.GetIndex()),
+		EntityID:   entityID,
+		Index:      entityID, // Deprecated: use entity_id
 		PlayerID:   playerIdx,
 		Abilities:  make([]AbilitySnapshot, 0),
 		Talents:    make([]TalentChoice, 0),

@@ -89,6 +89,10 @@ from .manta_python import (
     AttackEvent,
     AttacksConfig,
     AttacksResult,
+    # Entity deaths (from entity lifecycle)
+    EntityDeath,
+    EntityDeathsConfig,
+    EntityDeathsResult,
     # Respawn events (derived from combat log)
     HeroRespawnEvent,
     calculate_respawn_time,
@@ -178,6 +182,10 @@ __all__ = [
     "AttackEvent",
     "AttacksConfig",
     "AttacksResult",
+    # Entity deaths (from entity lifecycle)
+    "EntityDeath",
+    "EntityDeathsConfig",
+    "EntityDeathsResult",
     # Respawn events (derived from combat log)
     "HeroRespawnEvent",
     "calculate_respawn_time",

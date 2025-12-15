@@ -32,6 +32,9 @@ type ParseConfig struct {
 
 	// Attacks collector (from TE_Projectile)
 	Attacks *AttacksConfig `json:"attacks,omitempty"`
+
+	// Entity deaths collector (tracks entity removals)
+	EntityDeaths *EntityDeathsConfig `json:"entity_deaths,omitempty"`
 }
 
 // HeaderCollectorConfig - header is simple, just enable/disable
@@ -71,6 +74,7 @@ type ParseResult struct {
 	Messages     *UniversalResult    `json:"messages,omitempty"`
 	ParserInfo   *ParserInfo         `json:"parser_info,omitempty"`
 	Attacks      *AttacksResult      `json:"attacks,omitempty"`
+	EntityDeaths *EntityDeathsResult `json:"entity_deaths,omitempty"`
 }
 
 // UniversalResult matches the existing universal parse result structure
@@ -106,7 +110,8 @@ type TalentChoice struct {
 // HeroSnapshot captures a hero's complete state (shared between entity_parser and index)
 type HeroSnapshot struct {
 	// Identity
-	Index    int    `json:"index"`
+	EntityID int    `json:"entity_id"`
+	Index    int    `json:"index"` // Deprecated: use entity_id instead
 	PlayerID int    `json:"player_id"`
 	HeroID   int    `json:"hero_id"`
 	HeroName string `json:"hero_name"`
@@ -182,5 +187,38 @@ type AttackEvent struct {
 // AttacksResult contains all attack events from TE_Projectile
 type AttacksResult struct {
 	Events      []AttackEvent `json:"events"`
+	TotalEvents int           `json:"total_events"`
+}
+
+// EntityDeathsConfig controls entity death tracking
+type EntityDeathsConfig struct {
+	MaxEvents     int  `json:"max_events"`      // Max events (0 = unlimited)
+	HeroesOnly    bool `json:"heroes_only"`     // Only track hero deaths
+	CreepsOnly    bool `json:"creeps_only"`     // Only track creep deaths
+	IncludeCreeps bool `json:"include_creeps"`  // Include creeps (default false for performance)
+}
+
+// EntityDeath represents an entity being removed from the game
+type EntityDeath struct {
+	Tick        int     `json:"tick"`
+	EntityID    int     `json:"entity_id"`
+	ClassName   string  `json:"class_name"`
+	Name        string  `json:"name"`          // e.g., "npc_dota_hero_juggernaut" or "npc_dota_creep_goodguys_melee"
+	Team        int     `json:"team"`          // 2=Radiant, 3=Dire
+	X           float32 `json:"x"`             // Last known position
+	Y           float32 `json:"y"`
+	Health      int     `json:"health"`        // Health at time of removal (usually 0)
+	MaxHealth   int     `json:"max_health"`
+	IsHero      bool    `json:"is_hero"`
+	IsCreep     bool    `json:"is_creep"`
+	IsBuilding  bool    `json:"is_building"`
+	IsNeutral   bool    `json:"is_neutral"`    // Neutral creep
+	GameTime    float32 `json:"game_time"`
+	GameTimeStr string  `json:"game_time_str"`
+}
+
+// EntityDeathsResult contains all entity death events
+type EntityDeathsResult struct {
+	Events      []EntityDeath `json:"events"`
 	TotalEvents int           `json:"total_events"`
 }
