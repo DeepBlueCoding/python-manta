@@ -12,13 +12,13 @@
         <meta name="author" content="DeepBlueCoding">
       
       
-        <link rel="canonical" href="https://deepbluecoding.github.io/python-manta/master/reference/entities/">
+        <link rel="canonical" href="https://deepbluecoding.github.io/python-manta/master/reference/attacks/">
       
       
-        <link rel="prev" href="../modifiers/">
+        <link rel="prev" href="../combat-log/">
       
       
-        <link rel="next" href="../string-tables/">
+        <link rel="next" href="../modifiers/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Entities - Python Manta</title>
+        <title>Attacks - Python Manta</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#entities-reference" class="md-skip">
+        <a href="#attacks-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Entities
+              Attacks
             
           </span>
         </div>
@@ -1045,10 +1045,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../attacks/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Attacks
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1064,6 +1091,237 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attack-event-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Event Fields
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attack Event Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projectile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projectile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#limiting-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limiting Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entity-index-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entity Index Mapping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entity Index Mapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entity-index-ranges-approximate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entity Index Ranges (Approximate)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tower-attack-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tower Attack Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neutral-aggro-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neutral Aggro Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hero-attack-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero Attack Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#statistics-real-match-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Statistics (Real Match Data)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combat-log-vs-attacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combat Log vs Attacks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combining-with-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combining with Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1101,37 +1359,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entities
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../entities/" class="md-nav__link">
         
   
   
@@ -1147,275 +1378,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#entity-data-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entity Data Fields
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#basic-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic Usage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#entity-classes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entity Classes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Entity Classes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#heroes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Heroes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#creeps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Creeps
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#buildings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Buildings
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#other-units" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Other Units
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#items" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Items
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#abilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Abilities
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-hero-properties" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Hero Properties
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Common Hero Properties">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#health-mana" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Health &amp; Mana
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#position-movement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Position &amp; Movement
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#combat-stats" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Combat Stats
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#economy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Economy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#team-player" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Team &amp; Player
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#filtering" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Filtering
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Filtering">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#by-class-name" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        By Class Name
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#by-tick" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        By Tick
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#by-property" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        By Property
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#property-name-patterns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Property Name Patterns
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#result-metadata" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Result Metadata
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1483,13 +1445,63 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#entity-data-fields" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Entity Data Fields
+        Overview
       
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attack-event-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Event Fields
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attack Event Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projectile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projectile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1502,80 +1514,14 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#entity-classes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entity Classes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Entity Classes">
+    <nav class="md-nav" aria-label="Basic Usage">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#heroes" class="md-nav__link">
+  <a href="#limiting-events" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Heroes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#creeps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Creeps
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#buildings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Buildings
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#other-units" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Other Units
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#items" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Items
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#abilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Abilities
+        Limiting Events
       
     </span>
   </a>
@@ -1588,66 +1534,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-hero-properties" class="md-nav__link">
+  <a href="#entity-index-mapping" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Hero Properties
+        Entity Index Mapping
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Common Hero Properties">
+    <nav class="md-nav" aria-label="Entity Index Mapping">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#health-mana" class="md-nav__link">
+  <a href="#entity-index-ranges-approximate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Health &amp; Mana
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#position-movement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Position &amp; Movement
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#combat-stats" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Combat Stats
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#economy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Economy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#team-player" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Team &amp; Player
+        Entity Index Ranges (Approximate)
       
     </span>
   </a>
@@ -1660,22 +1562,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering" class="md-nav__link">
+  <a href="#use-case-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Filtering
+        Use Case Examples
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Filtering">
+    <nav class="md-nav" aria-label="Use Case Examples">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#by-class-name" class="md-nav__link">
+  <a href="#tower-attack-tracking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        By Class Name
+        Tower Attack Tracking
       
     </span>
   </a>
@@ -1683,10 +1585,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#by-tick" class="md-nav__link">
+  <a href="#neutral-aggro-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        By Tick
+        Neutral Aggro Analysis
       
     </span>
   </a>
@@ -1694,10 +1596,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#by-property" class="md-nav__link">
+  <a href="#hero-attack-patterns" class="md-nav__link">
     <span class="md-ellipsis">
       
-        By Property
+        Hero Attack Patterns
       
     </span>
   </a>
@@ -1710,10 +1612,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#property-name-patterns" class="md-nav__link">
+  <a href="#statistics-real-match-data" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Property Name Patterns
+        Statistics (Real Match Data)
       
     </span>
   </a>
@@ -1721,10 +1623,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#result-metadata" class="md-nav__link">
+  <a href="#combat-log-vs-attacks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Result Metadata
+        Combat Log vs Attacks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combining-with-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combining with Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Notes
       
     </span>
   </a>
@@ -1751,14 +1675,25 @@
   
 
 
-<h1 id="entities-reference">Entities Reference<a class="headerlink" href="#entities-reference" title="Permanent link">&para;</a></h1>
+<h1 id="attacks-reference">Attacks Reference<a class="headerlink" href="#attacks-reference" title="Permanent link">&para;</a></h1>
 <details class="info">
 <summary>AI Summary</summary>
-<p>Reference for querying game entities from Dota 2 replays. Entities represent all game objects: heroes, creeps, buildings, items, abilities, and more. Use <code>query_entities()</code> to get entity data at a specific tick with optional class filtering. Each entity has an index, serial, class name, and property dictionary. Common properties include health, mana, position, level, gold, and KDA stats.</p>
+<p>Complete reference for attack projectile parsing from TE_Projectile messages. Captures ALL auto-attacks in the game: hero attacks, tower attacks on creeps, creep-on-creep attacks, and neutral aggro. Each event contains source/target entity indices, projectile speed, and timing. Typically 15,000+ events per match with 87% being non-hero attacks (towers, creeps, neutrals).</p>
 </details>
 <hr />
-<h2 id="entity-data-fields">Entity Data Fields<a class="headerlink" href="#entity-data-fields" title="Permanent link">&para;</a></h2>
-<p>Every <code>EntityData</code> contains:</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The attacks collector parses <code>TE_Projectile</code> messages with <code>is_attack=True</code>, capturing all auto-attack projectiles in the game. This data is NOT available in the combat log, which only records damage/kill events.</p>
+<p><strong>Key Use Cases:</strong></p>
+<ul>
+<li>Tower attacks on creeps (not in combat log)</li>
+<li>Neutral creep aggro tracking</li>
+<li>Creep-on-creep combat analysis</li>
+<li>Hero attack patterns</li>
+</ul>
+<hr />
+<h2 id="attack-event-fields">Attack Event Fields<a class="headerlink" href="#attack-event-fields" title="Permanent link">&para;</a></h2>
+<p>Every <code>AttackEvent</code> contains these fields:</p>
+<h3 id="timing">Timing<a class="headerlink" href="#timing" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1769,494 +1704,278 @@
 </thead>
 <tbody>
 <tr>
-<td><code>index</code></td>
+<td><code>tick</code></td>
 <td><code>int</code></td>
-<td>Entity index (unique identifier)</td>
+<td>Game tick (~30/second)</td>
 </tr>
 <tr>
-<td><code>serial</code></td>
-<td><code>int</code></td>
-<td>Entity serial number</td>
+<td><code>game_time</code></td>
+<td><code>float</code></td>
+<td>Game time in seconds from horn</td>
 </tr>
 <tr>
-<td><code>class_name</code></td>
+<td><code>game_time_str</code></td>
 <td><code>str</code></td>
-<td>Entity class name (e.g., <code>CDOTA_Unit_Hero_Axe</code>)</td>
+<td>Formatted time (e.g., "15:34")</td>
 </tr>
 <tr>
-<td><code>properties</code></td>
-<td><code>Dict[str, Any]</code></td>
-<td>Entity properties dictionary</td>
+<td><code>launch_tick</code></td>
+<td><code>int</code></td>
+<td>Tick when projectile was launched</td>
+</tr>
+</tbody>
+</table>
+<h3 id="entities">Entities<a class="headerlink" href="#entities" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_index</code></td>
+<td><code>int</code></td>
+<td>Entity index of attacker</td>
+</tr>
+<tr>
+<td><code>target_index</code></td>
+<td><code>int</code></td>
+<td>Entity index of target</td>
+</tr>
+<tr>
+<td><code>source_handle</code></td>
+<td><code>int</code></td>
+<td>Raw entity handle (advanced use)</td>
+</tr>
+<tr>
+<td><code>target_handle</code></td>
+<td><code>int</code></td>
+<td>Raw entity handle (advanced use)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="projectile">Projectile<a class="headerlink" href="#projectile" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>projectile_speed</code></td>
+<td><code>int</code></td>
+<td>Projectile move speed</td>
+</tr>
+<tr>
+<td><code>dodgeable</code></td>
+<td><code>bool</code></td>
+<td>Can be disjointed</td>
 </tr>
 </tbody>
 </table>
 <hr />
 <h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parser</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Hero&quot;</span><span class="p">,</span> <span class="n">max_entities</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span><span class="p">:</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">class_name</span><span class="si">}</span><span class="s2"> (index=</span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Health: </span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iHealth&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Level: </span><span class="si">{</span><span class="n">entity</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;m_iCurrentLevel&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Collect all attack events</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">attacks</span><span class="o">=</span><span class="p">{})</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total attacks: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">attacks</span><span class="o">.</span><span class="n">total_events</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="k">for</span> <span class="n">attack</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">attacks</span><span class="o">.</span><span class="n">events</span><span class="p">[:</span><span class="mi">10</span><span class="p">]:</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">attack</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] Entity </span><span class="si">{</span><span class="n">attack</span><span class="o">.</span><span class="n">source_index</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">attack</span><span class="o">.</span><span class="n">target_index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="limiting-events">Limiting Events<a class="headerlink" href="#limiting-events" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># First 1000 attacks only</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">attacks</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_events&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">})</span>
 </code></pre></div>
 <hr />
-<h2 id="entity-classes">Entity Classes<a class="headerlink" href="#entity-classes" title="Permanent link">&para;</a></h2>
-<h3 id="heroes">Heroes<a class="headerlink" href="#heroes" title="Permanent link">&para;</a></h3>
+<h2 id="entity-index-mapping">Entity Index Mapping<a class="headerlink" href="#entity-index-mapping" title="Permanent link">&para;</a></h2>
+<p>Entity indices identify units in the game. To map indices to names:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Get hero entity indices from snapshot</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">snap</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">target_tick</span><span class="o">=</span><span class="mi">60000</span><span class="p">)</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">hero_indices</span> <span class="o">=</span> <span class="p">{</span><span class="n">h</span><span class="o">.</span><span class="n">index</span><span class="p">:</span> <span class="n">h</span><span class="o">.</span><span class="n">hero_name</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">snap</span><span class="o">.</span><span class="n">heroes</span><span class="p">}</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Classify attacks</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">for</span> <span class="n">attack</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">attacks</span><span class="o">.</span><span class="n">events</span><span class="p">:</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">source_name</span> <span class="o">=</span> <span class="n">hero_indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attack</span><span class="o">.</span><span class="n">source_index</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;entity_</span><span class="si">{</span><span class="n">attack</span><span class="o">.</span><span class="n">source_index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">target_name</span> <span class="o">=</span> <span class="n">hero_indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attack</span><span class="o">.</span><span class="n">target_index</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;entity_</span><span class="si">{</span><span class="n">attack</span><span class="o">.</span><span class="n">target_index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source_name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="entity-index-ranges-approximate">Entity Index Ranges (Approximate)<a class="headerlink" href="#entity-index-ranges-approximate" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Class Pattern</th>
-<th>Description</th>
+<th>Range</th>
+<th>Typical Units</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>CDOTA_Unit_Hero_*</code></td>
-<td>Hero units</td>
+<td>300-600</td>
+<td>Heroes</td>
 </tr>
 <tr>
-<td><code>CDOTA_Unit_Hero_Axe</code></td>
-<td>Axe specifically</td>
+<td>600-800</td>
+<td>Towers, buildings</td>
 </tr>
 <tr>
-<td><code>CDOTA_Unit_Hero_Invoker</code></td>
-<td>Invoker specifically</td>
-</tr>
-</tbody>
-</table>
-<h3 id="creeps">Creeps<a class="headerlink" href="#creeps" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Class Pattern</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>CDOTA_BaseNPC_Creep_*</code></td>
-<td>Lane creeps</td>
-</tr>
-<tr>
-<td><code>CDOTA_BaseNPC_Creep_Neutral</code></td>
-<td>Neutral creeps</td>
-</tr>
-</tbody>
-</table>
-<h3 id="buildings">Buildings<a class="headerlink" href="#buildings" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Class Pattern</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>CDOTA_BaseNPC_Tower</code></td>
-<td>Towers</td>
-</tr>
-<tr>
-<td><code>CDOTA_BaseNPC_Barracks</code></td>
-<td>Barracks</td>
-</tr>
-<tr>
-<td><code>CDOTA_BaseNPC_Building</code></td>
-<td>Ancient and other buildings</td>
-</tr>
-<tr>
-<td><code>CDOTA_BaseNPC_Fort</code></td>
-<td>Ancient (throne)</td>
-</tr>
-</tbody>
-</table>
-<h3 id="other-units">Other Units<a class="headerlink" href="#other-units" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Class Pattern</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>CDOTA_BaseNPC_Courier</code></td>
-<td>Couriers</td>
-</tr>
-<tr>
-<td><code>CDOTA_Unit_Roshan</code></td>
-<td>Roshan</td>
-</tr>
-<tr>
-<td><code>CDOTA_NPC_Observer_Ward</code></td>
-<td>Observer wards</td>
-</tr>
-<tr>
-<td><code>CDOTA_NPC_Sentry_Ward</code></td>
-<td>Sentry wards</td>
-</tr>
-</tbody>
-</table>
-<h3 id="items">Items<a class="headerlink" href="#items" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Class Pattern</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>CDOTA_Item_*</code></td>
-<td>Items</td>
-</tr>
-<tr>
-<td><code>CDOTA_Item_Physical</code></td>
-<td>Dropped items</td>
-</tr>
-</tbody>
-</table>
-<h3 id="abilities">Abilities<a class="headerlink" href="#abilities" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Class Pattern</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>CDOTA_Ability_*</code></td>
-<td>Ability instances</td>
+<td>1000+</td>
+<td>Creeps, summons, other units</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="common-hero-properties">Common Hero Properties<a class="headerlink" href="#common-hero-properties" title="Permanent link">&para;</a></h2>
-<h3 id="health-mana">Health &amp; Mana<a class="headerlink" href="#health-mana" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>m_iHealth</code></td>
-<td><code>int</code></td>
-<td>Current health</td>
-</tr>
-<tr>
-<td><code>m_iMaxHealth</code></td>
-<td><code>int</code></td>
-<td>Maximum health</td>
-</tr>
-<tr>
-<td><code>m_flMana</code></td>
-<td><code>float</code></td>
-<td>Current mana</td>
-</tr>
-<tr>
-<td><code>m_flMaxMana</code></td>
-<td><code>float</code></td>
-<td>Maximum mana</td>
-</tr>
-<tr>
-<td><code>m_flHealthThinkRegen</code></td>
-<td><code>float</code></td>
-<td>Health regeneration</td>
-</tr>
-<tr>
-<td><code>m_flManaThinkRegen</code></td>
-<td><code>float</code></td>
-<td>Mana regeneration</td>
-</tr>
-</tbody>
-</table>
-<h3 id="position-movement">Position &amp; Movement<a class="headerlink" href="#position-movement" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>m_vecOrigin</code></td>
-<td><code>[x, y, z]</code></td>
-<td>Position in world coordinates</td>
-</tr>
-<tr>
-<td><code>m_angRotation</code></td>
-<td><code>[pitch, yaw, roll]</code></td>
-<td>Rotation angles</td>
-</tr>
-<tr>
-<td><code>m_flSpeed</code></td>
-<td><code>float</code></td>
-<td>Current movement speed</td>
-</tr>
-</tbody>
-</table>
-<h3 id="combat-stats">Combat Stats<a class="headerlink" href="#combat-stats" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>m_iCurrentLevel</code></td>
-<td><code>int</code></td>
-<td>Hero level</td>
-</tr>
-<tr>
-<td><code>m_iKills</code></td>
-<td><code>int</code></td>
-<td>Kills</td>
-</tr>
-<tr>
-<td><code>m_iDeaths</code></td>
-<td><code>int</code></td>
-<td>Deaths</td>
-</tr>
-<tr>
-<td><code>m_iAssists</code></td>
-<td><code>int</code></td>
-<td>Assists</td>
-</tr>
-<tr>
-<td><code>m_iDamageMin</code></td>
-<td><code>int</code></td>
-<td>Minimum attack damage</td>
-</tr>
-<tr>
-<td><code>m_iDamageMax</code></td>
-<td><code>int</code></td>
-<td>Maximum attack damage</td>
-</tr>
-<tr>
-<td><code>m_flPhysicalArmorValue</code></td>
-<td><code>float</code></td>
-<td>Armor value</td>
-</tr>
-<tr>
-<td><code>m_flMagicalResistanceValue</code></td>
-<td><code>float</code></td>
-<td>Magic resistance</td>
-</tr>
-</tbody>
-</table>
-<h3 id="economy">Economy<a class="headerlink" href="#economy" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>m_iGold</code></td>
-<td><code>int</code></td>
-<td>Reliable + unreliable gold</td>
-</tr>
-<tr>
-<td><code>m_iGoldReliable</code></td>
-<td><code>int</code></td>
-<td>Reliable gold</td>
-</tr>
-<tr>
-<td><code>m_iGoldUnreliable</code></td>
-<td><code>int</code></td>
-<td>Unreliable gold</td>
-</tr>
-<tr>
-<td><code>m_iTotalEarnedGold</code></td>
-<td><code>int</code></td>
-<td>Total gold earned</td>
-</tr>
-<tr>
-<td><code>m_iLastHitCount</code></td>
-<td><code>int</code></td>
-<td>Total last hits</td>
-</tr>
-<tr>
-<td><code>m_iDenyCount</code></td>
-<td><code>int</code></td>
-<td>Total denies</td>
-</tr>
-</tbody>
-</table>
-<h3 id="team-player">Team &amp; Player<a class="headerlink" href="#team-player" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>m_iTeamNum</code></td>
-<td><code>int</code></td>
-<td>Team number (2=Radiant, 3=Dire)</td>
-</tr>
-<tr>
-<td><code>m_iPlayerID</code></td>
-<td><code>int</code></td>
-<td>Player ID (0-9)</td>
-</tr>
-<tr>
-<td><code>m_hAbilities</code></td>
-<td><code>list</code></td>
-<td>Ability handles</td>
-</tr>
-<tr>
-<td><code>m_hItems</code></td>
-<td><code>list</code></td>
-<td>Item handles</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="filtering">Filtering<a class="headerlink" href="#filtering" title="Permanent link">&para;</a></h2>
-<h3 id="by-class-name">By Class Name<a class="headerlink" href="#by-class-name" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># All heroes</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">heroes</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Hero&quot;</span><span class="p">,</span> <span class="n">max_entities</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># All towers</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">towers</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Tower&quot;</span><span class="p">,</span> <span class="n">max_entities</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># All couriers</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">couriers</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Courier&quot;</span><span class="p">,</span> <span class="n">max_entities</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<h2 id="use-case-examples">Use Case Examples<a class="headerlink" href="#use-case-examples" title="Permanent link">&para;</a></h2>
+<h3 id="tower-attack-tracking">Tower Attack Tracking<a class="headerlink" href="#tower-attack-tracking" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">attacks</span><span class="o">=</span><span class="p">{})</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Entity 725 is typically Dire T1 top tower</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">tower_attacks</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">attacks</span><span class="o">.</span><span class="n">events</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">source_index</span> <span class="o">==</span> <span class="mi">725</span><span class="p">]</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tower attacks: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tower_attacks</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Find all tower attacks (entities in 600-800 range)</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">possible_towers</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">attacks</span><span class="o">.</span><span class="n">events</span> <span class="k">if</span> <span class="mi">600</span> <span class="o">&lt;=</span> <span class="n">e</span><span class="o">.</span><span class="n">source_index</span> <span class="o">&lt;=</span> <span class="mi">800</span><span class="p">]</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Possible tower attacks: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">possible_towers</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="by-tick">By Tick<a class="headerlink" href="#by-tick" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Get state at specific tick</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">early_game</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">tick</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Hero&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">late_game</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">tick</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span> <span class="n">class_filter</span><span class="o">=</span><span class="s2">&quot;Hero&quot;</span><span class="p">)</span>
+<h3 id="neutral-aggro-analysis">Neutral Aggro Analysis<a class="headerlink" href="#neutral-aggro-analysis" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">attacks</span><span class="o">=</span><span class="p">{})</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># Get hero indices</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">snap</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">target_tick</span><span class="o">=</span><span class="mi">60000</span><span class="p">)</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">hero_indices</span> <span class="o">=</span> <span class="p">{</span><span class="n">h</span><span class="o">.</span><span class="n">index</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">snap</span><span class="o">.</span><span class="n">heroes</span><span class="p">}</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Find attacks FROM non-heroes TO heroes (neutrals attacking heroes)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">aggro_events</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">attacks</span><span class="o">.</span><span class="n">events</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">source_index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hero_indices</span> <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">target_index</span> <span class="ow">in</span> <span class="n">hero_indices</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="p">]</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Neutral/creep aggro on heroes: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">aggro_events</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="by-property">By Property<a class="headerlink" href="#by-property" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Get all entities, then filter in Python</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">query_entities</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">max_entities</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Find low health heroes</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">low_health</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entities</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="k">if</span> <span class="s2">&quot;Hero&quot;</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">class_name</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;m_iHealth&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">500</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">]</span>
+<h3 id="hero-attack-patterns">Hero Attack Patterns<a class="headerlink" href="#hero-attack-patterns" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">attacks</span><span class="o">=</span><span class="p">{})</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># Get hero indices</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">snap</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">target_tick</span><span class="o">=</span><span class="mi">60000</span><span class="p">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">hero_indices</span> <span class="o">=</span> <span class="p">{</span><span class="n">h</span><span class="o">.</span><span class="n">index</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">snap</span><span class="o">.</span><span class="n">heroes</span><span class="p">}</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Count attacks per hero</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">hero_attack_counts</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="k">for</span> <span class="n">attack</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">attacks</span><span class="o">.</span><span class="n">events</span><span class="p">:</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="k">if</span> <span class="n">attack</span><span class="o">.</span><span class="n">source_index</span> <span class="ow">in</span> <span class="n">hero_indices</span><span class="p">:</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="n">hero_attack_counts</span><span class="p">[</span><span class="n">attack</span><span class="o">.</span><span class="n">source_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">hero_attack_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attack</span><span class="o">.</span><span class="n">source_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="c1"># Display results</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="k">for</span> <span class="n">hero</span> <span class="ow">in</span> <span class="n">snap</span><span class="o">.</span><span class="n">heroes</span><span class="p">:</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="n">count</span> <span class="o">=</span> <span class="n">hero_attack_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">hero</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hero</span><span class="o">.</span><span class="n">hero_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> attacks&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
-<h2 id="property-name-patterns">Property Name Patterns<a class="headerlink" href="#property-name-patterns" title="Permanent link">&para;</a></h2>
-<p>Properties follow Source 2 naming conventions:</p>
+<h2 id="statistics-real-match-data">Statistics (Real Match Data)<a class="headerlink" href="#statistics-real-match-data" title="Permanent link">&para;</a></h2>
+<p>From match 8447659831 (Team Spirit vs Tundra, ~46 min):</p>
 <table>
 <thead>
 <tr>
-<th>Prefix</th>
-<th>Meaning</th>
-<th>Example</th>
+<th>Metric</th>
+<th>Value</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>m_i</code></td>
-<td>Integer</td>
-<td><code>m_iHealth</code></td>
+<td>Total attack events</td>
+<td>15,895</td>
 </tr>
 <tr>
-<td><code>m_fl</code></td>
-<td>Float</td>
-<td><code>m_flMana</code></td>
+<td>Hero attacks</td>
+<td>2,018 (13%)</td>
 </tr>
 <tr>
-<td><code>m_b</code></td>
-<td>Boolean</td>
-<td><code>m_bIsAlive</code></td>
+<td>Non-hero attacks</td>
+<td>13,877 (87%)</td>
 </tr>
 <tr>
-<td><code>m_sz</code></td>
-<td>String</td>
-<td><code>m_szName</code></td>
-</tr>
-<tr>
-<td><code>m_vec</code></td>
-<td>Vector</td>
-<td><code>m_vecOrigin</code></td>
-</tr>
-<tr>
-<td><code>m_ang</code></td>
-<td>Angle</td>
-<td><code>m_angRotation</code></td>
-</tr>
-<tr>
-<td><code>m_h</code></td>
-<td>Handle</td>
-<td><code>m_hAbilities</code></td>
-</tr>
-<tr>
-<td><code>m_n</code></td>
-<td>Enum/Int</td>
-<td><code>m_nGameState</code></td>
+<td>Dire T1 top tower attacks</td>
+<td>276</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="result-metadata">Result Metadata<a class="headerlink" href="#result-metadata" title="Permanent link">&para;</a></h2>
-<p><code>EntitiesResult</code> includes:</p>
+<h2 id="combat-log-vs-attacks">Combat Log vs Attacks<a class="headerlink" href="#combat-log-vs-attacks" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
+<th>Data Type</th>
+<th>Combat Log</th>
+<th>Attacks</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>entities</code></td>
-<td><code>List[EntityData]</code></td>
-<td>Entity data</td>
+<td>Hero damage</td>
+<td>Yes</td>
+<td>Yes (as projectile)</td>
 </tr>
 <tr>
-<td><code>total_entities</code></td>
-<td><code>int</code></td>
-<td>Count of entities returned</td>
+<td>Tower damage on heroes</td>
+<td>Yes</td>
+<td>Yes</td>
 </tr>
 <tr>
-<td><code>tick</code></td>
-<td><code>int</code></td>
-<td>Tick when captured</td>
+<td>Tower damage on creeps</td>
+<td><strong>No</strong></td>
+<td><strong>Yes</strong></td>
 </tr>
 <tr>
-<td><code>net_tick</code></td>
-<td><code>int</code></td>
-<td>Network tick when captured</td>
+<td>Creep damage</td>
+<td>No</td>
+<td>Yes</td>
 </tr>
 <tr>
-<td><code>success</code></td>
-<td><code>bool</code></td>
-<td>Parse success flag</td>
+<td>Neutral attacks</td>
+<td>No</td>
+<td>Yes</td>
 </tr>
 <tr>
-<td><code>error</code></td>
-<td><code>Optional[str]</code></td>
-<td>Error message if failed</td>
+<td>Kill events</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Ability damage</td>
+<td>Yes</td>
+<td>No</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Rule of thumb:</strong> Use combat log for damage/kill analysis. Use attacks for attack action tracking (who's hitting whom).</p>
+<hr />
+<h2 id="combining-with-snapshots">Combining with Snapshots<a class="headerlink" href="#combining-with-snapshots" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Track a specific creep being attacked by tower</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">attacks</span><span class="o">=</span><span class="p">{})</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Creep entity 2596 from our analysis</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">creep_2596_attacks</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">attacks</span><span class="o">.</span><span class="n">events</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">target_index</span> <span class="o">==</span> <span class="mi">2596</span><span class="p">]</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Attacks on creep 2596:&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">for</span> <span class="n">attack</span> <span class="ow">in</span> <span class="n">creep_2596_attacks</span><span class="p">:</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [</span><span class="si">{</span><span class="n">attack</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] from entity </span><span class="si">{</span><span class="n">attack</span><span class="o">.</span><span class="n">source_index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="performance-notes">Performance Notes<a class="headerlink" href="#performance-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Attack events are numerous (15,000+ per match)</li>
+<li>Use <code>max_events</code> to limit for faster parsing</li>
+<li>Events are ordered by tick</li>
+<li>Handle-to-index conversion: <code>index = handle &amp; 0x3FFF</code></li>
+</ul>
 
 
 

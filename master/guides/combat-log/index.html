@@ -1017,10 +1017,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#game-time-vs-replay-time" class="md-nav__link">
+  <a href="#game-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Game Time vs Replay Time
+        Game Time
       
     </span>
   </a>
@@ -1039,21 +1039,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#game-start-time" class="md-nav__link">
+  <a href="#game-start-tick" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Game Start Time
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#illusion-filtering" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Illusion Filtering
+        Game Start Tick
       
     </span>
   </a>
@@ -1104,6 +1093,67 @@
     <span class="md-ellipsis">
       
         Data NOT Available in Combat Log
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deriving-respawn-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deriving Respawn Events
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deriving Respawn Events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#herorespawnevent-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HeroRespawnEvent Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hero-levels-for-respawn-calculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero Levels for Respawn Calculation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respawn-time-formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respawn Time Formula
       
     </span>
   </a>
@@ -1540,6 +1590,34 @@
     
   
     Combat Log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/attacks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Attacks
   
 
     
@@ -2037,10 +2115,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#game-time-vs-replay-time" class="md-nav__link">
+  <a href="#game-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Game Time vs Replay Time
+        Game Time
       
     </span>
   </a>
@@ -2059,21 +2137,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#game-start-time" class="md-nav__link">
+  <a href="#game-start-tick" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Game Start Time
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#illusion-filtering" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Illusion Filtering
+        Game Start Tick
       
     </span>
   </a>
@@ -2135,6 +2202,67 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#deriving-respawn-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deriving Respawn Events
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deriving Respawn Events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#herorespawnevent-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HeroRespawnEvent Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hero-levels-for-respawn-calculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hero Levels for Respawn Calculation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respawn-time-formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respawn Time Formula
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2163,13 +2291,13 @@
 <hr />
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>The combat log provides structured data about damage, healing, deaths, and other combat-related events with rich metadata.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parser</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">combat_log</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_entries&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">})</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">type_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">combat_log</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">type_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="combat-log-types">Combat Log Types<a class="headerlink" href="#combat-log-types" title="Permanent link">&para;</a></h2>
@@ -2415,7 +2543,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> dealt </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> damage to </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> dealt </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> damage to </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  via </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
@@ -2423,7 +2551,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> healed for </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> healed for </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  from </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
@@ -2431,7 +2559,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> was killed by </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> was killed by </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="multiple-types">Multiple Types<a class="headerlink" href="#multiple-types" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Damage and deaths together</span>
@@ -2439,9 +2567,9 @@
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] DAMAGE: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] DAMAGE: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 <a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="k">elif</span> <span class="n">entry</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s] DEATH: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> killed by </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] DEATH: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> killed by </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="hero-only-filtering">Hero-Only Filtering<a class="headerlink" href="#hero-only-filtering" title="Permanent link">&para;</a></h2>
@@ -2482,7 +2610,7 @@
 <tr>
 <td><code>tick</code></td>
 <td>int</td>
-<td>Game tick</td>
+<td>Game tick (~30/second)</td>
 </tr>
 <tr>
 <td><code>net_tick</code></td>
@@ -2500,19 +2628,14 @@
 <td>Human-readable type name</td>
 </tr>
 <tr>
-<td><code>timestamp</code></td>
-<td>float</td>
-<td>Replay time in seconds (includes draft/pre-game)</td>
-</tr>
-<tr>
-<td><code>timestamp_raw</code></td>
-<td>float</td>
-<td>Raw timestamp value</td>
-</tr>
-<tr>
 <td><code>game_time</code></td>
 <td>float</td>
-<td><strong>In-game clock time</strong> (0:00 = creep spawn, can be negative for pre-game)</td>
+<td>Game time in seconds (0:00 = horn, negative for pre-game)</td>
+</tr>
+<tr>
+<td><code>game_time_str</code></td>
+<td>str</td>
+<td>Formatted game time (e.g., "-0:40", "5:32")</td>
 </tr>
 </tbody>
 </table>
@@ -2912,12 +3035,12 @@
 <tr>
 <td><code>attacker_hero_level</code></td>
 <td>int</td>
-<td>Attacker's hero level</td>
+<td>Attacker's hero level (from entity state)</td>
 </tr>
 <tr>
 <td><code>target_hero_level</code></td>
 <td>int</td>
-<td>Target's hero level</td>
+<td>Target's hero level (from entity state)</td>
 </tr>
 <tr>
 <td><code>attacker_has_scepter</code></td>
@@ -2936,6 +3059,14 @@
 </tr>
 </tbody>
 </table>
+<div class="admonition success">
+<p class="admonition-title">Hero Levels Now Available</p>
+<p>As of v1.4.5.4, <code>attacker_hero_level</code> and <code>target_hero_level</code> are populated from entity state during parsing. Previously these were always 0 (Dota 2's protobuf doesn't populate them), but we now inject levels from <code>m_iCurrentLevel</code> entity property.</p>
+<ul>
+<li><strong>100%</strong> of hero deaths have <code>target_hero_level</code> populated</li>
+<li><strong>94%+</strong> have <code>attacker_hero_level</code> (non-hero attackers like summons/neutrals are 0)</li>
+</ul>
+</div>
 <h3 id="visibility">Visibility<a class="headerlink" href="#visibility" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3075,69 +3206,78 @@
 <a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">hero</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">damage</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="kill-feed-reconstruction">Kill Feed Reconstruction<a class="headerlink" href="#kill-feed-reconstruction" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Kill Feed:&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">timestamp_min</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">//</span> <span class="mi">60</span><span class="p">)</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">timestamp_sec</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">%</span> <span class="mi">60</span><span class="p">)</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">timestamp_min</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">timestamp_sec</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> killed </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">combat_log</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;types&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;heroes_only&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;max_entries&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">})</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Kill Feed:&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">combat_log</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="c1"># Hero levels are now populated from entity state</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="n">attacker_lvl</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; (lvl </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_hero_level</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">attacker_hero_level</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="n">target_lvl</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; (lvl </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_hero_level</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">target_hero_level</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}{</span><span class="n">attacker_lvl</span><span class="si">}</span><span class="s2"> killed </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}{</span><span class="n">target_lvl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
+<p>Output:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Kill Feed:
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>------------------------------------------------------------
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>[00:10] npc_dota_hero_pugna (lvl 1) killed npc_dota_hero_troll_warlord (lvl 1)
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>[03:36] npc_dota_hero_pugna (lvl 2) killed npc_dota_hero_hoodwink (lvl 2)
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>[05:09] npc_dota_hero_bristleback (lvl 3) killed npc_dota_hero_pugna (lvl 3)
+</code></pre></div></p>
 <h3 id="ability-usage-tracking">Ability Usage Tracking<a class="headerlink" href="#ability-usage-tracking" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">ability_usage</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>        <span class="n">ability_usage</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Most Used Abilities:&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="k">for</span> <span class="n">ability</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ability_usage</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])[:</span><span class="mi">20</span><span class="p">]:</span>
-<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">ability</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="gold-economy">Gold Economy<a class="headerlink" href="#gold-economy" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">gold_gained</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">ability_usage</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
 <a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_target_hero</span><span class="p">:</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="n">gold_gained</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">gold</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="n">ability_usage</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
 <a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gold Gained:&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="k">for</span> <span class="n">hero</span><span class="p">,</span> <span class="n">gold</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">gold_gained</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">hero</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">gold</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Most Used Abilities:&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="k">for</span> <span class="n">ability</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ability_usage</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])[:</span><span class="mi">20</span><span class="p">]:</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">ability</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="healing-analysis">Healing Analysis<a class="headerlink" href="#healing-analysis" title="Permanent link">&para;</a></h3>
+<h3 id="gold-economy">Gold Economy<a class="headerlink" href="#gold-economy" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">healing_received</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">healing_sources</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="n">healing_received</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>        <span class="n">healing_sources</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="p">][</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span>
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Healing Received:&quot;</span><span class="p">)</span>
-<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="k">for</span> <span class="n">unit</span><span class="p">,</span> <span class="n">total</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">healing_received</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])[:</span><span class="mi">10</span><span class="p">]:</span>
-<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">total</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> total&quot;</span><span class="p">)</span>
-<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>    <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">amount</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">healing_sources</span><span class="p">[</span><span class="n">unit</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])[:</span><span class="mi">3</span><span class="p">]:</span>
-<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">amount</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">gold_gained</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_target_hero</span><span class="p">:</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        <span class="n">gold_gained</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">gold</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gold Gained:&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="k">for</span> <span class="n">hero</span><span class="p">,</span> <span class="n">gold</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">gold_gained</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">hero</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">gold</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="healing-analysis">Healing Analysis<a class="headerlink" href="#healing-analysis" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">healing_received</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">healing_sources</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="n">healing_received</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="n">healing_sources</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="p">][</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Healing Received:&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="k">for</span> <span class="n">unit</span><span class="p">,</span> <span class="n">total</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">healing_received</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])[:</span><span class="mi">10</span><span class="p">]:</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">total</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> total&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">amount</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">healing_sources</span><span class="p">[</span><span class="n">unit</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])[:</span><span class="mi">3</span><span class="p">]:</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">amount</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="important-notes">Important Notes<a class="headerlink" href="#important-notes" title="Permanent link">&para;</a></h2>
-<h3 id="game-time-vs-replay-time">Game Time vs Replay Time<a class="headerlink" href="#game-time-vs-replay-time" title="Permanent link">&para;</a></h3>
-<p>The combat log provides two timing fields:</p>
+<h3 id="game-time">Game Time<a class="headerlink" href="#game-time" title="Permanent link">&para;</a></h3>
+<p>The <code>game_time</code> field provides the in-game clock time (what you see on screen). The horn sounds at <code>game_time=0</code>, and pre-game events have negative times.</p>
 <table>
 <thead>
 <tr>
@@ -3147,71 +3287,66 @@
 </thead>
 <tbody>
 <tr>
-<td><code>timestamp</code></td>
-<td><strong>Replay time</strong> - seconds since replay recording started (includes draft/pre-game)</td>
+<td><code>game_time</code></td>
+<td><strong>In-game clock time</strong> in seconds (0:00 = horn, negative for pre-game)</td>
 </tr>
 <tr>
-<td><code>game_time</code></td>
-<td><strong>In-game clock time</strong> - what you see on the game clock (0:00 = creep spawn)</td>
+<td><code>game_time_str</code></td>
+<td><strong>Formatted time</strong> string (e.g., "-0:40", "5:32")</td>
 </tr>
 </tbody>
 </table>
-<div class="admonition tip">
-<p class="admonition-title">Use <code>game_time</code> for game clock</p>
-<p>The <code>game_time</code> field automatically calculates the in-game clock time. It detects when the game transitions to <code>GAME_IN_PROGRESS</code> state and computes the offset.</p>
-</div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">MantaParser</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">MantaParser</span><span class="p">()</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>  <span class="c1"># PURCHASE events</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="c1"># game_time is already the in-game clock time</span>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">mins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">)</span> <span class="o">//</span> <span class="mi">60</span><span class="p">)</span>
-<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="n">secs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">))</span> <span class="o">%</span> <span class="mi">60</span>
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="n">sign</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span> <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">game_time</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sign</span><span class="si">}{</span><span class="n">mins</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">secs</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parser</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">combat_log</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;types&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">11</span><span class="p">],</span> <span class="s2">&quot;max_entries&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">})</span>  <span class="c1"># PURCHASE events</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">combat_log</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    <span class="c1"># Use game_time_str for formatted output</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="pre-game-events-negative-game-time">Pre-Game Events (Negative Game Time)<a class="headerlink" href="#pre-game-events-negative-game-time" title="Permanent link">&para;</a></h3>
-<p>Events during the 90-second pre-game countdown have <strong>negative</strong> <code>game_time</code> values:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>  <span class="c1"># PURCHASE</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="c1"># Pre-game purchases (during countdown)</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">pregame</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">game_time</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pre-game purchases: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pregame</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
-<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">pregame</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
-<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="n">mins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">)</span> <span class="o">//</span> <span class="mi">60</span><span class="p">)</span>
-<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="n">secs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="p">))</span> <span class="o">%</span> <span class="mi">60</span>
-<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="n">hero</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;npc_dota_hero_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>    <span class="n">item</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;item_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">mins</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">secs</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">hero</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="c1"># Output:</span>
-<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="c1"># -01:29 - antimage: ward_observer</span>
-<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="c1"># -01:28 - troll_warlord: tango</span>
-<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="c1"># -01:27 - crystal_maiden: blood_grenade</span>
+<p>Events during the 90-second pre-game countdown have <strong>negative</strong> <code>game_time</code> values. Use <code>is_pre_horn</code> property to check:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">combat_log</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;types&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">11</span><span class="p">],</span> <span class="s2">&quot;max_entries&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">})</span>  <span class="c1"># PURCHASE</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># Pre-game purchases (during countdown)</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="n">pregame</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">combat_log</span><span class="o">.</span><span class="n">entries</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">is_pre_horn</span><span class="p">]</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pre-game purchases: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pregame</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">pregame</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>    <span class="n">hero</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;npc_dota_hero_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>    <span class="n">item</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;item_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">hero</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="c1"># Output:</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="c1"># [-1:29] antimage: ward_observer</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="c1"># [-1:28] troll_warlord: tango</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="c1"># [-1:27] crystal_maiden: blood_grenade</span>
 </code></pre></div>
-<h3 id="game-start-time">Game Start Time<a class="headerlink" href="#game-start-time" title="Permanent link">&para;</a></h3>
-<p>The <code>CombatLogResult</code> includes <code>game_start_time</code> which is the replay timestamp when the game clock hit 0:00:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">18</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># First blood</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Game started at replay time: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">game_start_time</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="n">entry</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First blood at </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s game time&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="illusion-filtering">Illusion Filtering<a class="headerlink" href="#illusion-filtering" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Filter out illusion damage for accurate stats</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+<h3 id="game-start-tick">Game Start Tick<a class="headerlink" href="#game-start-tick" title="Permanent link">&para;</a></h3>
+<p>The <code>CombatLogResult</code> includes <code>game_start_tick</code> which is the tick when the horn sounded (game_time=0):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">combat_log</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;types&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">18</span><span class="p">],</span> <span class="s2">&quot;max_entries&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>  <span class="c1"># First blood</span>
 <a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">real_damage</span> <span class="o">=</span> <span class="p">[</span>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">entry</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span>
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_attacker_illusion</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_target_illusion</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="p">]</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total entries: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Real damage entries (no illusions): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">real_damage</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Game started at tick: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">combat_log</span><span class="o">.</span><span class="n">game_start_tick</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">combat_log</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="n">entry</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">combat_log</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First blood at </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2"> game time&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="c1">### Illusion Filtering</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="err">```</span><span class="n">python</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="c1"># Filter out illusion damage for accurate stats</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="n">real_damage</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>    <span class="n">entry</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_attacker_illusion</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_target_illusion</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="p">]</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total entries: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Real damage entries (no illusions): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">real_damage</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="combat-log-vs-game-events">Combat Log vs Game Events<a class="headerlink" href="#combat-log-vs-game-events" title="Permanent link">&para;</a></h2>
@@ -3246,7 +3381,7 @@
 </tr>
 <tr>
 <td>Timing</td>
-<td>Full match (timestamp is replay time)</td>
+<td>Full match (game_time is in-game clock)</td>
 <td>Full match</td>
 </tr>
 <tr>
@@ -3348,12 +3483,12 @@
 <tr>
 <td>Game time</td>
 <td><code>game_time</code></td>
-<td>In-game clock time (can be negative for pre-game)</td>
+<td>In-game clock time in seconds (negative for pre-game)</td>
 </tr>
 <tr>
-<td>Replay timestamp</td>
-<td><code>timestamp</code></td>
-<td>Replay time in seconds</td>
+<td>Game time (formatted)</td>
+<td><code>game_time_str</code></td>
+<td>Formatted time string (e.g., "-0:40", "5:32")</td>
 </tr>
 </tbody>
 </table>
@@ -3430,6 +3565,170 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># From a combat log HEAL entry with inflictor_name containing &quot;magic_stick&quot; or &quot;magic_wand&quot;</span>
 <a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">charges_used</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">value</span> <span class="o">//</span> <span class="mi">15</span>  <span class="c1"># e.g., 150 HP healed = 10 charges</span>
 </code></pre></div>
+</div>
+<hr />
+<h2 id="deriving-respawn-events">Deriving Respawn Events<a class="headerlink" href="#deriving-respawn-events" title="Permanent link">&para;</a></h2>
+<p>The combat log doesn't have explicit respawn events, but you can derive them from DEATH events using the <code>derive_respawn_events()</code> utility.</p>
+<h3 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parser</span><span class="p">,</span> <span class="n">derive_respawn_events</span><span class="p">,</span> <span class="n">CombatLogType</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="c1"># Get all hero deaths</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">combat_log</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="s2">&quot;types&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">CombatLogType</span><span class="o">.</span><span class="n">DEATH</span><span class="p">],</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="s2">&quot;heroes_only&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>    <span class="s2">&quot;max_entries&quot;</span><span class="p">:</span> <span class="mi">1000</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="p">})</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="c1"># Derive respawn events</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="n">respawns</span> <span class="o">=</span> <span class="n">derive_respawn_events</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">combat_log</span><span class="p">)</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">respawns</span><span class="p">[:</span><span class="mi">10</span><span class="p">]:</span>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">hero_display_name</span><span class="si">}</span><span class="s2"> died at </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">death_game_time_str</span><span class="si">}</span><span class="s2">, &quot;</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>          <span class="sa">f</span><span class="s2">&quot;respawns after </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">respawn_duration</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="herorespawnevent-fields">HeroRespawnEvent Fields<a class="headerlink" href="#herorespawnevent-fields" title="Permanent link">&para;</a></h3>
+<p>Each <code>HeroRespawnEvent</code> includes:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hero_name</code></td>
+<td>str</td>
+<td>Internal hero name (e.g., "npc_dota_hero_axe")</td>
+</tr>
+<tr>
+<td><code>hero_display_name</code></td>
+<td>str</td>
+<td>Display name (e.g., "Axe")</td>
+</tr>
+<tr>
+<td><code>death_tick</code></td>
+<td>int</td>
+<td>Tick when hero died</td>
+</tr>
+<tr>
+<td><code>death_game_time</code></td>
+<td>float</td>
+<td>Game time when hero died</td>
+</tr>
+<tr>
+<td><code>death_game_time_str</code></td>
+<td>str</td>
+<td>Formatted death time</td>
+</tr>
+<tr>
+<td><code>respawn_tick</code></td>
+<td>int</td>
+<td>Estimated respawn tick</td>
+</tr>
+<tr>
+<td><code>respawn_game_time</code></td>
+<td>float</td>
+<td>Estimated respawn game time</td>
+</tr>
+<tr>
+<td><code>respawn_game_time_str</code></td>
+<td>str</td>
+<td>Formatted respawn time</td>
+</tr>
+<tr>
+<td><code>respawn_duration</code></td>
+<td>float</td>
+<td>Respawn duration in seconds</td>
+</tr>
+<tr>
+<td><code>killer_name</code></td>
+<td>str</td>
+<td>Who killed the hero</td>
+</tr>
+<tr>
+<td><code>hero_level</code></td>
+<td>int</td>
+<td>Hero level at death (if available)</td>
+</tr>
+<tr>
+<td><code>team</code></td>
+<td>int</td>
+<td>Hero's team (2=Radiant, 3=Dire)</td>
+</tr>
+<tr>
+<td><code>will_reincarnate</code></td>
+<td>bool</td>
+<td>True if Aegis/Wraith King ult</td>
+</tr>
+<tr>
+<td><code>location_x</code></td>
+<td>float</td>
+<td>Death X coordinate</td>
+</tr>
+<tr>
+<td><code>location_y</code></td>
+<td>float</td>
+<td>Death Y coordinate</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hero-levels-for-respawn-calculation">Hero Levels for Respawn Calculation<a class="headerlink" href="#hero-levels-for-respawn-calculation" title="Permanent link">&para;</a></h3>
+<p>As of v1.4.5.4, <code>target_hero_level</code> is now populated directly in combat log entries, so respawn times are calculated accurately without needing to provide levels manually:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Hero levels are now available directly in combat log</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">respawns</span> <span class="o">=</span> <span class="n">derive_respawn_events</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">combat_log</span><span class="p">)</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">respawns</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">hero_display_name</span><span class="si">}</span><span class="s2"> (lvl </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">hero_level</span><span class="si">}</span><span class="s2">) died at </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">death_game_time_str</span><span class="si">}</span><span class="s2">, &quot;</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>          <span class="sa">f</span><span class="s2">&quot;respawns after </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">respawn_duration</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>You can still provide custom hero levels if needed (e.g., for edge cases or to override):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Optional: provide custom levels</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">hero_levels</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;npc_dota_hero_axe&quot;</span><span class="p">:</span> <span class="mi">25</span><span class="p">}</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">respawns</span> <span class="o">=</span> <span class="n">derive_respawn_events</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">combat_log</span><span class="p">,</span> <span class="n">hero_levels</span><span class="o">=</span><span class="n">hero_levels</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="respawn-time-formula">Respawn Time Formula<a class="headerlink" href="#respawn-time-formula" title="Permanent link">&para;</a></h3>
+<p>Respawn time is calculated as: <code>min(4 + (level × 2), 100)</code> seconds.</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Respawn Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1-5</td>
+<td>6-14 seconds</td>
+</tr>
+<tr>
+<td>10</td>
+<td>24 seconds</td>
+</tr>
+<tr>
+<td>15</td>
+<td>34 seconds</td>
+</tr>
+<tr>
+<td>20</td>
+<td>44 seconds</td>
+</tr>
+<tr>
+<td>25</td>
+<td>54 seconds</td>
+</tr>
+<tr>
+<td>30</td>
+<td>64 seconds</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Aegis and Wraith King</p>
+<p>When <code>will_reincarnate</code> is True (Aegis or Wraith King ult), the hero respawns at the death location after ~5 seconds instead of at fountain.</p>
 </div>
 
 

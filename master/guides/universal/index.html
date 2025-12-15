@@ -1422,6 +1422,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/attacks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Attacks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/modifiers/" class="md-nav__link">
         
   
@@ -2029,9 +2057,14 @@
 <td>Message-specific payload</td>
 </tr>
 <tr>
-<td><code>timestamp</code></td>
-<td>int</td>
-<td>Unix timestamp in milliseconds (if available)</td>
+<td><code>game_time</code></td>
+<td>float</td>
+<td>Game time in seconds (negative before horn)</td>
+</tr>
+<tr>
+<td><code>game_time_str</code></td>
+<td>str</td>
+<td>Formatted game time (e.g., "-0:40", "5:32")</td>
 </tr>
 </tbody>
 </table>
