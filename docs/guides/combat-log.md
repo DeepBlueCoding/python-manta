@@ -11,13 +11,13 @@
 The combat log provides structured data about damage, healing, deaths, and other combat-related events with rich metadata.
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
-result = parser.parse_combat_log("match.dem", max_entries=100)
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"max_entries": 100})
 
-for entry in result.entries:
-    print(f"[{entry.timestamp:.1f}s] {entry.type_name}: {entry.attacker_name} -> {entry.target_name}")
+for entry in result.combat_log.entries:
+    print(f"[{entry.game_time_str}] {entry.type_name}: {entry.attacker_name} -> {entry.target_name}")
 ```
 
 ---
@@ -82,7 +82,7 @@ for entry in result.entries:
 result = parser.parse_combat_log("match.dem", types=[0], max_entries=500)
 
 for entry in result.entries:
-    print(f"[{entry.timestamp:.1f}s] {entry.attacker_name} dealt {entry.value} damage to {entry.target_name}")
+    print(f"[{entry.game_time_str}] {entry.attacker_name} dealt {entry.value} damage to {entry.target_name}")
     if entry.inflictor_name:
         print(f"  via {entry.inflictor_name}")
 ```
@@ -93,7 +93,7 @@ for entry in result.entries:
 result = parser.parse_combat_log("match.dem", types=[1], max_entries=200)
 
 for entry in result.entries:
-    print(f"[{entry.timestamp:.1f}s] {entry.target_name} healed for {entry.value}")
+    print(f"[{entry.game_time_str}] {entry.target_name} healed for {entry.value}")
     if entry.inflictor_name:
         print(f"  from {entry.inflictor_name}")
 ```
@@ -104,7 +104,7 @@ for entry in result.entries:
 result = parser.parse_combat_log("match.dem", types=[4], max_entries=100)
 
 for entry in result.entries:
-    print(f"[{entry.timestamp:.1f}s] {entry.target_name} was killed by {entry.attacker_name}")
+    print(f"[{entry.game_time_str}] {entry.target_name} was killed by {entry.attacker_name}")
 ```
 
 ### Multiple Types
@@ -115,9 +115,9 @@ result = parser.parse_combat_log("match.dem", types=[0, 4], max_entries=500)
 
 for entry in result.entries:
     if entry.type == 0:
-        print(f"[{entry.timestamp:.1f}s] DAMAGE: {entry.attacker_name} -> {entry.target_name} ({entry.value})")
+        print(f"[{entry.game_time_str}] DAMAGE: {entry.attacker_name} -> {entry.target_name} ({entry.value})")
     elif entry.type == 4:
-        print(f"[{entry.timestamp:.1f}s] DEATH: {entry.target_name} killed by {entry.attacker_name}")
+        print(f"[{entry.game_time_str}] DEATH: {entry.target_name} killed by {entry.attacker_name}")
 ```
 
 ---
@@ -161,13 +161,12 @@ Each `CombatLogEntry` contains comprehensive data for fight analysis:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `tick` | int | Game tick |
+| `tick` | int | Game tick (~30/second) |
 | `net_tick` | int | Network tick |
 | `type` | int | Combat log type ID (0-44) |
 | `type_name` | str | Human-readable type name |
-| `timestamp` | float | Replay time in seconds (includes draft/pre-game) |
-| `timestamp_raw` | float | Raw timestamp value |
-| `game_time` | float | **In-game clock time** (0:00 = creep spawn, can be negative for pre-game) |
+| `game_time` | float | Game time in seconds (0:00 = horn, negative for pre-game) |
+| `game_time_str` | str | Formatted game time (e.g., "-0:40", "5:32") |
 
 ### Participant Fields
 
@@ -273,11 +272,17 @@ Each `CombatLogEntry` contains comprehensive data for fight analysis:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `attacker_hero_level` | int | Attacker's hero level |
-| `target_hero_level` | int | Target's hero level |
+| `attacker_hero_level` | int | Attacker's hero level (from entity state) |
+| `target_hero_level` | int | Target's hero level (from entity state) |
 | `attacker_has_scepter` | bool | Attacker has Aghanim's Scepter |
 | `attacker_team` | int | Attacker team (2=Radiant, 3=Dire) |
 | `target_team` | int | Target team |
+
+!!! success "Hero Levels Now Available"
+    As of v1.4.5.4, `attacker_hero_level` and `target_hero_level` are populated from entity state during parsing. Previously these were always 0 (Dota 2's protobuf doesn't populate them), but we now inject levels from `m_iCurrentLevel` entity property.
+
+    - **100%** of hero deaths have `target_hero_level` populated
+    - **94%+** have `attacker_hero_level` (non-hero attackers like summons/neutrals are 0)
 
 ### Visibility
 
@@ -336,15 +341,26 @@ for hero, damage in sorted(damage_dealt.items(), key=lambda x: -x[1]):
 ### Kill Feed Reconstruction
 
 ```python
-result = parser.parse_combat_log("match.dem", types=[4], heroes_only=True, max_entries=100)
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [4], "heroes_only": True, "max_entries": 100})
 
 print("Kill Feed:")
 print("-" * 60)
 
-for entry in result.entries:
-    timestamp_min = int(entry.timestamp // 60)
-    timestamp_sec = int(entry.timestamp % 60)
-    print(f"[{timestamp_min:02d}:{timestamp_sec:02d}] {entry.attacker_name} killed {entry.target_name}")
+for entry in result.combat_log.entries:
+    # Hero levels are now populated from entity state
+    attacker_lvl = f" (lvl {entry.attacker_hero_level})" if entry.attacker_hero_level > 0 else ""
+    target_lvl = f" (lvl {entry.target_hero_level})" if entry.target_hero_level > 0 else ""
+    print(f"[{entry.game_time_str}] {entry.attacker_name}{attacker_lvl} killed {entry.target_name}{target_lvl}")
+```
+
+Output:
+```
+Kill Feed:
+------------------------------------------------------------
+[00:10] npc_dota_hero_pugna (lvl 1) killed npc_dota_hero_troll_warlord (lvl 1)
+[03:36] npc_dota_hero_pugna (lvl 2) killed npc_dota_hero_hoodwink (lvl 2)
+[05:09] npc_dota_hero_bristleback (lvl 3) killed npc_dota_hero_pugna (lvl 3)
 ```
 
 ### Ability Usage Tracking
@@ -409,69 +425,61 @@ for unit, total in sorted(healing_received.items(), key=lambda x: -x[1])[:10]:
 
 ## Important Notes
 
-### Game Time vs Replay Time
+### Game Time
 
-The combat log provides two timing fields:
+The `game_time` field provides the in-game clock time (what you see on screen). The horn sounds at `game_time=0`, and pre-game events have negative times.
 
 | Field | Description |
 |-------|-------------|
-| `timestamp` | **Replay time** - seconds since replay recording started (includes draft/pre-game) |
-| `game_time` | **In-game clock time** - what you see on the game clock (0:00 = creep spawn) |
-
-!!! tip "Use `game_time` for game clock"
-
-    The `game_time` field automatically calculates the in-game clock time. It detects when the game transitions to `GAME_IN_PROGRESS` state and computes the offset.
+| `game_time` | **In-game clock time** in seconds (0:00 = horn, negative for pre-game) |
+| `game_time_str` | **Formatted time** string (e.g., "-0:40", "5:32") |
 
 ```python
-from python_manta import MantaParser
+from python_manta import Parser
 
-parser = MantaParser()
-result = parser.parse_combat_log("match.dem", types=[11], max_entries=100)  # PURCHASE events
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [11], "max_entries": 100})  # PURCHASE events
 
-for entry in result.entries:
-    # game_time is already the in-game clock time
-    mins = int(abs(entry.game_time) // 60)
-    secs = int(abs(entry.game_time)) % 60
-    sign = "-" if entry.game_time < 0 else ""
-    print(f"{sign}{mins:02d}:{secs:02d} - {entry.value_name}")
+for entry in result.combat_log.entries:
+    # Use game_time_str for formatted output
+    print(f"[{entry.game_time_str}] {entry.value_name}")
 ```
 
 ### Pre-Game Events (Negative Game Time)
 
-Events during the 90-second pre-game countdown have **negative** `game_time` values:
+Events during the 90-second pre-game countdown have **negative** `game_time` values. Use `is_pre_horn` property to check:
 
 ```python
-result = parser.parse_combat_log("match.dem", types=[11], max_entries=200)  # PURCHASE
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [11], "max_entries": 200})  # PURCHASE
 
 # Pre-game purchases (during countdown)
-pregame = [e for e in result.entries if e.game_time < 0]
+pregame = [e for e in result.combat_log.entries if e.is_pre_horn]
 print(f"Pre-game purchases: {len(pregame)}")
 
 for entry in pregame[:5]:
-    mins = int(abs(entry.game_time) // 60)
-    secs = int(abs(entry.game_time)) % 60
     hero = entry.target_name.replace("npc_dota_hero_", "")
     item = entry.value_name.replace("item_", "")
-    print(f"-{mins:02d}:{secs:02d} - {hero}: {item}")
+    print(f"[{entry.game_time_str}] {hero}: {item}")
 # Output:
-# -01:29 - antimage: ward_observer
-# -01:28 - troll_warlord: tango
-# -01:27 - crystal_maiden: blood_grenade
+# [-1:29] antimage: ward_observer
+# [-1:28] troll_warlord: tango
+# [-1:27] crystal_maiden: blood_grenade
 ```
 
-### Game Start Time
+### Game Start Tick
 
-The `CombatLogResult` includes `game_start_time` which is the replay timestamp when the game clock hit 0:00:
+The `CombatLogResult` includes `game_start_tick` which is the tick when the horn sounded (game_time=0):
 
 ```python
-result = parser.parse_combat_log("match.dem", types=[18], max_entries=1)  # First blood
+parser = Parser("match.dem")
+result = parser.parse(combat_log={"types": [18], "max_entries": 1})  # First blood
 
-print(f"Game started at replay time: {result.game_start_time:.1f}s")
+print(f"Game started at tick: {result.combat_log.game_start_tick}")
 
-if result.entries:
-    entry = result.entries[0]
-    print(f"First blood at {entry.game_time:.0f}s game time")
-```
+if result.combat_log.entries:
+    entry = result.combat_log.entries[0]
+    print(f"First blood at {entry.game_time_str} game time")
 
 ### Illusion Filtering
 
@@ -498,7 +506,7 @@ print(f"Real damage entries (no illusions): {len(real_damage)}")
 | Structure | Fixed schema with 80+ fields | Variable fields per event type |
 | Types | 45 log types | 364 event types |
 | Best for | Detailed damage/heal analysis | Discrete game occurrences |
-| Timing | Full match (timestamp is replay time) | Full match |
+| Timing | Full match (game_time is in-game clock) | Full match |
 | Filtering | By type ID, heroes_only | By event name |
 
 Use combat log for continuous combat data (DPS, healing totals) and game events for discrete occurrences (tower kills, rune pickups).
@@ -528,8 +536,8 @@ The combat log exposes raw data that can be used by other tools for analysis or 
 | Has Aghanim's | `attacker_has_scepter` | Boolean |
 | Hero levels | `attacker_hero_level`, `target_hero_level` | Integer |
 | Position | `location_x`, `location_y` | Map coordinates |
-| Game time | `game_time` | In-game clock time (can be negative for pre-game) |
-| Replay timestamp | `timestamp` | Replay time in seconds |
+| Game time | `game_time` | In-game clock time in seconds (negative for pre-game) |
+| Game time (formatted) | `game_time_str` | Formatted time string (e.g., "-0:40", "5:32") |
 
 ### Data NOT Available in Combat Log
 
@@ -588,3 +596,90 @@ The combat log exposes raw data that can be used by other tools for analysis or 
     # From a combat log HEAL entry with inflictor_name containing "magic_stick" or "magic_wand"
     charges_used = entry.value // 15  # e.g., 150 HP healed = 10 charges
     ```
+
+---
+
+## Deriving Respawn Events
+
+The combat log doesn't have explicit respawn events, but you can derive them from DEATH events using the `derive_respawn_events()` utility.
+
+### Basic Usage
+
+```python
+from python_manta import Parser, derive_respawn_events, CombatLogType
+
+parser = Parser("match.dem")
+
+# Get all hero deaths
+result = parser.parse(combat_log={
+    "types": [CombatLogType.DEATH],
+    "heroes_only": True,
+    "max_entries": 1000
+})
+
+# Derive respawn events
+respawns = derive_respawn_events(result.combat_log)
+
+for r in respawns[:10]:
+    print(f"{r.hero_display_name} died at {r.death_game_time_str}, "
+          f"respawns after {r.respawn_duration:.0f}s")
+```
+
+### HeroRespawnEvent Fields
+
+Each `HeroRespawnEvent` includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `hero_name` | str | Internal hero name (e.g., "npc_dota_hero_axe") |
+| `hero_display_name` | str | Display name (e.g., "Axe") |
+| `death_tick` | int | Tick when hero died |
+| `death_game_time` | float | Game time when hero died |
+| `death_game_time_str` | str | Formatted death time |
+| `respawn_tick` | int | Estimated respawn tick |
+| `respawn_game_time` | float | Estimated respawn game time |
+| `respawn_game_time_str` | str | Formatted respawn time |
+| `respawn_duration` | float | Respawn duration in seconds |
+| `killer_name` | str | Who killed the hero |
+| `hero_level` | int | Hero level at death (if available) |
+| `team` | int | Hero's team (2=Radiant, 3=Dire) |
+| `will_reincarnate` | bool | True if Aegis/Wraith King ult |
+| `location_x` | float | Death X coordinate |
+| `location_y` | float | Death Y coordinate |
+
+### Hero Levels for Respawn Calculation
+
+As of v1.4.5.4, `target_hero_level` is now populated directly in combat log entries, so respawn times are calculated accurately without needing to provide levels manually:
+
+```python
+# Hero levels are now available directly in combat log
+respawns = derive_respawn_events(result.combat_log)
+
+for r in respawns[:5]:
+    print(f"{r.hero_display_name} (lvl {r.hero_level}) died at {r.death_game_time_str}, "
+          f"respawns after {r.respawn_duration:.0f}s")
+```
+
+You can still provide custom hero levels if needed (e.g., for edge cases or to override):
+
+```python
+# Optional: provide custom levels
+hero_levels = {"npc_dota_hero_axe": 25}
+respawns = derive_respawn_events(result.combat_log, hero_levels=hero_levels)
+```
+
+### Respawn Time Formula
+
+Respawn time is calculated as: `min(4 + (level × 2), 100)` seconds.
+
+| Level | Respawn Time |
+|-------|--------------|
+| 1-5 | 6-14 seconds |
+| 10 | 24 seconds |
+| 15 | 34 seconds |
+| 20 | 44 seconds |
+| 25 | 54 seconds |
+| 30 | 64 seconds |
+
+!!! note "Aegis and Wraith King"
+    When `will_reincarnate` is True (Aegis or Wraith King ult), the hero respawns at the death location after ~5 seconds instead of at fountain.

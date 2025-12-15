@@ -396,7 +396,7 @@ parser = Parser("match.dem")
 # Get all combat log entries
 result = parser.parse(combat_log={"max_entries": 100})
 for entry in result.combat_log.entries:
-    print(f"[{entry.timestamp:.1f}s] {entry.type_name}: {entry.attacker_name} -> {entry.target_name}")
+    print(f"[{entry.game_time_str}] {entry.type_name}: {entry.attacker_name} -> {entry.target_name}")
 
 # Filter by type (0=DAMAGE, 1=HEAL, 2=MODIFIER_ADD, etc.)
 result = parser.parse(combat_log={"types": [0], "max_entries": 100})  # Damage only
@@ -924,7 +924,7 @@ class EntityData(BaseModel):
 
 ```python
 class CombatLogEntry(BaseModel):
-    tick: int                     # Game tick
+    tick: int                     # Game tick (~30/second)
     type: int                     # Combat log type ID
     type_name: str                # Human-readable type name
     attacker_name: str            # Attacker name
@@ -932,7 +932,8 @@ class CombatLogEntry(BaseModel):
     inflictor_name: str           # Ability/item name
     value: int                    # Damage/heal value
     health: int                   # Target HP after event
-    timestamp: float              # Game time in seconds
+    game_time: float              # Game time in seconds (negative pre-horn)
+    game_time_str: str            # Formatted time ("-0:40", "5:32")
     is_attacker_hero: bool        # Whether attacker is a hero
     is_target_hero: bool          # Whether target is a hero
     stun_duration: float          # Stun duration applied
@@ -1073,7 +1074,7 @@ parser = Parser("match.dem")
 result = parser.parse(combat_log={"max_entries": 1000})
 
 for entry in result.combat_log.entries:
-    print(f"[{entry.timestamp:.1f}s] {entry.attacker_name} -> {entry.target_name}: {entry.value} damage")
+    print(f"[{entry.game_time_str}] {entry.attacker_name} -> {entry.target_name}: {entry.value} damage")
 ```
 
 ### Get Match Statistics

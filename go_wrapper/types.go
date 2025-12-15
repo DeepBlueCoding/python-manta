@@ -29,6 +29,9 @@ type ParseConfig struct {
 
 	// Parser info collector
 	ParserInfo *ParserInfoConfig `json:"parser_info,omitempty"`
+
+	// Attacks collector (from TE_Projectile)
+	Attacks *AttacksConfig `json:"attacks,omitempty"`
 }
 
 // HeaderCollectorConfig - header is simple, just enable/disable
@@ -67,6 +70,7 @@ type ParseResult struct {
 	StringTables *StringTablesResult `json:"string_tables,omitempty"`
 	Messages     *UniversalResult    `json:"messages,omitempty"`
 	ParserInfo   *ParserInfo         `json:"parser_info,omitempty"`
+	Attacks      *AttacksResult      `json:"attacks,omitempty"`
 }
 
 // UniversalResult matches the existing universal parse result structure
@@ -122,11 +126,12 @@ type HeroSnapshot struct {
 	IsAlive   bool    `json:"is_alive"`
 
 	// Economy (from CDOTA_PlayerResource / CDOTA_Data*)
-	Gold     int `json:"gold"`
-	NetWorth int `json:"net_worth"`
-	LastHits int `json:"last_hits"`
-	Denies   int `json:"denies"`
-	XP       int `json:"xp"`
+	Gold         int `json:"gold"`
+	NetWorth     int `json:"net_worth"`
+	LastHits     int `json:"last_hits"`
+	Denies       int `json:"denies"`
+	XP           int `json:"xp"`
+	CampsStacked int `json:"camps_stacked"`
 
 	// KDA
 	Kills   int `json:"kills"`
@@ -153,4 +158,29 @@ type HeroSnapshot struct {
 	// Clone/illusion flags
 	IsClone    bool `json:"is_clone,omitempty"`
 	IsIllusion bool `json:"is_illusion,omitempty"`
+}
+
+// AttacksConfig controls attack event parsing from TE_Projectile
+type AttacksConfig struct {
+	MaxEvents int `json:"max_events"` // Max events (0 = unlimited)
+}
+
+// AttackEvent represents a single attack projectile
+type AttackEvent struct {
+	Tick            int     `json:"tick"`
+	SourceIndex     int     `json:"source_index"`      // Entity index of attacker
+	TargetIndex     int     `json:"target_index"`      // Entity index of target
+	SourceHandle    int64   `json:"source_handle"`     // Raw entity handle
+	TargetHandle    int64   `json:"target_handle"`     // Raw entity handle
+	ProjectileSpeed int     `json:"projectile_speed"`  // Projectile move speed
+	Dodgeable       bool    `json:"dodgeable"`         // Can be dodged/disjointed
+	LaunchTick      int     `json:"launch_tick"`       // When projectile was launched
+	GameTime        float32 `json:"game_time"`         // Game time in seconds
+	GameTimeStr     string  `json:"game_time_str"`     // Formatted game time
+}
+
+// AttacksResult contains all attack events from TE_Projectile
+type AttacksResult struct {
+	Events      []AttackEvent `json:"events"`
+	TotalEvents int           `json:"total_events"`
 }

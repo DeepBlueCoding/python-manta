@@ -728,8 +728,6 @@ type CombatLogEntry struct {
 	Value              int32   `json:"value"`
 	ValueName          string  `json:"value_name"`
 	Health             int32   `json:"health"`
-	Timestamp          float32 `json:"timestamp"`
-	TimestampRaw       float32 `json:"timestamp_raw"`
 	GameTime           float32 `json:"game_time"`
 	StunDuration       float32 `json:"stun_duration"`
 	SlowDuration       float32 `json:"slow_duration"`
@@ -820,6 +818,7 @@ type CombatLogResult struct {
 	Error         string           `json:"error,omitempty"`
 	TotalEntries  int              `json:"total_entries"`
 	GameStartTime float32          `json:"game_start_time"` // Timestamp when game clock hits 00:00
+	GameStartTick uint32           `json:"game_start_tick"` // Tick when horn sounds (game_time = 0)
 }
 
 // CombatLogConfig controls combat log parsing
@@ -879,8 +878,9 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 	}
 	rawEntries := make([]rawEntry, 0)
 
-	// Track game start time (when GAME_IN_PROGRESS state begins)
+	// Track game start time and tick (when GAME_IN_PROGRESS state begins)
 	var gameStartTime float32 = 0
+	var gameStartTick uint32 = 0
 
 	// Parse combat log entries - store raw data
 	parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
@@ -888,6 +888,7 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 		if m.GetType() == dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_GAME_STATE {
 			if m.GetValue() == 5 { // DOTA_GAMERULES_STATE_GAME_IN_PROGRESS
 				gameStartTime = m.GetTimestamp()
+				gameStartTick = parser.Tick
 			}
 		}
 
@@ -911,12 +912,8 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 			}
 		}
 
-		// Apply heroes only filter
-		if config.HeroesOnly {
-			if !m.GetIsAttackerHero() && !m.GetIsTargetHero() {
-				return nil
-			}
-		}
+		// NOTE: heroes_only filter is applied after name resolution
+		// This allows checking both boolean flags AND name strings for hero detection
 
 		// Store raw entry for later processing
 		rawEntries = append(rawEntries, rawEntry{
@@ -999,9 +996,7 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 			Value:              int32(m.GetValue()),
 			ValueName:          valueName,
 			Health:             m.GetHealth(),
-			Timestamp:          m.GetTimestamp(),
-			TimestampRaw:       m.GetTimestampRaw(),
-			GameTime:           m.GetTimestamp() - gameStartTime,
+			GameTime:           TickToGameTime(raw.tick, gameStartTick),
 			StunDuration:       m.GetStunDuration(),
 			SlowDuration:       m.GetSlowDuration(),
 			IsAbilityToggleOn:  m.GetIsAbilityToggleOn(),
@@ -1084,12 +1079,23 @@ func RunCombatLogParse(filePath string, config CombatLogConfig) (*CombatLogResul
 			TrackedStatId:   int32(m.GetTrackedStatId()),
 		}
 
+		// Apply heroes_only filter (checks both boolean flags AND name strings)
+		if config.HeroesOnly {
+			isHeroRelated := entry.IsAttackerHero || entry.IsTargetHero ||
+				strings.Contains(entry.AttackerName, "npc_dota_hero_") ||
+				strings.Contains(entry.TargetName, "npc_dota_hero_")
+			if !isHeroRelated {
+				continue
+			}
+		}
+
 		result.Entries = append(result.Entries, entry)
 	}
 
 	result.Success = true
 	result.TotalEntries = len(result.Entries)
 	result.GameStartTime = gameStartTime
+	result.GameStartTick = gameStartTick
 	return result, nil
 }
 
@@ -1188,6 +1194,121 @@ func marshalParserInfo(result *ParserInfo) *C.char {
 		errorResult := &ParserInfo{
 			Success: false,
 			Error:   fmt.Sprintf("Error marshaling result: %v", err),
+		}
+		jsonResult, _ = json.Marshal(errorResult)
+	}
+	return C.CString(string(jsonResult))
+}
+
+// ============================================================================
+// ATTACKS PARSING (from TE_Projectile)
+// ============================================================================
+
+//export ParseAttacks
+func ParseAttacks(filePath *C.char, configJSON *C.char) *C.char {
+	goFilePath := C.GoString(filePath)
+	goConfigJSON := C.GoString(configJSON)
+
+	config := AttacksConfig{
+		MaxEvents: 0,
+	}
+	if goConfigJSON != "" {
+		json.Unmarshal([]byte(goConfigJSON), &config)
+	}
+
+	result, err := RunAttacksParse(goFilePath, config)
+	if err != nil {
+		failure := &AttacksResult{
+			Events: make([]AttackEvent, 0),
+		}
+		return marshalAttacksResult(failure)
+	}
+
+	return marshalAttacksResult(result)
+}
+
+// RunAttacksParse executes attack event parsing from TE_Projectile
+func RunAttacksParse(filePath string, config AttacksConfig) (*AttacksResult, error) {
+	result := &AttacksResult{
+		Events: make([]AttackEvent, 0),
+	}
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("error opening file: %w", err)
+	}
+	defer file.Close()
+
+	parser, err := manta.NewStreamParser(file)
+	if err != nil {
+		return nil, fmt.Errorf("error creating parser: %w", err)
+	}
+
+	// Track game start tick for game time calculation
+	var gameStartTick uint32 = 0
+
+	// Detect game start from combat log
+	parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
+		if gameStartTick == 0 && m.GetType() == dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_GAME_STATE {
+			if m.GetValue() == 5 { // DOTA_GAMERULES_STATE_GAME_IN_PROGRESS
+				gameStartTick = parser.Tick
+			}
+		}
+		return nil
+	})
+
+	// Register TE_Projectile handler for attack events
+	parser.Callbacks.OnCDOTAUserMsg_TE_Projectile(func(m *dota.CDOTAUserMsg_TE_Projectile) error {
+		// Only capture attack projectiles
+		if !m.GetIsAttack() {
+			return nil
+		}
+
+		if config.MaxEvents > 0 && len(result.Events) >= config.MaxEvents {
+			return nil
+		}
+
+		sourceHandle := int64(m.GetSource())
+		targetHandle := int64(m.GetTarget())
+
+		// Convert handles to entity indices (lower 14 bits)
+		sourceIndex := int(sourceHandle & 0x3FFF)
+		targetIndex := int(targetHandle & 0x3FFF)
+
+		event := AttackEvent{
+			Tick:            int(parser.Tick),
+			SourceIndex:     sourceIndex,
+			TargetIndex:     targetIndex,
+			SourceHandle:    sourceHandle,
+			TargetHandle:    targetHandle,
+			ProjectileSpeed: int(m.GetMoveSpeed()),
+			Dodgeable:       m.GetDodgeable(),
+			LaunchTick:      int(m.GetLaunchTick()),
+		}
+
+		result.Events = append(result.Events, event)
+		return nil
+	})
+
+	if err := parser.Start(); err != nil {
+		return nil, fmt.Errorf("error parsing file: %w", err)
+	}
+
+	// Post-process: add game time to events
+	for i := range result.Events {
+		result.Events[i].GameTime = TickToGameTime(uint32(result.Events[i].Tick), gameStartTick)
+		result.Events[i].GameTimeStr = FormatGameTime(result.Events[i].GameTime)
+	}
+
+	result.TotalEvents = len(result.Events)
+	return result, nil
+}
+
+func marshalAttacksResult(result *AttacksResult) *C.char {
+	jsonResult, err := json.Marshal(result)
+	if err != nil {
+		errorResult := &AttacksResult{
+			Events: make([]AttackEvent, 0),
 		}
 		jsonResult, _ = json.Marshal(errorResult)
 	}

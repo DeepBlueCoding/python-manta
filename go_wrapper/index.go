@@ -108,9 +108,8 @@ func buildDemoIndex(filePath string, intervalTicks int) *DemoIndex {
 	}
 
 	lastKeyframeTick := -intervalTicks
-	var gameStartTick int
+	var gameStartTick uint32
 	var gameStartTime float32
-	const ticksPerSecond = 30.0
 
 	// Track game time and create keyframes
 	parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
@@ -125,7 +124,7 @@ func buildDemoIndex(filePath string, intervalTicks int) *DemoIndex {
 		if strings.Contains(className, "CDOTAGamerulesProxy") {
 			if gst, ok := e.GetFloat32("m_pGameRules.m_flGameStartTime"); ok && gst > 0 && gameStartTime == 0 {
 				gameStartTime = gst
-				gameStartTick = currentTick
+				gameStartTick = parser.Tick
 				index.GameStarted = currentTick
 			}
 		}
@@ -137,11 +136,8 @@ func buildDemoIndex(filePath string, intervalTicks int) *DemoIndex {
 
 		// Add keyframe if enough ticks have passed
 		if currentTick-lastKeyframeTick >= intervalTicks {
-			// Calculate game time based on ticks elapsed since game start
-			var gameTime float32
-			if gameStartTick > 0 && currentTick >= gameStartTick {
-				gameTime = float32(currentTick-gameStartTick) / ticksPerSecond
-			}
+			// Calculate game time using centralized conversion
+			gameTime := TickToGameTime(parser.Tick, gameStartTick)
 
 			index.Keyframes = append(index.Keyframes, Keyframe{
 				Tick:     currentTick,
@@ -210,10 +206,9 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 		Success: true,
 	}
 
-	var gameStartTick int
+	var gameStartTick uint32
 	var gameStartTime float32
 	reachedTarget := false
-	const ticksPerSecond = 30.0
 
 	// Track entities by their index (handle)
 	heroByIndex := make(map[uint32]*manta.Entity)
@@ -233,7 +228,7 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 		if strings.Contains(className, "CDOTAGamerulesProxy") {
 			if gst, ok := e.GetFloat32("m_pGameRules.m_flGameStartTime"); ok && gst > 0 && gameStartTime == 0 {
 				gameStartTime = gst
-				gameStartTick = currentTick
+				gameStartTick = parser.Tick
 			}
 		}
 
@@ -278,10 +273,8 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 			snapshot.Tick = currentTick
 			snapshot.NetTick = int(parser.NetTick)
 
-			// Calculate game time
-			if gameStartTick > 0 && currentTick >= gameStartTick {
-				snapshot.GameTime = float32(currentTick-gameStartTick) / ticksPerSecond
-			}
+			// Calculate game time using centralized conversion
+			snapshot.GameTime = TickToGameTime(parser.Tick, gameStartTick)
 
 			// Build set of main hero entity indices
 			mainHeroIndices := make(map[uint32]int) // entity index -> player index

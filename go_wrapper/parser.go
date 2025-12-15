@@ -67,12 +67,18 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 	var gameInfo *CDotaGameInfo
 	var combatLogRaw []rawCombatLogEntry
 	var gameStartTime float32
+	var gameStartTick uint32
 	var entityState *entityCollectorState
 	var gameEventsResult *GameEventsResult
 	var modifiersResult *ModifiersResult
 	var stringTablesResult *StringTablesResult
 	var messagesResult *UniversalResult
 	var parserInfoResult *ParserInfo
+	var attacksResult *AttacksResult
+
+	// Hero level tracking for combat log enrichment
+	// Maps hero name (e.g., "npc_dota_hero_axe") to current level
+	heroLevels := make(map[string]int32)
 
 	// Setup collectors based on config
 
@@ -149,11 +155,35 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		combatLogRaw = make([]rawCombatLogEntry, 0)
 		clConfig := config.CombatLog
 
+		// Track hero levels from entity updates for combat log enrichment
+		parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
+			if e == nil {
+				return nil
+			}
+			className := e.GetClassName()
+			// Only process hero entities
+			if !strings.Contains(className, "CDOTA_Unit_Hero_") {
+				return nil
+			}
+			// Extract hero name from class name (e.g., "CDOTA_Unit_Hero_Axe" -> "npc_dota_hero_axe")
+			parts := strings.Split(className, "CDOTA_Unit_Hero_")
+			if len(parts) < 2 {
+				return nil
+			}
+			heroName := "npc_dota_hero_" + strings.ToLower(parts[1])
+			// Get current level from entity
+			if level, ok := e.GetInt32("m_iCurrentLevel"); ok && level > 0 {
+				heroLevels[heroName] = level
+			}
+			return nil
+		})
+
 		parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
 			// Detect game start
 			if m.GetType() == dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_GAME_STATE {
 				if m.GetValue() == 5 {
 					gameStartTime = m.GetTimestamp()
+					gameStartTick = parser.Tick
 				}
 			}
 
@@ -177,15 +207,31 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 				}
 			}
 
-			// Apply heroes only filter
-			if clConfig.HeroesOnly && !m.GetIsAttackerHero() && !m.GetIsTargetHero() {
-				return nil
+			// NOTE: heroes_only filter is applied in finalizeCombatLog after name resolution
+			// This allows checking both boolean flags AND name strings for hero detection
+
+			// Capture hero levels from entity state at this tick
+			// Normalize hero names to match entity format (e.g., "storm_spirit" -> "stormspirit")
+			var attackerLevel, targetLevel int32
+			if attackerName, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetAttackerName())); ok {
+				normalizedAttacker := normalizeHeroName(attackerName)
+				if level, exists := heroLevels[normalizedAttacker]; exists {
+					attackerLevel = level
+				}
+			}
+			if targetName, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetTargetName())); ok {
+				normalizedTarget := normalizeHeroName(targetName)
+				if level, exists := heroLevels[normalizedTarget]; exists {
+					targetLevel = level
+				}
 			}
 
 			combatLogRaw = append(combatLogRaw, rawCombatLogEntry{
-				tick:    parser.Tick,
-				netTick: parser.NetTick,
-				msg:     m,
+				tick:              parser.Tick,
+				netTick:           parser.NetTick,
+				msg:               m,
+				attackerHeroLevel: attackerLevel,
+				targetHeroLevel:   targetLevel,
 			})
 
 			return nil
@@ -399,6 +445,45 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		})
 	}
 
+	// Attacks collector (from TE_Projectile)
+	if config.Attacks != nil {
+		attacksConfig := config.Attacks
+		attacksResult = &AttacksResult{
+			Events: make([]AttackEvent, 0),
+		}
+
+		parser.Callbacks.OnCDOTAUserMsg_TE_Projectile(func(m *dota.CDOTAUserMsg_TE_Projectile) error {
+			// Only capture attack projectiles
+			if !m.GetIsAttack() {
+				return nil
+			}
+
+			if attacksConfig.MaxEvents > 0 && len(attacksResult.Events) >= attacksConfig.MaxEvents {
+				return nil
+			}
+
+			sourceHandle := int64(m.GetSource())
+			targetHandle := int64(m.GetTarget())
+
+			// Convert handles to entity indices (lower 14 bits)
+			sourceIndex := int(sourceHandle & 0x3FFF)
+			targetIndex := int(targetHandle & 0x3FFF)
+
+			attacksResult.Events = append(attacksResult.Events, AttackEvent{
+				Tick:            int(parser.Tick),
+				SourceIndex:     sourceIndex,
+				TargetIndex:     targetIndex,
+				SourceHandle:    sourceHandle,
+				TargetHandle:    targetHandle,
+				ProjectileSpeed: int(m.GetMoveSpeed()),
+				Dodgeable:       m.GetDodgeable(),
+				LaunchTick:      int(m.GetLaunchTick()),
+			})
+
+			return nil
+		})
+	}
+
 	// Run the parser ONCE
 	if err := parser.Start(); err != nil {
 		return nil, fmt.Errorf("error parsing file: %w", err)
@@ -416,7 +501,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 
 	// Combat log: resolve names after parsing
 	if combatLogRaw != nil {
-		result.CombatLog = finalizeCombatLog(parser, combatLogRaw, gameStartTime)
+		result.CombatLog = finalizeCombatLog(parser, combatLogRaw, gameStartTime, gameStartTick, config.CombatLog)
 	}
 
 	// Entity snapshots
@@ -463,22 +548,53 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		result.ParserInfo = parserInfoResult
 	}
 
+	// Attacks
+	if attacksResult != nil {
+		// Post-process: add game time to events
+		for i := range attacksResult.Events {
+			attacksResult.Events[i].GameTime = TickToGameTime(uint32(attacksResult.Events[i].Tick), gameStartTick)
+			attacksResult.Events[i].GameTimeStr = FormatGameTime(attacksResult.Events[i].GameTime)
+		}
+		attacksResult.TotalEvents = len(attacksResult.Events)
+		result.Attacks = attacksResult
+	}
+
 	return result, nil
 }
 
 // rawCombatLogEntry stores combat log data before name resolution
 type rawCombatLogEntry struct {
-	tick    uint32
-	netTick uint32
-	msg     *dota.CMsgDOTACombatLogEntry
+	tick             uint32
+	netTick          uint32
+	msg              *dota.CMsgDOTACombatLogEntry
+	attackerHeroLevel int32  // Captured from entity state at this tick
+	targetHeroLevel   int32  // Captured from entity state at this tick
+}
+
+// isHeroName checks if a name string indicates a hero
+func isHeroName(name string) bool {
+	return strings.Contains(name, "npc_dota_hero_")
+}
+
+// normalizeHeroName converts combat log hero names to entity class format.
+// Combat log uses "npc_dota_hero_storm_spirit" while entities use "npc_dota_hero_stormspirit".
+func normalizeHeroName(name string) string {
+	if !strings.HasPrefix(name, "npc_dota_hero_") {
+		return name
+	}
+	// Remove underscores from the hero name part (after "npc_dota_hero_")
+	suffix := strings.TrimPrefix(name, "npc_dota_hero_")
+	normalized := strings.ReplaceAll(suffix, "_", "")
+	return "npc_dota_hero_" + normalized
 }
 
 // finalizeCombatLog resolves names and builds the final result
-func finalizeCombatLog(parser *manta.Parser, rawEntries []rawCombatLogEntry, gameStartTime float32) *CombatLogResult {
+func finalizeCombatLog(parser *manta.Parser, rawEntries []rawCombatLogEntry, gameStartTime float32, gameStartTick uint32, clConfig *CombatLogConfig) *CombatLogResult {
 	result := &CombatLogResult{
 		Entries:       make([]CombatLogEntry, 0, len(rawEntries)),
 		Success:       true,
 		GameStartTime: gameStartTime,
+		GameStartTick: gameStartTick,
 	}
 
 	getName := func(idx uint32) string {
@@ -542,9 +658,7 @@ func finalizeCombatLog(parser *manta.Parser, rawEntries []rawCombatLogEntry, gam
 			Value:                    int32(m.GetValue()),
 			ValueName:                valueName,
 			Health:                   m.GetHealth(),
-			Timestamp:                m.GetTimestamp(),
-			TimestampRaw:             m.GetTimestampRaw(),
-			GameTime:                 m.GetTimestamp() - gameStartTime,
+			GameTime:                 TickToGameTime(raw.tick, gameStartTick),
 			StunDuration:             m.GetStunDuration(),
 			SlowDuration:             m.GetSlowDuration(),
 			IsAbilityToggleOn:        m.GetIsAbilityToggleOn(),
@@ -572,8 +686,8 @@ func finalizeCombatLog(parser *manta.Parser, rawEntries []rawCombatLogEntry, gam
 			StackCount:               int32(m.GetStackCount()),
 			HiddenModifier:           m.GetHiddenModifier(),
 			InvisibilityModifier:     m.GetInvisibilityModifier(),
-			AttackerHeroLevel:        int32(m.GetAttackerHeroLevel()),
-			TargetHeroLevel:          int32(m.GetTargetHeroLevel()),
+			AttackerHeroLevel:        raw.attackerHeroLevel, // From entity state (protobuf value is always 0)
+			TargetHeroLevel:          raw.targetHeroLevel,   // From entity state (protobuf value is always 0)
 			XPM:                      int32(m.GetXpm()),
 			GPM:                      int32(m.GetGpm()),
 			EventLocation:            int32(m.GetEventLocation()),
@@ -612,6 +726,15 @@ func finalizeCombatLog(parser *manta.Parser, rawEntries []rawCombatLogEntry, gam
 			KillEaterEvent:           int32(m.GetKillEaterEvent()),
 			UnitStatusLabel:          int32(m.GetUnitStatusLabel()),
 			TrackedStatId:            int32(m.GetTrackedStatId()),
+		}
+
+		// Apply heroes_only filter (checks both boolean flags AND name strings)
+		if clConfig != nil && clConfig.HeroesOnly {
+			isHeroRelated := entry.IsAttackerHero || entry.IsTargetHero ||
+				isHeroName(entry.AttackerName) || isHeroName(entry.TargetName)
+			if !isHeroRelated {
+				continue
+			}
 		}
 
 		result.Entries = append(result.Entries, entry)
@@ -722,11 +845,8 @@ func setupEntityCollector(parser *manta.Parser, state *entityCollectorState) {
 // This delegates to captureSnapshot from entity_parser.go which properly extracts
 // hero positions by finding CDOTA_Unit_Hero_* entities
 func captureEntitySnapshot(parser *manta.Parser, config *EntityParseConfig, gameStartTime float32, gameStartTick uint32) EntitySnapshot {
-	// Calculate game time from ticks since game start (30 ticks per second)
-	var gameTime float32 = 0
-	if gameStartTick > 0 && parser.Tick > gameStartTick {
-		gameTime = float32(parser.Tick-gameStartTick) / 30.0
-	}
+	// Calculate game time using centralized conversion
+	gameTime := TickToGameTime(parser.Tick, gameStartTick)
 
 	// Use the working captureSnapshot from entity_parser.go
 	entityConfig := EntityParseConfig{
@@ -736,6 +856,7 @@ func captureEntitySnapshot(parser *manta.Parser, config *EntityParseConfig, game
 		TargetHeroes:  config.TargetHeroes,
 		EntityClasses: config.EntityClasses,
 		IncludeRaw:    config.IncludeRaw,
+		IncludeCreeps: config.IncludeCreeps,
 	}
 
 	result := captureSnapshot(parser, gameTime, entityConfig)
@@ -753,11 +874,18 @@ func captureEntitySnapshot(parser *manta.Parser, config *EntityParseConfig, game
 
 // finalizeEntitySnapshots builds the final entity result
 func finalizeEntitySnapshots(state *entityCollectorState, totalTicks uint32) *EntityParseResult {
+	// Post-process: recalculate game_time for all snapshots now that we know gameStartTick
+	// This fixes pre-horn snapshots that were captured before gameStartTick was known
+	for i := range state.snapshots {
+		state.snapshots[i].GameTime = TickToGameTime(state.snapshots[i].Tick, state.gameStartTick)
+	}
+
 	return &EntityParseResult{
 		Snapshots:     state.snapshots,
 		Success:       true,
 		TotalTicks:    totalTicks,
 		SnapshotCount: len(state.snapshots),
+		GameStartTick: state.gameStartTick,
 	}
 }
 

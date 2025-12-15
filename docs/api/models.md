@@ -799,7 +799,8 @@ class MessageEvent(BaseModel):
     tick: int                    # Game tick when message occurred
     net_tick: int                # Network tick
     data: Any                    # Message-specific data (dict)
-    timestamp: Optional[int]     # Unix timestamp in milliseconds
+    game_time: float             # Game time in seconds (negative before horn)
+    game_time_str: str           # Formatted game time (e.g., "-0:40", "5:32")
 ```
 
 **Example:**
@@ -897,7 +898,8 @@ class CombatLogEntry(BaseModel):
     is_visible_dire: bool         # Visible to Dire
     value: int                    # Damage/heal value
     health: int                   # Target health after
-    timestamp: float              # Game time in seconds
+    game_time: float              # Game time in seconds (negative before horn)
+    game_time_str: str            # Formatted game time (e.g., "-0:40", "5:32")
     stun_duration: float          # Stun duration if applicable
     slow_duration: float          # Slow duration if applicable
     is_ability_toggle_on: bool    # Ability toggled on
@@ -908,15 +910,78 @@ class CombatLogEntry(BaseModel):
     last_hits: int                # Last hits at time
     attacker_team: int            # Attacker team ID
     target_team: int              # Target team ID
+    attacker_hero_level: int      # Attacker's hero level (from entity state)
+    target_hero_level: int        # Target's hero level (from entity state)
+```
+
+!!! success "Hero Levels Now Available (v1.4.5.4+)"
+    `attacker_hero_level` and `target_hero_level` are now populated from entity state during parsing. 100% of hero deaths have `target_hero_level`, 94%+ have `attacker_hero_level`.
+
+**Example:**
+```python
+result = parser.parse(combat_log={"types": [4], "heroes_only": True, "max_entries": 100})
+
+for entry in result.combat_log.entries:
+    if entry.type == 4:  # DEATH
+        print(f"[{entry.game_time_str}] {entry.attacker_name} (lvl {entry.attacker_hero_level}) "
+              f"killed {entry.target_name} (lvl {entry.target_hero_level})")
+```
+
+---
+
+## Attack Models
+
+Attack models capture auto-attack projectiles from `TE_Projectile` messages. Unlike combat log which only records damage/kill events, attacks capture the actual attack action including tower attacks on creeps and neutral aggro.
+
+### AttacksResult
+
+Result container for attacks parsing.
+
+```python
+class AttacksResult(BaseModel):
+    events: List[AttackEvent] = []  # Attack events
+    total_events: int = 0           # Total events captured
+```
+
+### AttackEvent
+
+Single auto-attack projectile event.
+
+```python
+class AttackEvent(BaseModel):
+    tick: int                   # Game tick when attack was registered
+    source_index: int           # Entity index of attacker
+    target_index: int           # Entity index of target
+    source_handle: int          # Raw entity handle (for advanced use)
+    target_handle: int          # Raw entity handle (for advanced use)
+    projectile_speed: int = 0   # Projectile move speed
+    dodgeable: bool = False     # Can be disjointed
+    launch_tick: int = 0        # Tick when projectile was launched
+    game_time: float = 0.0      # Game time in seconds
+    game_time_str: str = ""     # Formatted game time (e.g., "15:34")
 ```
 
 **Example:**
 ```python
-result = parser.parse_combat_log("match.dem", types=[0], heroes_only=True, max_entries=100)
+from python_manta import Parser
 
-for entry in result.entries:
-    if entry.type == 0:  # DAMAGE
-        print(f"[{entry.timestamp:.1f}s] {entry.attacker_name} hit {entry.target_name} for {entry.value}")
+parser = Parser("match.dem")
+result = parser.parse(attacks={})
+
+# Get hero indices for classification
+snap = parser.snapshot(target_tick=60000)
+hero_indices = {h.index for h in snap.heroes}
+
+# Analyze attacks
+hero_attacks = sum(1 for e in result.attacks.events if e.source_index in hero_indices)
+tower_attacks = sum(1 for e in result.attacks.events if 600 <= e.source_index <= 800)
+
+print(f"Hero attacks: {hero_attacks}")
+print(f"Tower attacks: {tower_attacks}")
+
+# Find who a specific tower attacked
+tower_725_targets = [e.target_index for e in result.attacks.events if e.source_index == 725]
+print(f"Tower 725 attacked {len(set(tower_725_targets))} unique targets")
 ```
 
 ---

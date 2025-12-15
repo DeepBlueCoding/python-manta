@@ -15,6 +15,56 @@ from typing import Optional, Dict, Any, List, Iterator
 from pydantic import BaseModel, Field
 
 
+# ============================================================================
+# TIME UTILITIES
+# ============================================================================
+
+TICKS_PER_SECOND = 30.0
+
+
+def format_game_time(seconds: float) -> str:
+    """Format game time as '-0:40' or '3:07'.
+
+    Args:
+        seconds: Game time in seconds (negative = pre-horn)
+
+    Returns:
+        Formatted time string like '-0:40' or '3:07'
+    """
+    negative = seconds < 0
+    abs_seconds = abs(int(seconds))
+    mins = abs_seconds // 60
+    secs = abs_seconds % 60
+    sign = "-" if negative else ""
+    return f"{sign}{mins}:{secs:02d}"
+
+
+def game_time_to_tick(game_time: float, game_start_tick: int) -> int:
+    """Convert game_time (seconds from horn) to tick.
+
+    Args:
+        game_time: Seconds from horn (negative = pre-horn)
+        game_start_tick: Tick when horn sounded
+
+    Returns:
+        Tick number
+    """
+    return game_start_tick + int(game_time * TICKS_PER_SECOND)
+
+
+def tick_to_game_time(tick: int, game_start_tick: int) -> float:
+    """Convert tick to game_time (seconds from horn).
+
+    Args:
+        tick: Tick number
+        game_start_tick: Tick when horn sounded
+
+    Returns:
+        Seconds from horn (negative = pre-horn)
+    """
+    return (tick - game_start_tick) / TICKS_PER_SECOND
+
+
 class RuneType(str, Enum):
     """Dota 2 rune types with their modifier names.
 
@@ -1362,17 +1412,41 @@ class TeamState(BaseModel):
     tower_kills: int = 0
 
 
+class CreepSnapshot(BaseModel):
+    """Creep position and state snapshot.
+
+    Only populated when include_creeps=True in EntityParseConfig.
+    """
+    entity_id: int
+    class_name: str  # e.g., "CDOTA_BaseNPC_Creep_Lane"
+    name: str = ""   # e.g., "npc_dota_creep_goodguys_melee"
+    team: int = 0    # 2=Radiant, 3=Dire, 0=Neutral
+    x: float = 0.0
+    y: float = 0.0
+    health: int = 0
+    max_health: int = 0
+    is_neutral: bool = False  # true for neutral creeps
+    is_lane: bool = False     # true for lane creeps
+
+
 class EntitySnapshot(BaseModel):
     """Entity state snapshot at a specific tick.
 
     Contains complete hero state including economy, abilities, talents, combat stats,
     and attributes. All hero data is consolidated in the heroes field.
+    Optionally includes creep positions when include_creeps=True.
     """
     tick: int
     game_time: float
     heroes: List["HeroSnapshot"] = []
+    creeps: List[CreepSnapshot] = []  # Only populated when include_creeps=True
     teams: List[TeamState] = []
     raw_entities: Optional[Dict[str, Any]] = None
+
+    @property
+    def game_time_str(self) -> str:
+        """Formatted game time like '-0:40' or '3:07'."""
+        return format_game_time(self.game_time)
 
 
 class EntityParseConfig(BaseModel):
@@ -1383,6 +1457,7 @@ class EntityParseConfig(BaseModel):
     target_heroes: List[str] = []  # Filter by hero name (npc_dota_hero_* format)
     entity_classes: List[str] = []  # Empty = default set
     include_raw: bool = False
+    include_creeps: bool = False  # Include lane and neutral creep positions
 
 
 class EntityParseResult(BaseModel):
@@ -1392,6 +1467,7 @@ class EntityParseResult(BaseModel):
     error: Optional[str] = None
     total_ticks: int = 0
     snapshot_count: int = 0
+    game_start_tick: int = 0  # Tick when horn sounded (for game_time calculation)
 
 
 # ============================================================================
@@ -1542,8 +1618,6 @@ class CombatLogEntry(BaseModel):
     value: int = 0
     value_name: str = ""
     health: int = 0
-    timestamp: float = 0.0
-    timestamp_raw: float = 0.0
     game_time: float = 0.0
     stun_duration: float = 0.0
     slow_duration: float = 0.0
@@ -1626,6 +1700,16 @@ class CombatLogEntry(BaseModel):
     unit_status_label: int = 0
     tracked_stat_id: int = 0
 
+    @property
+    def game_time_str(self) -> str:
+        """Formatted game time like '-0:40' or '3:07'."""
+        return format_game_time(self.game_time)
+
+    @property
+    def is_pre_horn(self) -> bool:
+        """True if event occurred before horn."""
+        return self.game_time < 0
+
 
 class CombatLogConfig(BaseModel):
     """Configuration for combat log parsing."""
@@ -1641,6 +1725,163 @@ class CombatLogResult(BaseModel):
     error: Optional[str] = None
     total_entries: int = 0
     game_start_time: float = 0.0
+    game_start_tick: int = 0  # Tick when horn sounds (game_time = 0)
+
+
+# ============================================================================
+# ATTACKS (from TE_Projectile)
+# ============================================================================
+
+
+class AttackEvent(BaseModel):
+    """Represents a single attack projectile from TE_Projectile.
+
+    This captures auto-attacks from all units: heroes, towers, creeps, neutrals.
+    Useful for tracking tower attacks on creeps, neutral aggro, etc.
+    """
+    tick: int                        # Tick when attack was registered
+    source_index: int                # Entity index of attacker
+    target_index: int                # Entity index of target
+    source_handle: int               # Raw entity handle (for advanced use)
+    target_handle: int               # Raw entity handle (for advanced use)
+    projectile_speed: int = 0        # Projectile move speed
+    dodgeable: bool = False          # Can be disjointed
+    launch_tick: int = 0             # Tick when projectile was launched
+    game_time: float = 0.0           # Game time in seconds
+    game_time_str: str = ""          # Formatted game time (e.g., "12:34")
+
+
+class AttacksResult(BaseModel):
+    """Result from attacks parsing (TE_Projectile with is_attack=True)."""
+    events: List[AttackEvent] = []
+    total_events: int = 0
+
+
+# ============================================================================
+# HERO RESPAWN EVENT MODEL AND UTILITY
+# ============================================================================
+
+
+class HeroRespawnEvent(BaseModel):
+    """Represents a hero respawn event derived from death events.
+
+    Note: Since target_hero_level is always 0 in replay data (Dota 2 limitation),
+    respawn_time is estimated using a default formula unless hero_level is
+    provided from entity snapshots.
+    """
+    hero_name: str                    # e.g., "npc_dota_hero_juggernaut"
+    hero_display_name: str = ""       # e.g., "Juggernaut" (from Hero enum)
+    death_tick: int                   # Tick when hero died
+    death_game_time: float            # Game time when hero died (seconds from horn)
+    death_game_time_str: str = ""     # Formatted game time (e.g., "12:34")
+    respawn_tick: int = 0             # Estimated tick when hero respawns
+    respawn_game_time: float = 0.0    # Estimated respawn game time
+    respawn_game_time_str: str = ""   # Formatted respawn time
+    respawn_duration: float = 0.0     # Respawn time in seconds
+    killer_name: str = ""             # Who killed the hero
+    hero_level: int = 0               # Hero level at death (if available)
+    team: int = 0                     # 2=Radiant, 3=Dire
+    will_reincarnate: bool = False    # Has Aegis/Reincarnation
+    location_x: float = 0.0           # Death location X
+    location_y: float = 0.0           # Death location Y
+
+
+def calculate_respawn_time(level: int, game_time: float) -> float:
+    """Calculate Dota 2 respawn time based on hero level.
+
+    Formula: Base respawn is roughly 4 + (level * 2) seconds.
+    This is simplified - actual respawn depends on talents, items, etc.
+
+    Args:
+        level: Hero level (1-30)
+        game_time: Game time in seconds (for potential time-based modifiers)
+
+    Returns:
+        Estimated respawn time in seconds
+    """
+    if level <= 0:
+        level = 1
+    base_respawn = 4.0 + (level * 2.0)
+    return min(base_respawn, 100.0)
+
+
+def derive_respawn_events(
+    combat_log_result: CombatLogResult,
+    hero_levels: Optional[Dict[str, int]] = None,
+) -> List[HeroRespawnEvent]:
+    """Derive hero respawn events from combat log death entries.
+
+    Processes DOTA_COMBATLOG_DEATH events where the target is a hero
+    and creates HeroRespawnEvent instances with estimated respawn times.
+
+    Args:
+        combat_log_result: Parsed combat log with DEATH events
+        hero_levels: Optional dict mapping hero names to levels for accurate
+                     respawn calculation. If not provided, uses level 1 default.
+
+    Returns:
+        List of HeroRespawnEvent instances sorted by death time
+
+    Example:
+        >>> result = parser.parse(combat_log={"types": [CombatLogType.DEATH], "heroes_only": True})
+        >>> respawns = derive_respawn_events(result.combat_log)
+        >>> for r in respawns:
+        ...     print(f"{r.hero_display_name} died at {r.death_game_time_str}, respawns at {r.respawn_game_time_str}")
+    """
+    if hero_levels is None:
+        hero_levels = {}
+
+    respawn_events = []
+
+    for entry in combat_log_result.entries:
+        if entry.type != 4:
+            continue
+
+        if "npc_dota_hero_" not in entry.target_name:
+            continue
+
+        hero_name = entry.target_name
+        hero_key = hero_name.replace("npc_dota_hero_", "")
+
+        level = hero_levels.get(hero_name, hero_levels.get(hero_key, 1))
+
+        if entry.target_hero_level > 0:
+            level = entry.target_hero_level
+
+        respawn_duration = calculate_respawn_time(level, entry.game_time)
+
+        if entry.will_reincarnate:
+            respawn_duration = 0.0
+
+        respawn_game_time = entry.game_time + respawn_duration
+        respawn_tick = entry.tick + int(respawn_duration * TICKS_PER_SECOND)
+
+        display_name = hero_key.replace("_", " ").title()
+        for hero in Hero:
+            if hero.name.lower() == hero_key.lower():
+                display_name = hero.display_name
+                break
+
+        event = HeroRespawnEvent(
+            hero_name=hero_name,
+            hero_display_name=display_name,
+            death_tick=entry.tick,
+            death_game_time=entry.game_time,
+            death_game_time_str=format_game_time(entry.game_time),
+            respawn_tick=respawn_tick,
+            respawn_game_time=respawn_game_time,
+            respawn_game_time_str=format_game_time(respawn_game_time),
+            respawn_duration=respawn_duration,
+            killer_name=entry.attacker_name,
+            hero_level=level,
+            team=entry.target_team,
+            will_reincarnate=entry.will_reincarnate,
+            location_x=entry.location_x,
+            location_y=entry.location_y,
+        )
+        respawn_events.append(event)
+
+    return sorted(respawn_events, key=lambda e: e.death_game_time)
 
 
 # ============================================================================
@@ -1684,6 +1925,11 @@ class ParserInfoCollectorConfig(BaseModel):
     enabled: bool = True
 
 
+class AttacksConfig(BaseModel):
+    """Config for attacks collection (from TE_Projectile)."""
+    max_events: int = 0  # Max events (0 = unlimited)
+
+
 class ParseConfig(BaseModel):
     """Configuration for single-pass parsing with multiple collectors."""
     header: Optional[HeaderCollectorConfig] = None
@@ -1695,6 +1941,7 @@ class ParseConfig(BaseModel):
     string_tables: Optional[StringTablesConfig] = None
     messages: Optional[MessagesCollectorConfig] = None
     parser_info: Optional[ParserInfoCollectorConfig] = None
+    attacks: Optional[AttacksConfig] = None
 
 
 class MessagesResult(BaseModel):
@@ -1721,6 +1968,7 @@ class ParseResult(BaseModel):
     string_tables: Optional[StringTablesResult] = None
     messages: Optional[MessagesResult] = None
     parser_info: Optional[ParserInfo] = None
+    attacks: Optional[AttacksResult] = None
 
 
 class StreamConfig(BaseModel):
@@ -1845,6 +2093,7 @@ class HeroSnapshot(BaseModel):
     last_hits: int = 0
     denies: int = 0
     xp: int = 0
+    camps_stacked: int = 0
 
     # KDA
     kills: int = 0
@@ -1970,6 +2219,7 @@ class Parser:
         """Initialize parser for a specific demo file."""
         self._demo_path = demo_path
         self._decompressed_cache: Dict[str, str] = {}
+        self._game_start_tick: Optional[int] = None
 
         if library_path is None:
             library_path = Path(__file__).parent / "libmanta_wrapper.so"
@@ -2053,6 +2303,7 @@ class Parser:
         string_tables: Optional[Dict[str, Any]] = None,
         messages: Optional[Dict[str, Any]] = None,
         parser_info: bool = False,
+        attacks: Optional[Dict[str, Any]] = None,
     ) -> ParseResult:
         """Parse the demo file with specified collectors.
 
@@ -2069,6 +2320,7 @@ class Parser:
             string_tables: String tables config (table_names, max_entries, etc.)
             messages: Universal messages config (filter, max_messages)
             parser_info: Collect parser state info
+            attacks: Attacks config (max_events) - captures TE_Projectile attacks
 
         Returns:
             ParseResult with all requested data
@@ -2106,6 +2358,9 @@ class Parser:
 
         if parser_info:
             config.parser_info = ParserInfoCollectorConfig(enabled=True)
+
+        if attacks is not None:
+            config.attacks = AttacksConfig(**attacks)
 
         path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json(exclude_none=True).encode('utf-8')
@@ -2209,10 +2464,56 @@ class Parser:
         if not result.success:
             raise ValueError(f"Index building failed: {result.error}")
 
+        # Cache game_start_tick for time conversions
+        if result.game_started > 0:
+            self._game_start_tick = result.game_started
+
         return result
 
-    def snapshot(self, target_tick: int, include_illusions: bool = False) -> EntityStateSnapshot:
-        """Get entity state snapshot at a specific tick."""
+    def _ensure_game_start_tick(self) -> int:
+        """Ensure game_start_tick is cached, building index if needed."""
+        if self._game_start_tick is None:
+            # Build a lightweight index to get game_start_tick
+            index = self.build_index(interval_ticks=36000)  # Large interval = fast
+            if self._game_start_tick is None:
+                raise ValueError("Could not determine game start tick from demo")
+        return self._game_start_tick
+
+    def _game_time_to_tick(self, game_time: float) -> int:
+        """Convert game_time (seconds from horn) to tick."""
+        game_start_tick = self._ensure_game_start_tick()
+        return game_time_to_tick(game_time, game_start_tick)
+
+    @property
+    def game_start_tick(self) -> Optional[int]:
+        """The tick when the horn sounds (game_time = 0). None if not yet determined."""
+        return self._game_start_tick
+
+    def snapshot(
+        self,
+        target_tick: Optional[int] = None,
+        game_time: Optional[float] = None,
+        include_illusions: bool = False
+    ) -> EntityStateSnapshot:
+        """Get entity state snapshot at a specific tick or game time.
+
+        Args:
+            target_tick: Tick number (preferred, faster)
+            game_time: Seconds from horn (converted to tick internally)
+            include_illusions: Include illusion/clone heroes
+
+        Returns:
+            EntityStateSnapshot with hero states at the specified time.
+
+        Raises:
+            ValueError: If neither target_tick nor game_time is provided
+        """
+        if target_tick is None and game_time is None:
+            raise ValueError("Must provide either target_tick or game_time")
+
+        if target_tick is None:
+            target_tick = self._game_time_to_tick(game_time)
+
         if not os.path.exists(self._demo_path):
             raise FileNotFoundError(f"Demo file not found: {self._demo_path}")
 
@@ -2238,13 +2539,37 @@ class Parser:
 
     def parse_range(
         self,
-        start_tick: int,
-        end_tick: int,
+        start_tick: Optional[int] = None,
+        end_tick: Optional[int] = None,
+        start_time: Optional[float] = None,
+        end_time: Optional[float] = None,
         combat_log: bool = False,
         messages: bool = False,
         game_events: bool = False,
     ) -> RangeParseResult:
-        """Parse events within a specific tick range."""
+        """Parse events within a specific tick or time range.
+
+        Args:
+            start_tick: Start tick (preferred, faster)
+            end_tick: End tick (preferred, faster)
+            start_time: Start time in seconds from horn
+            end_time: End time in seconds from horn
+            combat_log: Collect combat log entries
+            messages: Collect messages
+            game_events: Collect game events
+
+        You can mix tick and time parameters, e.g.:
+            parse_range(start_time=60.0, end_tick=50000, combat_log=True)
+        """
+        # Convert times to ticks if provided
+        if start_tick is None and start_time is not None:
+            start_tick = self._game_time_to_tick(start_time)
+        if end_tick is None and end_time is not None:
+            end_tick = self._game_time_to_tick(end_time)
+
+        if start_tick is None or end_tick is None:
+            raise ValueError("Must provide start and end (either as tick or time)")
+
         if not os.path.exists(self._demo_path):
             raise FileNotFoundError(f"Demo file not found: {self._demo_path}")
 

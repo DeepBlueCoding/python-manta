@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/dotabuff/manta"
+	"github.com/dotabuff/manta/dota"
 )
 
 // EntitySnapshot represents the state of tracked entities at a specific tick
@@ -18,6 +19,7 @@ type EntitySnapshot struct {
 	Tick        uint32                 `json:"tick"`
 	GameTime    float32                `json:"game_time"`
 	Heroes      []HeroSnapshot         `json:"heroes"`
+	Creeps      []CreepSnapshot        `json:"creeps,omitempty"` // Only populated when IncludeCreeps=true
 	Teams       []TeamState            `json:"teams"`
 	RawEntities map[string]interface{} `json:"raw_entities,omitempty"`
 }
@@ -52,13 +54,28 @@ type TeamState struct {
 	TowerKills int `json:"tower_kills"`
 }
 
+// CreepSnapshot represents a creep's position and state
+type CreepSnapshot struct {
+	EntityID  int     `json:"entity_id"`
+	ClassName string  `json:"class_name"` // e.g., "CDOTA_BaseNPC_Creep_Lane"
+	Name      string  `json:"name"`       // e.g., "npc_dota_creep_goodguys_melee"
+	Team      int     `json:"team"`       // 2=Radiant, 3=Dire, 0=Neutral
+	X         float32 `json:"x"`
+	Y         float32 `json:"y"`
+	Health    int     `json:"health"`
+	MaxHealth int     `json:"max_health"`
+	IsNeutral bool    `json:"is_neutral"` // true for neutral creeps
+	IsLane    bool    `json:"is_lane"`    // true for lane creeps
+}
+
 // EntityParseResult holds the result of entity state parsing
 type EntityParseResult struct {
-	Snapshots    []EntitySnapshot `json:"snapshots"`
-	Success      bool             `json:"success"`
-	Error        string           `json:"error,omitempty"`
-	TotalTicks   uint32           `json:"total_ticks"`
-	SnapshotCount int             `json:"snapshot_count"`
+	Snapshots     []EntitySnapshot `json:"snapshots"`
+	Success       bool             `json:"success"`
+	Error         string           `json:"error,omitempty"`
+	TotalTicks    uint32           `json:"total_ticks"`
+	SnapshotCount int              `json:"snapshot_count"`
+	GameStartTick uint32           `json:"game_start_tick"` // Tick when horn sounded (for game_time calculation)
 }
 
 // EntityParseConfig controls what and how often to capture
@@ -69,6 +86,7 @@ type EntityParseConfig struct {
 	TargetHeroes   []string `json:"target_heroes"`   // Filter by hero name (npc_dota_hero_* format from combat log)
 	EntityClasses  []string `json:"entity_classes"`  // Classes to track (empty = default set)
 	IncludeRaw     bool     `json:"include_raw"`     // Include raw entity data
+	IncludeCreeps  bool     `json:"include_creeps"`  // Include lane and neutral creep positions
 }
 
 //export ParseEntities
@@ -118,8 +136,7 @@ func RunEntityParse(filePath string, config EntityParseConfig) (*EntityParseResu
 
 	// Track last capture tick to respect interval
 	lastCaptureTick := uint32(0)
-	gameStartTime := float32(0)  // When the actual game started (after pick phase)
-	gameStartTick := uint32(0)   // Tick when game started
+	gameStartTick := uint32(0) // Tick when game started (horn)
 
 	// Build a set of target ticks for O(1) lookup
 	targetTickSet := make(map[uint32]bool)
@@ -131,6 +148,16 @@ func RunEntityParse(filePath string, config EntityParseConfig) (*EntityParseResu
 	// Track which target ticks we've captured (to handle tick not exactly matching)
 	capturedTargets := make(map[uint32]bool)
 
+	// Detect game start from combat log (when game state becomes 5 = DOTA_GAMERULES_STATE_GAME_IN_PROGRESS)
+	parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
+		if m.GetType() == dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_GAME_STATE {
+			if m.GetValue() == 5 && gameStartTick == 0 {
+				gameStartTick = parser.Tick
+			}
+		}
+		return nil
+	})
+
 	// Entity handler to capture state at intervals or specific ticks
 	parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
 		// Safety check
@@ -140,10 +167,9 @@ func RunEntityParse(filePath string, config EntityParseConfig) (*EntityParseResu
 
 		className := e.GetClassName()
 
-		// Track game start time from game rules entity
+		// Track game start time from game rules entity (check on ALL entity operations)
 		if strings.Contains(className, "CDOTAGamerulesProxy") {
-			if gst, ok := e.GetFloat32("m_pGameRules.m_flGameStartTime"); ok && gst > 0 && gameStartTime == 0 {
-				gameStartTime = gst
+			if gst, ok := e.GetFloat32("m_pGameRules.m_flGameStartTime"); ok && gst > 0 && gameStartTick == 0 {
 				gameStartTick = parser.Tick
 			}
 		}
@@ -191,14 +217,9 @@ func RunEntityParse(filePath string, config EntityParseConfig) (*EntityParseResu
 			return nil
 		}
 
-		// Calculate game time from tick (30 ticks per second)
-		var gameTime float32 = 0
-		if gameStartTick > 0 && currentTick > gameStartTick {
-			gameTime = float32(currentTick-gameStartTick) / 30.0
-		}
-
-		// Capture snapshot
-		snapshot := captureSnapshot(parser, gameTime, config)
+		// Capture snapshot with placeholder game_time (will be recalculated after parse)
+		// Use tick=0 for game_time calculation since we don't know gameStartTick yet
+		snapshot := captureSnapshot(parser, 0, config)
 		if snapshot != nil && len(snapshot.Heroes) > 0 {
 			result.Snapshots = append(result.Snapshots, *snapshot)
 			lastCaptureTick = currentTick
@@ -211,9 +232,15 @@ func RunEntityParse(filePath string, config EntityParseConfig) (*EntityParseResu
 		return nil, fmt.Errorf("error parsing file: %w", err)
 	}
 
+	// Post-process: recalculate game_time for all snapshots now that we know gameStartTick
+	for i := range result.Snapshots {
+		result.Snapshots[i].GameTime = TickToGameTime(result.Snapshots[i].Tick, gameStartTick)
+	}
+
 	result.Success = true
 	result.TotalTicks = parser.Tick
 	result.SnapshotCount = len(result.Snapshots)
+	result.GameStartTick = gameStartTick
 	return result, nil
 }
 
@@ -421,7 +448,80 @@ func captureSnapshot(parser *manta.Parser, gameTime float32, config EntityParseC
 		}
 	}
 
+	// Optionally capture creep positions
+	if config.IncludeCreeps {
+		snapshot.Creeps = captureCreepSnapshots(parser)
+	}
+
 	return snapshot
+}
+
+// captureCreepSnapshots captures all lane and neutral creep positions
+func captureCreepSnapshots(parser *manta.Parser) []CreepSnapshot {
+	creeps := make([]CreepSnapshot, 0, 100)
+
+	// Find all creep entities
+	creepEntities := parser.FilterEntity(func(e *manta.Entity) bool {
+		if e == nil {
+			return false
+		}
+		className := e.GetClassName()
+		return strings.Contains(className, "CDOTA_BaseNPC_Creep_Lane") ||
+			strings.Contains(className, "CDOTA_BaseNPC_Creep_Neutral")
+	})
+
+	for _, e := range creepEntities {
+		if e == nil {
+			continue
+		}
+
+		className := e.GetClassName()
+		creep := CreepSnapshot{
+			EntityID:  int(e.GetIndex()),
+			ClassName: className,
+			IsLane:    strings.Contains(className, "Creep_Lane"),
+			IsNeutral: strings.Contains(className, "Creep_Neutral"),
+		}
+
+		// Get name (e.g., "npc_dota_creep_goodguys_melee")
+		if name, ok := e.GetString("m_iszUnitName"); ok {
+			creep.Name = name
+		}
+
+		// Get team (try both int32 and uint32 extraction)
+		if team, ok := e.GetUint32("m_iTeamNum"); ok {
+			creep.Team = int(team)
+		} else if team, ok := e.GetInt32("m_iTeamNum"); ok {
+			creep.Team = int(team)
+		}
+
+		// Get position
+		if cellX, ok := e.GetUint32("CBodyComponent.m_cellX"); ok {
+			if vecX, ok := e.GetFloat32("CBodyComponent.m_vecX"); ok {
+				creep.X = float32(cellX)*128.0 + vecX - 16384.0
+			}
+		}
+		if cellY, ok := e.GetUint32("CBodyComponent.m_cellY"); ok {
+			if vecY, ok := e.GetFloat32("CBodyComponent.m_vecY"); ok {
+				creep.Y = float32(cellY)*128.0 + vecY - 16384.0
+			}
+		}
+
+		// Get health
+		if health, ok := e.GetInt32("m_iHealth"); ok {
+			creep.Health = int(health)
+		}
+		if maxHealth, ok := e.GetInt32("m_iMaxHealth"); ok {
+			creep.MaxHealth = int(maxHealth)
+		}
+
+		// Only include alive creeps
+		if creep.Health > 0 {
+			creeps = append(creeps, creep)
+		}
+	}
+
+	return creeps
 }
 
 // extractPlayerStateFromResource extracts basic player info from CDOTA_PlayerResource
@@ -534,15 +634,16 @@ func extractHeroPosition(hero *manta.Entity, player *PlayerState) {
 
 // EconomyData holds economy stats extracted from PlayerResource and Data entities
 type EconomyData struct {
-	Level    int
-	Kills    int
-	Deaths   int
-	Assists  int
-	LastHits int
-	Denies   int
-	Gold     int
-	NetWorth int
-	XP       int
+	Level        int
+	Kills        int
+	Deaths       int
+	Assists      int
+	LastHits     int
+	Denies       int
+	Gold         int
+	NetWorth     int
+	XP           int
+	CampsStacked int
 }
 
 // extractEconomyData extracts economy data from PlayerResource and Data entities
@@ -591,6 +692,9 @@ func extractEconomyData(playerResource, dataRadiant, dataDire *manta.Entity, pla
 		}
 		if xp, ok := dataEntity.GetInt32(fmt.Sprintf("m_vecDataTeam.%04d.m_iTotalEarnedXP", teamSlot)); ok {
 			economy.XP = int(xp)
+		}
+		if stacks, ok := dataEntity.GetInt32(fmt.Sprintf("m_vecDataTeam.%04d.m_iCampsStacked", teamSlot)); ok {
+			economy.CampsStacked = int(stacks)
 		}
 	}
 
@@ -647,6 +751,7 @@ func extractFullHeroSnapshot(entity *manta.Entity, playerIdx int, heroID int, pa
 		hero.Gold = economy.Gold
 		hero.NetWorth = economy.NetWorth
 		hero.XP = economy.XP
+		hero.CampsStacked = economy.CampsStacked
 	}
 
 	// Override level from hero entity if available (more accurate)

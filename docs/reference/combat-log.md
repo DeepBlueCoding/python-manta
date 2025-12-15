@@ -2,7 +2,7 @@
 # Combat Log Reference
 
 ??? info "AI Summary"
-    Complete reference for 12 combat log entry types parsed from Dota 2 replays. Types include: DAMAGE (0), HEAL (1), MODIFIER_ADD (2), MODIFIER_REMOVE (3), DEATH (4), ABILITY (5), ITEM (6), LOCATION (7), GOLD (8), GAME_STATE (9), XP (10), PURCHASE (11). Each entry contains attacker/target info, damage values, timestamps, and team visibility flags.
+    Complete reference for 12 combat log entry types parsed from Dota 2 replays. Types include: DAMAGE (0), HEAL (1), MODIFIER_ADD (2), MODIFIER_REMOVE (3), DEATH (4), ABILITY (5), ITEM (6), LOCATION (7), GOLD (8), GAME_STATE (9), XP (10), PURCHASE (11). Each entry contains attacker/target info, damage values, game_time (seconds from horn), and team visibility flags.
 
 ---
 
@@ -33,11 +33,12 @@ Every `CombatLogEntry` contains these fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `tick` | `int` | Game tick |
+| `tick` | `int` | Game tick (~30/second) |
 | `net_tick` | `int` | Network tick |
 | `type` | `int` | Combat log type ID (0-11) |
 | `type_name` | `str` | Human-readable type name |
-| `timestamp` | `float` | Game time in seconds |
+| `game_time` | `float` | Game time in seconds (negative before horn) |
+| `game_time_str` | `str` | Formatted game time (e.g., "-0:40", "5:32") |
 
 ### Participants
 
@@ -102,7 +103,7 @@ Every `CombatLogEntry` contains these fields:
 result = parser.parse_combat_log("match.dem", types=[0], heroes_only=True, max_entries=100)
 
 for entry in result.entries:
-    print(f"[{entry.timestamp:.1f}s] {entry.attacker_name} -> {entry.target_name}: {entry.value} damage")
+    print(f"[{entry.game_time_str}] {entry.attacker_name} -> {entry.target_name}: {entry.value} damage")
     if entry.inflictor_name:
         print(f"  via {entry.inflictor_name}")
 ```
@@ -113,7 +114,7 @@ for entry in result.entries:
 result = parser.parse_combat_log("match.dem", types=[1], max_entries=100)
 
 for entry in result.entries:
-    print(f"[{entry.timestamp:.1f}s] {entry.target_name} healed for {entry.value}")
+    print(f"[{entry.game_time_str}] {entry.target_name} healed for {entry.value}")
 ```
 
 ### MODIFIER_ADD (Type 2)
@@ -123,7 +124,7 @@ result = parser.parse_combat_log("match.dem", types=[2], max_entries=100)
 
 for entry in result.entries:
     if entry.inflictor_name:
-        print(f"[{entry.timestamp:.1f}s] {entry.inflictor_name} applied to {entry.target_name}")
+        print(f"[{entry.game_time_str}] {entry.inflictor_name} applied to {entry.target_name}")
 ```
 
 ### DEATH (Type 4)
@@ -132,7 +133,7 @@ for entry in result.entries:
 result = parser.parse_combat_log("match.dem", types=[4], heroes_only=True, max_entries=100)
 
 for entry in result.entries:
-    print(f"[{entry.timestamp:.1f}s] {entry.target_name} died")
+    print(f"[{entry.game_time_str}] {entry.target_name} died")
     if entry.attacker_name:
         print(f"  killed by {entry.attacker_name}")
 ```
@@ -144,7 +145,7 @@ result = parser.parse_combat_log("match.dem", types=[8], max_entries=100)
 
 for entry in result.entries:
     if entry.gold > 0:
-        print(f"[{entry.timestamp:.1f}s] {entry.target_name} gained {entry.gold} gold")
+        print(f"[{entry.game_time_str}] {entry.target_name} gained {entry.gold} gold")
 ```
 
 ### XP (Type 10)
@@ -154,7 +155,7 @@ result = parser.parse_combat_log("match.dem", types=[10], max_entries=100)
 
 for entry in result.entries:
     if entry.xp > 0:
-        print(f"[{entry.timestamp:.1f}s] {entry.target_name} gained {entry.xp} XP")
+        print(f"[{entry.game_time_str}] {entry.target_name} gained {entry.xp} XP")
 ```
 
 ---

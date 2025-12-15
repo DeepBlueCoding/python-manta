@@ -625,7 +625,7 @@ def track_runes(demo_path: str):
         rune = RuneType.from_modifier(pickup.inflictor_name)
         rune_name = rune.display_name if rune else pickup.inflictor_name
         hero_runes[hero].append({
-            "time": pickup.timestamp,
+            "time": pickup.game_time,
             "rune": rune_name
         })
 
@@ -636,9 +636,7 @@ def track_runes(demo_path: str):
         hero = pickup.target_name.replace("npc_dota_hero_", "")
         rune = RuneType.from_modifier(pickup.inflictor_name)
         rune_name = rune.display_name if rune else pickup.inflictor_name
-        minutes = int(pickup.timestamp // 60)
-        seconds = int(pickup.timestamp % 60)
-        print(f"[{minutes:02d}:{seconds:02d}] {hero:<20} picked up {rune_name}")
+        print(f"[{pickup.game_time_str}] {hero:<20} picked up {rune_name}")
 
     # Print summary by hero
     print("\nRunes by Hero:")
@@ -897,43 +895,39 @@ track_neutral_items("match.dem")
 Analyze how defensive items counter ultimates. This example shows how skiter's Outworld Staff nullified Ame's Omnislash in a crucial teamfight at 64:08.
 
 ```python
-from python_manta import MantaParser, CombatLogType, NeutralItem
+from python_manta import Parser, CombatLogType, NeutralItem
 
 def analyze_defensive_counter(demo_path: str, start_time: float, end_time: float):
     """Analyze a specific window for ability vs defensive item interactions."""
-    parser = MantaParser()
+    parser = Parser(demo_path)
 
     print("Defensive Item Analysis")
     print("=" * 60)
     print(f"Window: {start_time/60:.0f}:{start_time%60:02.0f} - {end_time/60:.0f}:{end_time%60:02.0f}")
 
     # Get abilities cast in window
-    abilities = parser.parse_combat_log(demo_path, types=[CombatLogType.ABILITY], max_entries=100000)
-    items = parser.parse_combat_log(demo_path, types=[CombatLogType.ITEM], max_entries=100000)
-    damage = parser.parse_combat_log(demo_path, types=[CombatLogType.DAMAGE], max_entries=500000)
-    mods = parser.parse_combat_log(demo_path, types=[CombatLogType.MODIFIER_ADD], max_entries=100000)
+    abilities = parser.parse(combat_log={"types": [CombatLogType.ABILITY], "max_entries": 100000})
+    items = parser.parse(combat_log={"types": [CombatLogType.ITEM], "max_entries": 100000})
+    damage = parser.parse(combat_log={"types": [CombatLogType.DAMAGE], "max_entries": 500000})
+    mods = parser.parse(combat_log={"types": [CombatLogType.MODIFIER_ADD], "max_entries": 100000})
 
-    window_abilities = [e for e in abilities.entries if start_time <= e.timestamp <= end_time]
-    window_items = [e for e in items.entries if start_time <= e.timestamp <= end_time]
-    window_damage = [e for e in damage.entries if start_time <= e.timestamp <= end_time]
-    window_mods = [e for e in mods.entries if start_time <= e.timestamp <= end_time]
+    window_abilities = [e for e in abilities.combat_log.entries if start_time <= e.game_time <= end_time]
+    window_items = [e for e in items.combat_log.entries if start_time <= e.game_time <= end_time]
+    window_damage = [e for e in damage.combat_log.entries if start_time <= e.game_time <= end_time]
+    window_mods = [e for e in mods.combat_log.entries if start_time <= e.game_time <= end_time]
 
     print("\n--- Abilities Cast ---")
     for e in window_abilities:
-        mins = int(e.timestamp // 60)
-        secs = int(e.timestamp % 60)
         caster = e.attacker_name.replace('npc_dota_hero_', '')
         ability = e.inflictor_name
         target = e.target_name.replace('npc_dota_hero_', '')
-        print(f"  [{mins:02d}:{secs:02d}] {caster} -> {ability} on {target}")
+        print(f"  [{e.game_time_str}] {caster} -> {ability} on {target}")
 
     print("\n--- Items Used ---")
     for e in window_items:
-        mins = int(e.timestamp // 60)
-        secs = int(e.timestamp % 60)
         user = e.attacker_name.replace('npc_dota_hero_', '')
         item = e.inflictor_name
-        print(f"  [{mins:02d}:{secs:02d}] {user} -> {item}")
+        print(f"  [{e.game_time_str}] {user} -> {item}")
 
     print("\n--- Key Modifiers ---")
     defensive_mods = [e for e in window_mods
@@ -942,22 +936,18 @@ def analyze_defensive_counter(demo_path: str, start_time: float, end_time: float
                       or 'outworld' in e.inflictor_name.lower()
                       or 'aeon' in e.inflictor_name.lower()]
     for e in defensive_mods:
-        mins = int(e.timestamp // 60)
-        secs = int(e.timestamp % 60)
         target = e.target_name.replace('npc_dota_hero_', '')
         mod = e.inflictor_name
-        print(f"  [{mins:02d}:{secs:02d}] {mod} on {target}")
+        print(f"  [{e.game_time_str}] {mod} on {target}")
 
     # Check for Omnislash damage specifically
     omni_damage = [e for e in window_damage
                    if 'omni' in e.inflictor_name.lower() or 'swift' in e.inflictor_name.lower()]
     print(f"\n--- Omnislash Damage: {len(omni_damage)} hits ---")
     for e in omni_damage[:5]:
-        mins = int(e.timestamp // 60)
-        secs = int(e.timestamp % 60)
         target = e.target_name.replace('npc_dota_hero_', '')
         dmg = e.value
-        print(f"  [{mins:02d}:{secs:02d}] Hit {target} for {dmg}")
+        print(f"  [{e.game_time_str}] Hit {target} for {dmg}")
 
 # Usage - Analyze the 64:08 Omnislash vs Outworld Staff moment
 # At 64:08, Ame Omnislashes Medusa, but she uses Outworld Staff at 64:09

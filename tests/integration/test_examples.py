@@ -12,13 +12,15 @@ import pytest
 # Module-level markers: slow integration tests (~8min)
 pytestmark = [pytest.mark.slow, pytest.mark.integration]
 from collections import defaultdict
+from caching_parser import Parser
 from python_manta import (
-    Parser, Hero, CombatLogType, RuneType,
+    Hero, CombatLogType, RuneType,
     NeutralItem, NeutralItemTier
 )
+from tests.conftest import DEMO_FILE_SECONDARY
 
 # TI 2025 Grand Finals Game 5
-DEMO_PATH = "/home/juanma/projects/equilibrium_coach/.data/replays/8461956309.dem"
+DEMO_PATH = DEMO_FILE_SECONDARY
 
 
 @pytest.fixture(scope="module")
@@ -211,9 +213,7 @@ class TestRuneTracking:
             hero = pickup.target_name.replace("npc_dota_hero_", "")
             rune = RuneType.from_modifier(pickup.inflictor_name)
             rune_name = rune.display_name if rune else pickup.inflictor_name
-            minutes = int(pickup.timestamp // 60)
-            seconds = int(pickup.timestamp % 60)
-            print(f"[{minutes:02d}:{seconds:02d}] {hero:<20} picked up {rune_name}")
+            print(f"[{pickup.game_time_str}] {hero:<20} picked up {rune_name}")
 
         # Summary by hero
         hero_runes = defaultdict(list)

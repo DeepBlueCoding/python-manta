@@ -11,7 +11,8 @@ import pytest
 
 # Module-level marker: core functionality tests (~30s)
 pytestmark = pytest.mark.core
-from python_manta import Parser, HeaderInfo, GameInfo, ParseResult
+from caching_parser import Parser
+from python_manta import HeaderInfo, GameInfo, ParseResult
 
 # Import DEMO_FILE from conftest for tests that need to create their own Parser
 from tests.conftest import DEMO_FILE
@@ -186,9 +187,9 @@ class TestParserLibraryIntegration:
 
     def test_custom_library_path_works(self):
         """Test parser works with custom library path."""
-        # Use explicit library path
-        lib_path = "/home/juanma/projects/equilibrium_coach/python_manta/src/python_manta/libmanta_wrapper.so"
-        parser = Parser(DEMO_FILE, library_path=lib_path)
+        from pathlib import Path
+        lib_path = Path(__file__).parent.parent / "src" / "python_manta" / "libmanta_wrapper.so"
+        parser = Parser(DEMO_FILE, library_path=str(lib_path))
 
         # Should produce same results as default parser
         result = parser.parse(header=True)

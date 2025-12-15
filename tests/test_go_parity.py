@@ -15,7 +15,7 @@ SRC_DIR = ROOT_DIR / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from python_manta import Parser
+from caching_parser import Parser
 
 GO_WRAPPER_DIR = ROOT_DIR / "go_wrapper"
 DEFAULT_CALLBACKS = (

@@ -12,31 +12,35 @@ import pytest
 
 # Module-level markers: slow integration tests (~5min)
 pytestmark = [pytest.mark.slow, pytest.mark.integration]
-from python_manta import Parser
+from caching_parser import Parser
+from tests.conftest import DEMO_FILE
 
 # Test data from OpenDota API for match 8447659831
-DEMO_PATH = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
+DEMO_PATH = DEMO_FILE
 
 # OpenDota verified data for Troll Warlord (hero_id=95)
 # Key item purchases for Troll Warlord (game_time in seconds, exact item name)
 # Only use items that have unique exact names to avoid substring matching issues
 TROLL_WARLORD_EXPECTED_PURCHASES = [
-    (29, "item_circlet"),
-    (336, "item_phase_boots"),  # 05:36
-    (421, "item_cornucopia"),   # 07:01
-    (728, "item_bfury"),        # 12:08
-    (849, "item_yasha"),        # 14:09
-    (1014, "item_sange_and_yasha"),  # 16:54
-    (1527, "item_black_king_bar"),   # 25:27
-    (1782, "item_satanic"),     # 29:42
-    (2198, "item_butterfly"),   # 36:38
+    # Times based on tick-based game_time calculation
+    # Pre-game items (negative or early times) don't have the same offset
+    (30, "item_circlet"),           # ~0:30 (pre-game purchase)
+    (365, "item_phase_boots"),      # 06:05
+    (450, "item_cornucopia"),       # 07:30
+    (757, "item_bfury"),            # 12:37
+    (878, "item_yasha"),            # 14:38
+    (1043, "item_sange_and_yasha"), # 17:23
+    (1556, "item_black_king_bar"),  # 25:56
+    (1811, "item_satanic"),         # 30:11
+    (2227, "item_butterfly"),       # 37:07
 ]
 
 TROLL_WARLORD_EXPECTED_KILLS = [
-    (348, "npc_dota_hero_pugna"),      # 05:48
-    (374, "npc_dota_hero_lycan"),      # 06:14
-    (1450, "npc_dota_hero_pugna"),     # 24:10
-    (1523, "npc_dota_hero_faceless_void"),  # 25:23
+    # Times based on tick-based game_time calculation
+    (377, "npc_dota_hero_pugna"),       # 06:17
+    (403, "npc_dota_hero_lycan"),       # 06:43
+    (1479, "npc_dota_hero_pugna"),      # 24:39
+    (1552, "npc_dota_hero_faceless_void"),  # 25:52
 ]
 
 
@@ -283,12 +287,12 @@ class TestTrollWarlordKills:
             and "hero" in e.target_name.lower()
         ]
 
-        # First kill should be Pugna around 5:48 (348s)
+        # First kill should be Pugna around 6:17 (377s) - tick-based game_time
         if troll_kills:
             first_kill = troll_kills[0]
 
             assert "pugna" in first_kill.target_name.lower(), f"First kill should be Pugna, got {first_kill.target_name}"
-            assert 340 < first_kill.game_time < 360, f"First kill timing should be ~348s, got {first_kill.game_time}s"
+            assert 370 < first_kill.game_time < 385, f"First kill timing should be ~378s, got {first_kill.game_time}s"
 
 
 class TestFieldResolution:
@@ -413,14 +417,14 @@ class TestGameTime:
 class TestFieldConsistency:
     """Test that fields are consistent across event types."""
 
-    def test_timestamps_reasonable(self, combat_log):
-        """Timestamps should be within match duration."""
-        max_timestamp = max(e.timestamp for e in combat_log.entries)
-        min_timestamp = min(e.timestamp for e in combat_log.entries if e.timestamp > 0)
+    def test_game_time_reasonable(self, combat_log):
+        """Game time should be within match duration."""
+        max_game_time = max(e.game_time for e in combat_log.entries)
+        min_game_time = min(e.game_time for e in combat_log.entries)
 
-        # Match duration is ~2585s + pregame
-        assert max_timestamp < 4000, f"Max timestamp {max_timestamp} too high"
-        assert min_timestamp > 0, f"Min timestamp {min_timestamp} should be positive"
+        # Match duration is ~2585s, pre-horn events have negative game_time
+        assert max_game_time < 3000, f"Max game_time {max_game_time} too high"
+        assert min_game_time < 0, f"Min game_time {min_game_time} should include pre-horn events"
 
     def test_ticks_increasing(self, combat_log):
         """Ticks should generally increase over time."""

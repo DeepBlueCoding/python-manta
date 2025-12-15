@@ -676,3 +676,133 @@ for hero in snap.heroes:
         elif ability.level > 0:
             print(f"  {ability.short_name}: ready")
 ```
+
+---
+
+## Pre-Horn Positions
+
+Entity snapshots can capture hero positions **before the horn sounds** (during the strategy phase). Pre-horn snapshots have negative `game_time` values.
+
+### Basic Pre-Horn Tracking
+
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+
+# Parse with interval that captures pre-horn
+result = parser.parse(entities={'interval_ticks': 900, 'max_snapshots': 20})
+
+for snap in result.entities.snapshots:
+    if snap.game_time < 0:
+        print(f"Pre-horn ({snap.game_time_str}): {len(snap.heroes)} heroes")
+        for hero in snap.heroes:
+            print(f"  {hero.hero_name} at ({hero.x:.0f}, {hero.y:.0f})")
+```
+
+### Understanding Pre-Horn Time
+
+| `game_time` | Meaning |
+|-------------|---------|
+| `-90.0` | 1 minute 30 seconds before horn |
+| `-45.0` | 45 seconds before horn |
+| `0.0` | Horn sounds (game starts) |
+| `60.0` | 1 minute into the game |
+
+### Game Start Tick
+
+The `game_start_tick` field tells you when the horn sounded:
+
+```python
+result = parser.parse(entities={'interval_ticks': 1800})
+
+print(f"Game started at tick: {result.entities.game_start_tick}")
+
+# All snapshots with tick < game_start_tick are pre-horn
+for snap in result.entities.snapshots:
+    if snap.tick < result.entities.game_start_tick:
+        print(f"Pre-horn snapshot at tick {snap.tick}")
+```
+
+---
+
+## Creep Positions
+
+Track lane and neutral creep positions with the `include_creeps` option.
+
+!!! warning "Performance Note"
+    Including creeps significantly increases data volume. A typical snapshot may have 100-200 creeps vs 10 heroes. Use judiciously.
+
+### Basic Creep Tracking
+
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+
+# Enable creep tracking
+result = parser.parse(entities={
+    'interval_ticks': 1800,
+    'max_snapshots': 10,
+    'include_creeps': True
+})
+
+for snap in result.entities.snapshots:
+    lane_creeps = [c for c in snap.creeps if c.is_lane]
+    neutral_creeps = [c for c in snap.creeps if c.is_neutral]
+    print(f"{snap.game_time_str}: {len(lane_creeps)} lane, {len(neutral_creeps)} neutral creeps")
+```
+
+### CreepSnapshot Fields
+
+Each creep in `snapshot.creeps` includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `entity_id` | int | Entity index |
+| `class_name` | str | Entity class (e.g., `CDOTA_BaseNPC_Creep_Lane`) |
+| `name` | str | Unit name (may be empty) |
+| `team` | int | 2=Radiant, 3=Dire, 4=Neutral |
+| `x` | float | X world coordinate |
+| `y` | float | Y world coordinate |
+| `health` | int | Current health |
+| `max_health` | int | Maximum health |
+| `is_lane` | bool | True for lane creeps |
+| `is_neutral` | bool | True for neutral creeps |
+
+### Filtering Creeps by Team
+
+```python
+for snap in result.entities.snapshots:
+    radiant_creeps = [c for c in snap.creeps if c.team == 2]
+    dire_creeps = [c for c in snap.creeps if c.team == 3]
+    neutral_creeps = [c for c in snap.creeps if c.team == 4]
+
+    print(f"{snap.game_time_str}:")
+    print(f"  Radiant creeps: {len(radiant_creeps)}")
+    print(f"  Dire creeps: {len(dire_creeps)}")
+    print(f"  Neutral creeps: {len(neutral_creeps)}")
+```
+
+### Creep Wave Analysis
+
+```python
+# Track creep waves by position
+for snap in result.entities.snapshots:
+    if snap.game_time < 0:
+        continue  # Skip pre-horn
+
+    # Group lane creeps by approximate lane position
+    for creep in snap.creeps:
+        if creep.is_lane and creep.team == 2:  # Radiant lane creeps
+            # Mid lane is roughly where x ≈ y
+            # Top lane: high y, low x
+            # Bot lane: low y, high x
+            if abs(creep.x - creep.y) < 2000:
+                lane = "mid"
+            elif creep.y > creep.x:
+                lane = "top"
+            else:
+                lane = "bot"
+            print(f"Radiant creep at ({creep.x:.0f}, {creep.y:.0f}) - {lane} lane")
+```

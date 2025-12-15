@@ -12,7 +12,6 @@ import pytest
 # Module-level marker: fast tests (~10s)
 pytestmark = pytest.mark.fast
 from python_manta import (
-    Parser,
     ParseResult,
     HeaderInfo,
     DraftEvent,
@@ -24,9 +23,6 @@ from python_manta import (
     GameActivity,
     Hero,
 )
-
-# Import DEMO_FILE from conftest for tests that need to create their own Parser
-from tests.conftest import DEMO_FILE
 
 
 class TestHeaderInfoRealValues:

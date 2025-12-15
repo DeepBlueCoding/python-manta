@@ -10,7 +10,8 @@ import pytest
 
 # Module-level marker: core functionality tests (~30s)
 pytestmark = pytest.mark.core
-from python_manta import Parser, ParseResult, HeaderInfo, GameInfo, Hero
+from caching_parser import Parser
+from python_manta import ParseResult, HeaderInfo, GameInfo, Hero
 
 # Import DEMO_FILE from conftest for tests that need to create their own Parser
 from tests.conftest import DEMO_FILE
