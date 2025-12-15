@@ -167,8 +167,7 @@ type HeroSnapshot struct {
 
 // AttacksConfig controls attack event parsing
 type AttacksConfig struct {
-	MaxEvents    int  `json:"max_events"`     // Max events (0 = unlimited)
-	IncludeMelee bool `json:"include_melee"`  // Include melee attacks from combat log (default: false)
+	MaxEvents int `json:"max_events"` // Max events (0 = unlimited)
 }
 
 // AttackEvent represents a single attack (ranged projectile or melee)

@@ -1969,9 +1969,8 @@ class ParserInfoCollectorConfig(BaseModel):
 
 
 class AttacksConfig(BaseModel):
-    """Config for attacks collection (ranged + optional melee)."""
-    max_events: int = 0       # Max events (0 = unlimited)
-    include_melee: bool = False  # Include melee attacks from combat log
+    """Config for attacks collection (ranged projectiles + melee auto-attacks)."""
+    max_events: int = 0  # Max events (0 = unlimited)
 
 
 class EntityDeathsConfig(BaseModel):

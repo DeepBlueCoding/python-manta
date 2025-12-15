@@ -166,12 +166,11 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			if !strings.Contains(className, "CDOTA_Unit_Hero_") {
 				return nil
 			}
-			// Extract hero name from class name (e.g., "CDOTA_Unit_Hero_Axe" -> "npc_dota_hero_axe")
-			parts := strings.Split(className, "CDOTA_Unit_Hero_")
-			if len(parts) < 2 {
+			// Extract hero name using proper CamelCase -> snake_case conversion
+			heroName := entityClassToHeroName(className)
+			if heroName == "" {
 				return nil
 			}
-			heroName := "npc_dota_hero_" + strings.ToLower(parts[1])
 			// Get current level from entity
 			if level, ok := e.GetInt32("m_iCurrentLevel"); ok && level > 0 {
 				heroLevels[heroName] = level
@@ -446,11 +445,69 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		})
 	}
 
-	// Attacks collector (from TE_Projectile)
+	// Attacks collector (from TE_Projectile and combat log)
+	// Track entity name → index mapping for melee attack correlation
+	entityNameToIndex := make(map[string]int)
+
 	if config.Attacks != nil {
 		attacksConfig := config.Attacks
 		attacksResult = &AttacksResult{
 			Events: make([]AttackEvent, 0),
+		}
+
+		// Track entity name → index mapping for melee attack correlation
+		parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
+			if e == nil || op.Flag(manta.EntityOpDeleted) {
+				return nil
+			}
+
+			className := e.GetClassName()
+			entityID := int(e.GetIndex())
+
+			// Get unit name for heroes/creeps/etc
+			var name string
+			if n, ok := e.GetString("m_iszUnitName"); ok && n != "" {
+				name = n
+			} else if strings.Contains(className, "CDOTA_Unit_Hero_") {
+				// Use entityClassToHeroName for proper CamelCase -> snake_case conversion
+				name = entityClassToHeroName(className)
+			}
+
+			if name != "" {
+				entityNameToIndex[name] = entityID
+			}
+
+			return nil
+		})
+
+		// Helper to get entity info by index
+		getEntityInfo := func(entityIndex int) (name string, x, y float32) {
+			e := parser.FindEntity(int32(entityIndex))
+			if e == nil {
+				return "", 0, 0
+			}
+
+			className := e.GetClassName()
+			if n, ok := e.GetString("m_iszUnitName"); ok && n != "" {
+				name = n
+			} else if strings.Contains(className, "CDOTA_Unit_Hero_") {
+				// Use entityClassToHeroName for proper CamelCase -> snake_case conversion
+				name = entityClassToHeroName(className)
+			}
+
+			// Get position
+			if cellX, ok := e.GetUint64("CBodyComponent.m_cellX"); ok {
+				if cellY, ok2 := e.GetUint64("CBodyComponent.m_cellY"); ok2 {
+					if vecX, ok3 := e.GetFloat32("CBodyComponent.m_vecX"); ok3 {
+						if vecY, ok4 := e.GetFloat32("CBodyComponent.m_vecY"); ok4 {
+							x = float32(cellX)*128.0 + vecX - 8192.0
+							y = float32(cellY)*128.0 + vecY - 8192.0
+						}
+					}
+				}
+			}
+
+			return name, x, y
 		}
 
 		// Ranged attacks from TE_Projectile
@@ -471,6 +528,13 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			sourceIndex := int(sourceHandle & 0x3FFF)
 			targetIndex := int(targetHandle & 0x3FFF)
 
+			// Look up entity names and positions
+			attackerName, locX, locY := getEntityInfo(sourceIndex)
+			targetName, _, _ := getEntityInfo(targetIndex)
+
+			// Calculate game time
+			gt := TickToGameTime(parser.Tick, gameStartTick)
+
 			attacksResult.Events = append(attacksResult.Events, AttackEvent{
 				Tick:            int(parser.Tick),
 				SourceIndex:     sourceIndex,
@@ -480,52 +544,79 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 				ProjectileSpeed: int(m.GetMoveSpeed()),
 				Dodgeable:       m.GetDodgeable(),
 				LaunchTick:      int(m.GetLaunchTick()),
+				GameTime:        gt,
+				GameTimeStr:     FormatGameTime(gt),
 				IsMelee:         false,
+				AttackerName:    attackerName,
+				TargetName:      targetName,
+				LocationX:       locX,
+				LocationY:       locY,
 			})
 
 			return nil
 		})
 
-		// Melee attacks from combat log DAMAGE events
-		if attacksConfig.IncludeMelee {
-			parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
-				// Only DAMAGE events (type 0)
-				if m.GetType() != dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_DAMAGE {
-					return nil
-				}
-
-				// Only auto-attacks (no inflictor = no ability)
-				if m.GetInflictorName() != 0 {
-					return nil
-				}
-
-				if attacksConfig.MaxEvents > 0 && len(attacksResult.Events) >= attacksConfig.MaxEvents {
-					return nil
-				}
-
-				// Get names from string table
-				attackerName := ""
-				targetName := ""
-				if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetAttackerName())); ok {
-					attackerName = name
-				}
-				if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetTargetName())); ok {
-					targetName = name
-				}
-
-				attacksResult.Events = append(attacksResult.Events, AttackEvent{
-					Tick:         int(parser.Tick),
-					IsMelee:      true,
-					AttackerName: attackerName,
-					TargetName:   targetName,
-					Damage:       int(m.GetValue()),
-					LocationX:    m.GetLocationX(),
-					LocationY:    m.GetLocationY(),
-				})
-
+		// Melee attacks from combat log DAMAGE events (always included)
+		parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
+			// Only DAMAGE events (type 0)
+			if m.GetType() != dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_DAMAGE {
 				return nil
+			}
+
+			// Only auto-attacks (no inflictor = no ability)
+			if m.GetInflictorName() != 0 {
+				return nil
+			}
+
+			if attacksConfig.MaxEvents > 0 && len(attacksResult.Events) >= attacksConfig.MaxEvents {
+				return nil
+			}
+
+			// Get names from string table
+			attackerName := ""
+			targetName := ""
+			if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetAttackerName())); ok {
+				attackerName = name
+			}
+			if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetTargetName())); ok {
+				targetName = name
+			}
+
+			// Look up entity indices from name → index mapping
+			sourceIndex := 0
+			targetIndex := 0
+			if idx, ok := entityNameToIndex[attackerName]; ok {
+				sourceIndex = idx
+			}
+			if idx, ok := entityNameToIndex[targetName]; ok {
+				targetIndex = idx
+			}
+
+			// Get attacker position from entity (combat log doesn't have location for DAMAGE)
+			var locX, locY float32
+			if sourceIndex > 0 {
+				_, locX, locY = getEntityInfo(sourceIndex)
+			}
+
+			// Calculate game time from combat log timestamp
+			gt := m.GetTimestamp() - gameStartTime
+
+			attacksResult.Events = append(attacksResult.Events, AttackEvent{
+				Tick:         int(parser.Tick),
+				SourceIndex:  sourceIndex,
+				TargetIndex:  targetIndex,
+				GameTime:     gt,
+				GameTimeStr:  FormatGameTime(gt),
+				IsMelee:      true,
+				AttackerName: attackerName,
+				TargetName:   targetName,
+				Damage:       int(m.GetValue()),
+				LocationX:    locX,
+				LocationY:    locY,
 			})
-		}
+
+			return nil
+		})
 	}
 
 	// Entity deaths collector (tracks entity removals)
@@ -589,11 +680,8 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			if n, ok := e.GetString("m_iszUnitName"); ok {
 				name = n
 			} else if isHero {
-				// Build hero name from class name
-				parts := strings.Split(className, "CDOTA_Unit_Hero_")
-				if len(parts) >= 2 {
-					name = "npc_dota_hero_" + strings.ToLower(parts[1])
-				}
+				// Use entityClassToHeroName for proper CamelCase -> snake_case conversion
+				name = entityClassToHeroName(className)
 			}
 
 			var team int

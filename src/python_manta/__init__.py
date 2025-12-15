@@ -101,7 +101,7 @@ from .manta_python import (
     ParserInfo,
 )
 
-__version__ = "1.4.5.2"
+__version__ = "1.4.5.4.dev4"
 __author__ = "Equilibrium Coach Team"
 __description__ = "Python interface for Manta Dota 2 replay parser"
 
