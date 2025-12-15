@@ -453,6 +453,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			Events: make([]AttackEvent, 0),
 		}
 
+		// Ranged attacks from TE_Projectile
 		parser.Callbacks.OnCDOTAUserMsg_TE_Projectile(func(m *dota.CDOTAUserMsg_TE_Projectile) error {
 			// Only capture attack projectiles
 			if !m.GetIsAttack() {
@@ -479,10 +480,52 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 				ProjectileSpeed: int(m.GetMoveSpeed()),
 				Dodgeable:       m.GetDodgeable(),
 				LaunchTick:      int(m.GetLaunchTick()),
+				IsMelee:         false,
 			})
 
 			return nil
 		})
+
+		// Melee attacks from combat log DAMAGE events
+		if attacksConfig.IncludeMelee {
+			parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
+				// Only DAMAGE events (type 0)
+				if m.GetType() != dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_DAMAGE {
+					return nil
+				}
+
+				// Only auto-attacks (no inflictor = no ability)
+				if m.GetInflictorName() != 0 {
+					return nil
+				}
+
+				if attacksConfig.MaxEvents > 0 && len(attacksResult.Events) >= attacksConfig.MaxEvents {
+					return nil
+				}
+
+				// Get names from string table
+				attackerName := ""
+				targetName := ""
+				if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetAttackerName())); ok {
+					attackerName = name
+				}
+				if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetTargetName())); ok {
+					targetName = name
+				}
+
+				attacksResult.Events = append(attacksResult.Events, AttackEvent{
+					Tick:         int(parser.Tick),
+					IsMelee:      true,
+					AttackerName: attackerName,
+					TargetName:   targetName,
+					Damage:       int(m.GetValue()),
+					LocationX:    m.GetLocationX(),
+					LocationY:    m.GetLocationY(),
+				})
+
+				return nil
+			})
+		}
 	}
 
 	// Entity deaths collector (tracks entity removals)

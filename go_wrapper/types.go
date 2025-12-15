@@ -165,26 +165,34 @@ type HeroSnapshot struct {
 	IsIllusion bool `json:"is_illusion,omitempty"`
 }
 
-// AttacksConfig controls attack event parsing from TE_Projectile
+// AttacksConfig controls attack event parsing
 type AttacksConfig struct {
-	MaxEvents int `json:"max_events"` // Max events (0 = unlimited)
+	MaxEvents    int  `json:"max_events"`     // Max events (0 = unlimited)
+	IncludeMelee bool `json:"include_melee"`  // Include melee attacks from combat log (default: false)
 }
 
-// AttackEvent represents a single attack projectile
+// AttackEvent represents a single attack (ranged projectile or melee)
 type AttackEvent struct {
 	Tick            int     `json:"tick"`
-	SourceIndex     int     `json:"source_index"`      // Entity index of attacker
-	TargetIndex     int     `json:"target_index"`      // Entity index of target
-	SourceHandle    int64   `json:"source_handle"`     // Raw entity handle
-	TargetHandle    int64   `json:"target_handle"`     // Raw entity handle
-	ProjectileSpeed int     `json:"projectile_speed"`  // Projectile move speed
+	SourceIndex     int     `json:"source_index"`      // Entity index of attacker (0 for melee)
+	TargetIndex     int     `json:"target_index"`      // Entity index of target (0 for melee)
+	SourceHandle    int64   `json:"source_handle"`     // Raw entity handle (0 for melee)
+	TargetHandle    int64   `json:"target_handle"`     // Raw entity handle (0 for melee)
+	ProjectileSpeed int     `json:"projectile_speed"`  // Projectile move speed (0 for melee)
 	Dodgeable       bool    `json:"dodgeable"`         // Can be dodged/disjointed
 	LaunchTick      int     `json:"launch_tick"`       // When projectile was launched
 	GameTime        float32 `json:"game_time"`         // Game time in seconds
 	GameTimeStr     string  `json:"game_time_str"`     // Formatted game time
+	// Melee attack fields (from combat log)
+	IsMelee      bool    `json:"is_melee"`       // True if melee attack (from combat log)
+	AttackerName string  `json:"attacker_name"`  // Attacker name (for melee correlation)
+	TargetName   string  `json:"target_name"`    // Target name (for melee correlation)
+	Damage       int     `json:"damage"`         // Damage dealt (melee only)
+	LocationX    float32 `json:"location_x"`     // Attack location X (for correlation)
+	LocationY    float32 `json:"location_y"`     // Attack location Y (for correlation)
 }
 
-// AttacksResult contains all attack events from TE_Projectile
+// AttacksResult contains all attack events
 type AttacksResult struct {
 	Events      []AttackEvent `json:"events"`
 	TotalEvents int           `json:"total_events"`

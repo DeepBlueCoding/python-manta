@@ -1734,25 +1734,34 @@ class CombatLogResult(BaseModel):
 
 
 class AttackEvent(BaseModel):
-    """Represents a single attack projectile from TE_Projectile.
+    """Represents a single attack (ranged projectile or melee).
 
-    This captures auto-attacks from all units: heroes, towers, creeps, neutrals.
-    Useful for tracking tower attacks on creeps, neutral aggro, etc.
+    Ranged attacks come from TE_Projectile and have entity indices.
+    Melee attacks come from combat log DAMAGE and have names + location.
+    Use is_melee to distinguish between them.
     """
     tick: int                        # Tick when attack was registered
-    source_index: int                # Entity index of attacker
-    target_index: int                # Entity index of target
-    source_handle: int               # Raw entity handle (for advanced use)
-    target_handle: int               # Raw entity handle (for advanced use)
-    projectile_speed: int = 0        # Projectile move speed
+    # Ranged attack fields (from TE_Projectile)
+    source_index: int = 0            # Entity index of attacker (0 for melee)
+    target_index: int = 0            # Entity index of target (0 for melee)
+    source_handle: int = 0           # Raw entity handle (0 for melee)
+    target_handle: int = 0           # Raw entity handle (0 for melee)
+    projectile_speed: int = 0        # Projectile move speed (0 for melee)
     dodgeable: bool = False          # Can be disjointed
     launch_tick: int = 0             # Tick when projectile was launched
     game_time: float = 0.0           # Game time in seconds
     game_time_str: str = ""          # Formatted game time (e.g., "12:34")
+    # Melee attack fields (from combat log)
+    is_melee: bool = False           # True if melee attack
+    attacker_name: str = ""          # Attacker name (for melee correlation)
+    target_name: str = ""            # Target name (for melee correlation)
+    damage: int = 0                  # Damage dealt (melee only)
+    location_x: float = 0.0          # Attack location X (for correlation)
+    location_y: float = 0.0          # Attack location Y (for correlation)
 
 
 class AttacksResult(BaseModel):
-    """Result from attacks parsing (TE_Projectile with is_attack=True)."""
+    """Result from attacks parsing (ranged + optional melee)."""
     events: List[AttackEvent] = []
     total_events: int = 0
 
@@ -1960,8 +1969,9 @@ class ParserInfoCollectorConfig(BaseModel):
 
 
 class AttacksConfig(BaseModel):
-    """Config for attacks collection (from TE_Projectile)."""
-    max_events: int = 0  # Max events (0 = unlimited)
+    """Config for attacks collection (ranged + optional melee)."""
+    max_events: int = 0       # Max events (0 = unlimited)
+    include_melee: bool = False  # Include melee attacks from combat log
 
 
 class EntityDeathsConfig(BaseModel):
