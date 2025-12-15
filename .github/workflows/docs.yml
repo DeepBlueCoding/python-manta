@@ -37,7 +37,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Deploy docs (tag)
-        if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
+        if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-') && !contains(github.ref, '.dev')
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "Deploying tag: $VERSION"
