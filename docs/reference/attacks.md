@@ -54,10 +54,15 @@ Every `AttackEvent` contains these fields, populated consistently for both range
 |-------|------|--------|-------|-------------|
 | `is_melee` | `bool` | `False` | `True` | Attack type identifier |
 | `damage` | `int` | 0 | ✓ | Damage dealt |
+| `target_health` | `int` | 0 | ✓ | Target health AFTER attack |
 | `projectile_speed` | `int` | ✓ | 0 | Projectile move speed |
 | `dodgeable` | `bool` | ✓ | `False` | Can be disjointed |
 | `location_x` | `float` | ✓ | ✓* | Attacker position X |
 | `location_y` | `float` | ✓ | ✓* | Attacker position Y |
+| `attacker_team` | `int` | 0 | ✓ | Attacker team (2=Radiant, 3=Dire) |
+| `target_team` | `int` | 0 | ✓ | Target team (2=Radiant, 3=Dire) |
+| `is_attacker_hero` | `bool` | `False` | ✓ | Attacker is a hero |
+| `is_target_hero` | `bool` | `False` | ✓ | Target is a hero |
 
 *Melee location from entity lookup (heroes ~37%, creeps 0)
 

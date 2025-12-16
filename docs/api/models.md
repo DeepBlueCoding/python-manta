@@ -998,20 +998,38 @@ class AttacksResult(BaseModel):
 
 ### AttackEvent
 
-Single auto-attack projectile event.
+Single attack event (ranged projectile or melee hit).
 
 ```python
 class AttackEvent(BaseModel):
-    tick: int                   # Game tick when attack was registered
-    source_index: int           # Entity index of attacker
-    target_index: int           # Entity index of target
-    source_handle: int          # Raw entity handle (for advanced use)
-    target_handle: int          # Raw entity handle (for advanced use)
-    projectile_speed: int = 0   # Projectile move speed
-    dodgeable: bool = False     # Can be disjointed
-    launch_tick: int = 0        # Tick when projectile was launched
-    game_time: float = 0.0      # Game time in seconds
-    game_time_str: str = ""     # Formatted game time (e.g., "15:34")
+    # Timing
+    tick: int                        # Game tick when attack was registered
+    game_time: float = 0.0           # Game time in seconds
+    game_time_str: str = ""          # Formatted game time (e.g., "15:34")
+    launch_tick: int = 0             # Tick when projectile was launched (ranged only)
+
+    # Entity identification
+    source_index: int = 0            # Entity index of attacker
+    target_index: int = 0            # Entity index of target
+    source_handle: int = 0           # Raw entity handle (ranged only)
+    target_handle: int = 0           # Raw entity handle (ranged only)
+    attacker_name: str = ""          # Unit name (e.g., "npc_dota_hero_troll_warlord")
+    target_name: str = ""            # Target unit name
+
+    # Attack properties
+    is_melee: bool = False           # True if melee attack (from combat log)
+    projectile_speed: int = 0        # Projectile move speed (ranged only)
+    dodgeable: bool = False          # Can be disjointed (ranged only)
+    location_x: float = 0.0          # Attacker position X
+    location_y: float = 0.0          # Attacker position Y
+
+    # Melee-specific fields (from combat log DAMAGE events)
+    damage: int = 0                  # Damage dealt (melee only)
+    target_health: int = 0           # Target health AFTER attack (melee only)
+    attacker_team: int = 0           # Attacker team: 2=Radiant, 3=Dire (melee only)
+    target_team: int = 0             # Target team: 2=Radiant, 3=Dire (melee only)
+    is_attacker_hero: bool = False   # Attacker is a hero (melee only)
+    is_target_hero: bool = False     # Target is a hero (melee only)
 ```
 
 **Example:**
@@ -1021,20 +1039,24 @@ from python_manta import Parser
 parser = Parser("match.dem")
 result = parser.parse(attacks={})
 
-# Get hero indices for classification
-snap = parser.snapshot(target_tick=60000)
-hero_indices = {h.index for h in snap.heroes}
+# Separate ranged and melee attacks
+ranged = [a for a in result.attacks.events if not a.is_melee]
+melee = [a for a in result.attacks.events if a.is_melee]
+print(f"Ranged: {len(ranged)}, Melee: {len(melee)}")
 
-# Analyze attacks
-hero_attacks = sum(1 for e in result.attacks.events if e.source_index in hero_indices)
-tower_attacks = sum(1 for e in result.attacks.events if 600 <= e.source_index <= 800)
+# Hero vs hero melee combat (uses melee-specific fields)
+hero_fights = [
+    a for a in melee
+    if a.is_attacker_hero and a.is_target_hero
+]
+for a in hero_fights[:5]:
+    atk = a.attacker_name.replace("npc_dota_hero_", "")
+    tgt = a.target_name.replace("npc_dota_hero_", "")
+    print(f"[{a.game_time_str}] {atk} -> {tgt}: {a.damage} dmg, target HP: {a.target_health}")
 
-print(f"Hero attacks: {hero_attacks}")
-print(f"Tower attacks: {tower_attacks}")
-
-# Find who a specific tower attacked
-tower_725_targets = [e.target_index for e in result.attacks.events if e.source_index == 725]
-print(f"Tower 725 attacked {len(set(tower_725_targets))} unique targets")
+# Ranged projectile analysis
+fast_projectiles = [a for a in ranged if a.projectile_speed > 1000]
+print(f"Fast projectiles (>1000 speed): {len(fast_projectiles)}")
 ```
 
 ---
