@@ -260,6 +260,7 @@ func camelToSnake(s string) string {
 // entityClassToHeroName converts entity class name to npc_dota_hero_* format
 // Example: "CDOTA_Unit_Hero_Axe" -> "npc_dota_hero_axe"
 // Example: "CDOTA_Unit_Hero_TrollWarlord" -> "npc_dota_hero_troll_warlord"
+// Example: "CDOTA_Unit_Hero_Shadow_Demon" -> "npc_dota_hero_shadow_demon" (not shadow__demon)
 func entityClassToHeroName(className string) string {
 	// Remove prefix "CDOTA_Unit_Hero_"
 	if !strings.HasPrefix(className, "CDOTA_Unit_Hero_") {
@@ -267,7 +268,12 @@ func entityClassToHeroName(className string) string {
 	}
 	heroName := strings.TrimPrefix(className, "CDOTA_Unit_Hero_")
 	// Convert CamelCase to snake_case and add prefix
-	return "npc_dota_hero_" + camelToSnake(heroName)
+	result := "npc_dota_hero_" + camelToSnake(heroName)
+	// Normalize double underscores (e.g., Shadow_Demon -> shadow__demon -> shadow_demon)
+	for strings.Contains(result, "__") {
+		result = strings.ReplaceAll(result, "__", "_")
+	}
+	return result
 }
 
 // heroNameMatchesClass checks if a npc_dota_hero_* name matches an entity class

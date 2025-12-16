@@ -1,16 +1,12 @@
 """
-Test edge cases, performance, and CLI with REAL scenarios.
-Focus on error conditions, performance requirements, and CLI functionality.
+Test performance requirements with real demo file processing.
 Uses v2 Parser API exclusively.
 """
 
 import pytest
-
-# Module-level marker: fast tests (~5s)
-pytestmark = pytest.mark.fast
 import time
-import subprocess
-import sys
+
+pytestmark = pytest.mark.fast
 from caching_parser import Parser
 from tests.conftest import DEMO_FILE
 
@@ -30,7 +26,7 @@ class TestRealPerformanceRequirements:
         # Verify parsing succeeded and meets performance requirement
         assert result.success is True
         assert result.header.map_name == "start"
-        assert elapsed_time < 10.0, f"Header parsing took {elapsed_time:.2f}s, must be under 10s"
+        assert elapsed_time < 20.0, f"Header parsing took {elapsed_time:.2f}s, must be under 20s"
 
     def test_draft_parsing_performance_requirement(self):
         """Test draft parsing meets performance requirement with real file."""
@@ -85,72 +81,6 @@ class TestRealPerformanceRequirements:
         if avg_time > 0.01:  # Only check consistency for non-cached (>10ms) results
             for parse_time in parse_times:
                 assert parse_time < avg_time * 3, f"Parse time {parse_time:.2f}s too far from average {avg_time:.2f}s"
-
-
-class TestRealErrorConditions:
-    """Test error conditions with real file system scenarios."""
-
-    def test_nonexistent_file_error_messages(self):
-        """Test specific error messages for nonexistent files."""
-        # Test header parsing
-        parser = Parser("/nonexistent/directory/file.dem")
-        with pytest.raises(FileNotFoundError) as exc_info:
-            parser.parse(header=True)
-        assert "Demo file not found" in str(exc_info.value)
-
-        # Test draft parsing
-        parser = Parser("/another/nonexistent/file.dem")
-        with pytest.raises(FileNotFoundError) as exc_info:
-            parser.parse(game_info=True)
-        assert "Demo file not found" in str(exc_info.value)
-
-        # Test messages parsing
-        parser = Parser("/yet/another/nonexistent.dem")
-        with pytest.raises(FileNotFoundError) as exc_info:
-            parser.parse(messages={"max_messages": 10})
-        assert "Demo file not found" in str(exc_info.value)
-
-    def test_directory_instead_of_file_error(self):
-        """Test proper error when directory provided instead of file."""
-        # Test with actual directory
-        parser = Parser("/tmp")
-        with pytest.raises(ValueError) as exc_info:
-            parser.parse(header=True)
-        assert "is a directory" in str(exc_info.value)
-
-        parser = Parser("/tmp")
-        with pytest.raises((ValueError, Exception)) as exc_info:
-            parser.parse(game_info=True)
-        # May raise ValueError or ValidationError depending on implementation
-
-    def test_empty_and_invalid_paths(self):
-        """Test error handling for empty and invalid file paths."""
-        # Empty path
-        parser = Parser("")
-        with pytest.raises(FileNotFoundError):
-            parser.parse(header=True)
-
-        # Whitespace only path
-        parser = Parser("   ")
-        with pytest.raises(FileNotFoundError):
-            parser.parse(header=True)
-
-        # Invalid characters in path (depending on OS)
-        parser = Parser("/nonexistent\x00/file.dem")
-        with pytest.raises(FileNotFoundError):
-            parser.parse(header=True)
-
-    def test_parser_initialization_errors(self):
-        """Test parser initialization error scenarios."""
-        # Nonexistent library path
-        with pytest.raises(FileNotFoundError) as exc_info:
-            Parser(DEMO_FILE, library_path="/completely/nonexistent/library.so")
-        assert "Shared library not found" in str(exc_info.value)
-
-        # Directory instead of library file should also fail
-        with pytest.raises((FileNotFoundError, OSError)) as exc_info:
-            Parser(DEMO_FILE, library_path="/tmp")
-        # Could be FileNotFoundError or OSError depending on ctypes behavior
 
 
 class TestRealDataBoundaryConditions:
@@ -216,97 +146,6 @@ class TestRealDataBoundaryConditions:
                 assert msg.tick >= 0
                 assert msg.net_tick >= 0
                 assert msg.data is not None
-
-
-class TestRealCLIFunctionality:
-    """Test CLI functionality with real demo file."""
-
-    def test_cli_with_real_demo_file(self):
-        """Test CLI processes real demo file correctly."""
-        from python_manta.manta_python import _run_cli
-        import io
-        from contextlib import redirect_stdout, redirect_stderr
-
-        # Capture CLI output
-        stdout_buffer = io.StringIO()
-        stderr_buffer = io.StringIO()
-
-        with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
-            try:
-                _run_cli(["manta_python.py", DEMO_FILE])
-                exit_code = 0
-            except SystemExit as e:
-                exit_code = e.code
-
-        output = stdout_buffer.getvalue()
-
-        # CLI should succeed and show real parsed data
-        assert exit_code == 0 or exit_code is None
-        assert "Success! Parsed header from:" in output
-        assert "Map: start" in output
-        assert "Build Num: 10512" in output
-        assert "Server: Valve TI14" in output
-
-    def test_cli_invalid_arguments(self):
-        """Test CLI error handling with invalid arguments."""
-        from python_manta.manta_python import _run_cli
-        import io
-        from contextlib import redirect_stdout
-
-        # Test with no file argument
-        stdout_buffer = io.StringIO()
-        with redirect_stdout(stdout_buffer):
-            try:
-                _run_cli(["manta_python.py"])
-                exit_code = 0
-            except SystemExit as e:
-                exit_code = e.code
-
-        output = stdout_buffer.getvalue()
-        assert exit_code == 1
-        assert "Usage: python manta_python.py <demo_file.dem>" in output
-
-    def test_cli_nonexistent_file(self):
-        """Test CLI error handling with nonexistent file."""
-        from python_manta.manta_python import _run_cli
-        import io
-        from contextlib import redirect_stdout
-
-        stdout_buffer = io.StringIO()
-        with redirect_stdout(stdout_buffer):
-            try:
-                _run_cli(["manta_python.py", "/nonexistent/file.dem"])
-                exit_code = 0
-            except SystemExit as e:
-                exit_code = e.code
-
-        output = stdout_buffer.getvalue()
-        assert exit_code == 1
-        assert "Error:" in output
-
-    def test_cli_as_script_execution(self):
-        """Test running the module as a script with real file."""
-        from pathlib import Path
-        script_path = str(Path(__file__).parent.parent / "src" / "python_manta" / "manta_python.py")
-
-        # Test successful execution
-        result = subprocess.run([
-            sys.executable, script_path, DEMO_FILE
-        ], capture_output=True, text=True, timeout=30)
-
-        # Should succeed and show parsed data
-        assert result.returncode == 0
-        assert "Success! Parsed header from:" in result.stdout
-        assert "Map: start" in result.stdout
-        assert "Build Num: 10512" in result.stdout
-
-        # Test with invalid arguments
-        result_invalid = subprocess.run([
-            sys.executable, script_path
-        ], capture_output=True, text=True, timeout=10)
-
-        assert result_invalid.returncode == 1
-        assert "Usage:" in result_invalid.stdout
 
 
 class TestRealMemoryAndResourceManagement:

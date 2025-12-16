@@ -1,5 +1,5 @@
 """
-Test models with REAL VALUES from actual demo file.
+Test model classes with REAL VALUES from actual demo file.
 Golden Master approach: Test against verified expected values.
 Uses v2 Parser API exclusively.
 
@@ -9,7 +9,6 @@ redundant parsing and improve test performance significantly.
 
 import pytest
 
-# Module-level marker: fast tests (~10s)
 pytestmark = pytest.mark.fast
 from python_manta import (
     ParseResult,
@@ -19,9 +18,10 @@ from python_manta import (
     GameInfo,
     MessageEvent,
     MessagesResult,
-    ChatWheelMessage,
-    GameActivity,
     Hero,
+    AbilitySnapshot,
+    TalentChoice,
+    HeroSnapshot,
 )
 
 
@@ -262,142 +262,11 @@ class TestMessagesResultRealValues:
         assert result.messages.messages[0].tick == 0
 
 
-class TestChatWheelMessageEnum:
-    """Test ChatWheelMessage enum with real values."""
-
-    def test_standard_message_values(self):
-        """Test standard chat wheel message IDs map correctly."""
-        assert ChatWheelMessage.HELP.value == 5
-        assert ChatWheelMessage.MY_BAD.value == 68
-        assert ChatWheelMessage.SPACE_CREATED.value == 71
-        assert ChatWheelMessage.BRUTAL_SAVAGE_REKT.value == 230
-
-    def test_display_name_exact_values(self):
-        """Test display names are exact expected text."""
-        assert ChatWheelMessage.HELP.display_name == "Help!"
-        assert ChatWheelMessage.MY_BAD.display_name == "My bad"
-        assert ChatWheelMessage.SPACE_CREATED.display_name == "> Space created"
-        assert ChatWheelMessage.WELL_PLAYED.display_name == "Well played!"
-
-    def test_from_id_returns_enum(self):
-        """Test from_id returns correct enum for known IDs."""
-        assert ChatWheelMessage.from_id(5) == ChatWheelMessage.HELP
-        assert ChatWheelMessage.from_id(71) == ChatWheelMessage.SPACE_CREATED
-        assert ChatWheelMessage.from_id(68) == ChatWheelMessage.MY_BAD
-
-    def test_from_id_returns_none_for_unknown(self):
-        """Test from_id returns None for unmapped IDs."""
-        assert ChatWheelMessage.from_id(99999) is None
-        assert ChatWheelMessage.from_id(120009) is None  # TI voice line
-
-    def test_describe_id_known_message(self):
-        """Test describe_id returns display name for known IDs."""
-        assert ChatWheelMessage.describe_id(5) == "Help!"
-        assert ChatWheelMessage.describe_id(71) == "> Space created"
-
-    def test_describe_id_dota_plus_range(self):
-        """Test describe_id identifies Dota Plus voice lines."""
-        result = ChatWheelMessage.describe_id(11005)
-        assert "Dota Plus Hero Voice Line" in result
-
-    def test_describe_id_ti_battle_pass_range(self):
-        """Test describe_id identifies TI Battle Pass voice lines."""
-        result = ChatWheelMessage.describe_id(120009)
-        assert "TI Battle Pass Voice Line" in result
-
-    def test_describe_id_ti_talent_range(self):
-        """Test describe_id identifies TI talent/team voice lines."""
-        result = ChatWheelMessage.describe_id(401500)
-        assert "TI Talent/Team Voice Line" in result
-
-
-class TestGameActivityEnum:
-    """Test GameActivity enum with real values."""
-
-    def test_basic_activity_values(self):
-        """Test basic activity codes have correct values."""
-        assert GameActivity.IDLE.value == 1500
-        assert GameActivity.RUN.value == 1502
-        assert GameActivity.ATTACK.value == 1503
-        assert GameActivity.DIE.value == 1506
-
-    def test_taunt_activity_values(self):
-        """Test taunt activity codes have correct values."""
-        assert GameActivity.TAUNT.value == 1536
-        assert GameActivity.KILLTAUNT.value == 1535
-        assert GameActivity.TAUNT_SNIPER.value == 1641
-        assert GameActivity.TAUNT_SPECIAL.value == 1752
-
-    def test_ability_cast_values(self):
-        """Test ability cast activity codes are sequential."""
-        assert GameActivity.CAST_ABILITY_1.value == 1510
-        assert GameActivity.CAST_ABILITY_2.value == 1511
-        assert GameActivity.CAST_ABILITY_3.value == 1512
-        assert GameActivity.CAST_ABILITY_4.value == 1513
-
-    def test_is_taunt_property(self):
-        """Test is_taunt correctly identifies taunt activities."""
-        assert GameActivity.TAUNT.is_taunt is True
-        assert GameActivity.KILLTAUNT.is_taunt is True
-        assert GameActivity.TAUNT_SNIPER.is_taunt is True
-        assert GameActivity.ATTACK.is_taunt is False
-        assert GameActivity.RUN.is_taunt is False
-
-    def test_is_attack_property(self):
-        """Test is_attack correctly identifies attack activities."""
-        assert GameActivity.ATTACK.is_attack is True
-        assert GameActivity.ATTACK2.is_attack is True
-        assert GameActivity.ATTACK_EVENT.is_attack is True
-        assert GameActivity.TAUNT.is_attack is False
-        assert GameActivity.RUN.is_attack is False
-
-    def test_is_ability_cast_property(self):
-        """Test is_ability_cast correctly identifies ability casts."""
-        assert GameActivity.CAST_ABILITY_1.is_ability_cast is True
-        assert GameActivity.CAST_ABILITY_6.is_ability_cast is True
-        assert GameActivity.ATTACK.is_ability_cast is False
-        assert GameActivity.TAUNT.is_ability_cast is False
-
-    def test_is_channeling_property(self):
-        """Test is_channeling correctly identifies channeling activities."""
-        assert GameActivity.CHANNEL_ABILITY_1.is_channeling is True
-        assert GameActivity.CHANNEL_ABILITY_5.is_channeling is True
-        assert GameActivity.CAST_ABILITY_1.is_channeling is False
-
-    def test_from_value_returns_enum(self):
-        """Test from_value returns correct enum for known values."""
-        assert GameActivity.from_value(1500) == GameActivity.IDLE
-        assert GameActivity.from_value(1536) == GameActivity.TAUNT
-        assert GameActivity.from_value(1503) == GameActivity.ATTACK
-
-    def test_from_value_returns_none_for_unknown(self):
-        """Test from_value returns None for unmapped values."""
-        assert GameActivity.from_value(9999) is None
-        assert GameActivity.from_value(0) is None
-
-    def test_get_taunt_activities(self):
-        """Test get_taunt_activities returns all taunt activities."""
-        taunts = GameActivity.get_taunt_activities()
-        assert GameActivity.TAUNT in taunts
-        assert GameActivity.KILLTAUNT in taunts
-        assert GameActivity.TAUNT_SNIPER in taunts
-        assert GameActivity.ATTACK not in taunts
-        assert len(taunts) == 5  # TAUNT, KILLTAUNT, TAUNT_SNIPER, TAUNT_SPECIAL, CUSTOM_TOWER_TAUNT
-
-    def test_display_name_format(self):
-        """Test display_name produces readable names."""
-        assert GameActivity.CAST_ABILITY_1.display_name == "Cast Ability 1"
-        assert GameActivity.TAUNT.display_name == "Taunt"
-        assert GameActivity.RUN.display_name == "Run"
-
-
 class TestAbilitySnapshotModel:
     """Test AbilitySnapshot model properties."""
 
     def test_ability_snapshot_defaults(self):
         """Test AbilitySnapshot has correct default values."""
-        from python_manta import AbilitySnapshot
-
         ability = AbilitySnapshot()
         assert ability.slot == 0
         assert ability.name == ""
@@ -410,8 +279,6 @@ class TestAbilitySnapshotModel:
 
     def test_ability_snapshot_short_name_property(self):
         """Test short_name strips CDOTA_Ability_ prefix."""
-        from python_manta import AbilitySnapshot
-
         ability = AbilitySnapshot(name="CDOTA_Ability_Juggernaut_BladeFury")
         assert ability.short_name == "Juggernaut_BladeFury"
 
@@ -425,8 +292,6 @@ class TestAbilitySnapshotModel:
 
     def test_ability_snapshot_is_maxed_regular(self):
         """Test is_maxed for regular abilities (max level 4)."""
-        from python_manta import AbilitySnapshot
-
         # Not maxed
         ability = AbilitySnapshot(level=3, is_ultimate=False)
         assert ability.is_maxed is False
@@ -441,8 +306,6 @@ class TestAbilitySnapshotModel:
 
     def test_ability_snapshot_is_maxed_ultimate(self):
         """Test is_maxed for ultimate abilities (max level 3)."""
-        from python_manta import AbilitySnapshot
-
         # Not maxed
         ult = AbilitySnapshot(level=2, is_ultimate=True)
         assert ult.is_maxed is False
@@ -453,8 +316,6 @@ class TestAbilitySnapshotModel:
 
     def test_ability_snapshot_is_on_cooldown(self):
         """Test is_on_cooldown property."""
-        from python_manta import AbilitySnapshot
-
         # Not on cooldown
         ready = AbilitySnapshot(cooldown=0.0)
         assert ready.is_on_cooldown is False
@@ -465,8 +326,6 @@ class TestAbilitySnapshotModel:
 
     def test_ability_snapshot_serialization(self):
         """Test AbilitySnapshot serializes and deserializes correctly."""
-        from python_manta import AbilitySnapshot
-
         ability = AbilitySnapshot(
             slot=2,
             name="CDOTA_Ability_Juggernaut_BladeDance",
@@ -492,8 +351,6 @@ class TestTalentChoiceModel:
 
     def test_talent_choice_defaults(self):
         """Test TalentChoice has correct default values."""
-        from python_manta import TalentChoice
-
         talent = TalentChoice()
         assert talent.tier == 0
         assert talent.slot == 0
@@ -502,30 +359,22 @@ class TestTalentChoiceModel:
 
     def test_talent_choice_side_property_left(self):
         """Test side property returns 'left' when is_left is True."""
-        from python_manta import TalentChoice
-
         talent = TalentChoice(tier=10, is_left=True)
         assert talent.side == "left"
 
     def test_talent_choice_side_property_right(self):
         """Test side property returns 'right' when is_left is False."""
-        from python_manta import TalentChoice
-
         talent = TalentChoice(tier=15, is_left=False)
         assert talent.side == "right"
 
     def test_talent_choice_valid_tiers(self):
         """Test TalentChoice accepts valid tier values."""
-        from python_manta import TalentChoice
-
         for tier in [10, 15, 20, 25]:
             talent = TalentChoice(tier=tier)
             assert talent.tier == tier
 
     def test_talent_choice_serialization(self):
         """Test TalentChoice serializes and deserializes correctly."""
-        from python_manta import TalentChoice
-
         talent = TalentChoice(
             tier=20,
             slot=10,
@@ -547,8 +396,6 @@ class TestHeroSnapshotAbilityMethods:
 
     def test_hero_snapshot_has_ultimate_false(self):
         """Test has_ultimate is False when no ultimate is learned."""
-        from python_manta import HeroSnapshot, AbilitySnapshot
-
         hero = HeroSnapshot(
             abilities=[
                 AbilitySnapshot(slot=0, level=1, is_ultimate=False),
@@ -559,8 +406,6 @@ class TestHeroSnapshotAbilityMethods:
 
     def test_hero_snapshot_has_ultimate_true(self):
         """Test has_ultimate is True when ultimate is learned."""
-        from python_manta import HeroSnapshot, AbilitySnapshot
-
         hero = HeroSnapshot(
             abilities=[
                 AbilitySnapshot(slot=0, level=1, is_ultimate=False),
@@ -571,8 +416,6 @@ class TestHeroSnapshotAbilityMethods:
 
     def test_hero_snapshot_talents_chosen(self):
         """Test talents_chosen returns correct count."""
-        from python_manta import HeroSnapshot, TalentChoice
-
         # No talents
         hero_no_talents = HeroSnapshot(talents=[])
         assert hero_no_talents.talents_chosen == 0
@@ -588,8 +431,6 @@ class TestHeroSnapshotAbilityMethods:
 
     def test_hero_snapshot_get_ability_found(self):
         """Test get_ability finds ability by partial name match."""
-        from python_manta import HeroSnapshot, AbilitySnapshot
-
         hero = HeroSnapshot(
             abilities=[
                 AbilitySnapshot(slot=0, name="CDOTA_Ability_Juggernaut_BladeFury", level=4),
@@ -608,8 +449,6 @@ class TestHeroSnapshotAbilityMethods:
 
     def test_hero_snapshot_get_ability_not_found(self):
         """Test get_ability returns None when not found."""
-        from python_manta import HeroSnapshot, AbilitySnapshot
-
         hero = HeroSnapshot(
             abilities=[
                 AbilitySnapshot(slot=0, name="CDOTA_Ability_Juggernaut_BladeFury", level=4),
@@ -621,8 +460,6 @@ class TestHeroSnapshotAbilityMethods:
 
     def test_hero_snapshot_get_talent_at_tier_found(self):
         """Test get_talent_at_tier finds talent at specified tier."""
-        from python_manta import HeroSnapshot, TalentChoice
-
         hero = HeroSnapshot(
             talents=[
                 TalentChoice(tier=10, is_left=True, name="talent_10"),
@@ -641,8 +478,6 @@ class TestHeroSnapshotAbilityMethods:
 
     def test_hero_snapshot_get_talent_at_tier_not_found(self):
         """Test get_talent_at_tier returns None when not found."""
-        from python_manta import HeroSnapshot, TalentChoice
-
         hero = HeroSnapshot(
             talents=[
                 TalentChoice(tier=10, is_left=True),
@@ -653,139 +488,83 @@ class TestHeroSnapshotAbilityMethods:
         assert not_found is None
 
 
-class TestNeutralCampTypeEnum:
-    """Test NeutralCampType enum with real values from replays."""
+class TestNormalizeHeroName:
+    """Test normalize_hero_name utility function."""
 
-    def test_camp_type_values(self):
-        """Test camp type enum has correct integer values."""
-        from python_manta import NeutralCampType
+    def test_double_underscore_normalized(self):
+        """Test double underscores are replaced with single."""
+        from python_manta import normalize_hero_name
 
-        assert NeutralCampType.SMALL.value == 0
-        assert NeutralCampType.MEDIUM.value == 1
-        assert NeutralCampType.HARD.value == 2
-        assert NeutralCampType.ANCIENT.value == 3
+        assert normalize_hero_name("shadow__demon") == "shadow_demon"
+        assert normalize_hero_name("npc_dota_hero_shadow__demon") == "npc_dota_hero_shadow_demon"
 
-    def test_display_name_exact_values(self):
-        """Test display names are exact expected text."""
-        from python_manta import NeutralCampType
+    def test_triple_underscore_normalized(self):
+        """Test triple underscores are also normalized."""
+        from python_manta import normalize_hero_name
 
-        assert NeutralCampType.SMALL.display_name == "Small Camp"
-        assert NeutralCampType.MEDIUM.display_name == "Medium Camp"
-        assert NeutralCampType.HARD.display_name == "Hard Camp"
-        assert NeutralCampType.ANCIENT.display_name == "Ancient Camp"
+        assert normalize_hero_name("test___name") == "test_name"
 
-    def test_is_ancient_property(self):
-        """Test is_ancient correctly identifies ancient camps."""
-        from python_manta import NeutralCampType
+    def test_single_underscore_unchanged(self):
+        """Test single underscores are not modified."""
+        from python_manta import normalize_hero_name
 
-        assert NeutralCampType.ANCIENT.is_ancient is True
-        assert NeutralCampType.HARD.is_ancient is False
-        assert NeutralCampType.MEDIUM.is_ancient is False
-        assert NeutralCampType.SMALL.is_ancient is False
+        assert normalize_hero_name("shadow_demon") == "shadow_demon"
+        assert normalize_hero_name("npc_dota_hero_troll_warlord") == "npc_dota_hero_troll_warlord"
 
-    def test_from_value_returns_enum(self):
-        """Test from_value returns correct enum for known values."""
-        from python_manta import NeutralCampType
+    def test_no_underscore_unchanged(self):
+        """Test names without underscores are not modified."""
+        from python_manta import normalize_hero_name
 
-        assert NeutralCampType.from_value(0) == NeutralCampType.SMALL
-        assert NeutralCampType.from_value(1) == NeutralCampType.MEDIUM
-        assert NeutralCampType.from_value(2) == NeutralCampType.HARD
-        assert NeutralCampType.from_value(3) == NeutralCampType.ANCIENT
+        assert normalize_hero_name("axe") == "axe"
+        assert normalize_hero_name("juggernaut") == "juggernaut"
 
-    def test_from_value_returns_small_for_unknown(self):
-        """Test from_value returns SMALL for unmapped values (as fallback)."""
-        from python_manta import NeutralCampType
+    def test_empty_string(self):
+        """Test empty string returns empty string."""
+        from python_manta import normalize_hero_name
 
-        assert NeutralCampType.from_value(99) == NeutralCampType.SMALL
-        assert NeutralCampType.from_value(-1) == NeutralCampType.SMALL
+        assert normalize_hero_name("") == ""
 
 
-class TestNeutralCampTypeIntegration:
-    """Integration tests for NeutralCampType with real demo data.
+class TestTimeUtilities:
+    """Test time utility functions."""
 
-    Uses combat_log_result_secondary fixture from conftest.py for cached parsing.
-    """
+    def test_format_game_time_positive(self):
+        """Test format_game_time with positive values."""
+        from python_manta import format_game_time
 
-    def test_neutral_deaths_have_camp_type(self, combat_log_result_secondary):
-        """Test neutral creep deaths have valid camp_type values."""
-        from python_manta import NeutralCampType
+        assert format_game_time(0) == "0:00"
+        assert format_game_time(30) == "0:30"
+        assert format_game_time(60) == "1:00"
+        assert format_game_time(187) == "3:07"
+        assert format_game_time(3600) == "60:00"
 
-        result = combat_log_result_secondary
-        neutral_deaths = [
-            e for e in result.combat_log.entries
-            if e.type_name == "DOTA_COMBATLOG_DEATH"
-            and "npc_dota_neutral" in e.target_name
-            and e.neutral_camp_type > 0
-        ]
+    def test_format_game_time_negative(self):
+        """Test format_game_time with negative values (pre-horn)."""
+        from python_manta import format_game_time
 
-        assert len(neutral_deaths) > 0
-        for death in neutral_deaths:
-            camp_type = NeutralCampType.from_value(death.neutral_camp_type)
-            assert camp_type in [NeutralCampType.MEDIUM, NeutralCampType.HARD, NeutralCampType.ANCIENT]
+        assert format_game_time(-40) == "-0:40"
+        assert format_game_time(-90) == "-1:30"
 
-    def test_ancient_camp_contains_ancient_creeps(self, combat_log_result_secondary):
-        """Test ANCIENT camp type (value 3) has neutral creep deaths."""
-        from python_manta import NeutralCampType
+    def test_game_time_to_tick(self):
+        """Test game_time_to_tick conversion."""
+        from python_manta import game_time_to_tick, TICKS_PER_SECOND
 
-        result = combat_log_result_secondary
-        ancient_deaths = [
-            e for e in result.combat_log.entries
-            if e.type_name == "DOTA_COMBATLOG_DEATH"
-            and e.neutral_camp_type == NeutralCampType.ANCIENT.value
-            and "npc_dota_neutral" in e.target_name
-        ]
+        game_start_tick = 27000
+        # 300 seconds = 5:00 = 9000 ticks after game start
+        assert game_time_to_tick(300, game_start_tick) == 27000 + 300 * int(TICKS_PER_SECOND)
+        # 0 seconds = game start
+        assert game_time_to_tick(0, game_start_tick) == 27000
+        # Negative = pre-horn
+        assert game_time_to_tick(-30, game_start_tick) == 27000 - 30 * int(TICKS_PER_SECOND)
 
-        assert len(ancient_deaths) > 0
-        for death in ancient_deaths:
-            assert "npc_dota_neutral" in death.target_name
+    def test_tick_to_game_time(self):
+        """Test tick_to_game_time conversion."""
+        from python_manta import tick_to_game_time, TICKS_PER_SECOND
 
-    def test_medium_camp_contains_medium_creeps(self, combat_log_result_secondary):
-        """Test MEDIUM camp type contains wolves/ogres/mud golems."""
-        from python_manta import NeutralCampType
-
-        result = combat_log_result_secondary
-        medium_deaths = [
-            e for e in result.combat_log.entries
-            if e.type_name == "DOTA_COMBATLOG_DEATH"
-            and e.neutral_camp_type == NeutralCampType.MEDIUM.value
-            and "npc_dota_neutral" in e.target_name
-        ]
-
-        assert len(medium_deaths) > 0
-        creep_names = set(e.target_name.replace("npc_dota_neutral_", "") for e in medium_deaths)
-        medium_creep_keywords = ["wolf", "ogre", "mud_golem", "satyr", "frog"]
-        found_medium = any(any(k in n for k in medium_creep_keywords) for n in creep_names)
-        assert found_medium, f"Expected medium creeps, got: {creep_names}"
-
-    def test_hard_camp_contains_hard_creeps(self, combat_log_result_secondary):
-        """Test HARD camp type contains hellbears/trolls/centaurs."""
-        from python_manta import NeutralCampType
-
-        result = combat_log_result_secondary
-        hard_deaths = [
-            e for e in result.combat_log.entries
-            if e.type_name == "DOTA_COMBATLOG_DEATH"
-            and e.neutral_camp_type == NeutralCampType.HARD.value
-            and "npc_dota_neutral" in e.target_name
-        ]
-
-        assert len(hard_deaths) > 0
-        creep_names = set(e.target_name.replace("npc_dota_neutral_", "") for e in hard_deaths)
-        hard_creep_keywords = ["furbolg", "dark_troll", "centaur", "wildkin", "satyr_hellcaller", "warpine"]
-        found_hard = any(any(k in n for k in hard_creep_keywords) for n in creep_names)
-        assert found_hard, f"Expected hard creeps, got: {creep_names}"
-
-    def test_neutral_camp_team_matches_team_enum(self, combat_log_result_secondary):
-        """Test neutral_camp_team uses Team enum values (2=Radiant, 3=Dire)."""
-        from python_manta import Team
-
-        result = combat_log_result_secondary
-        neutral_deaths = [
-            e for e in result.combat_log.entries
-            if e.type_name == "DOTA_COMBATLOG_DEATH"
-            and "npc_dota_neutral" in e.target_name
-            and e.neutral_camp_type > 0
-        ]
-
-        camp_teams = set(e.neutral_camp_team for e in neutral_deaths)
-        assert camp_teams.issubset({Team.RADIANT.value, Team.DIRE.value})
+        game_start_tick = 27000
+        # At game start tick, game_time = 0
+        assert tick_to_game_time(27000, game_start_tick) == 0.0
+        # 9000 ticks after = 300 seconds
+        assert tick_to_game_time(36000, game_start_tick) == 300.0
+        # Before game start = negative
+        assert tick_to_game_time(26100, game_start_tick) == -30.0

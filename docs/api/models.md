@@ -6,6 +6,59 @@
 
 ---
 
+## Utility Functions
+
+### Time Utilities
+
+| Function | Description |
+|----------|-------------|
+| `TICKS_PER_SECOND` | Constant: 30.0 ticks per second |
+| `format_game_time(seconds)` | Format game time as `"-0:40"` or `"3:07"` |
+| `game_time_to_tick(game_time, game_start_tick)` | Convert game time (seconds) to tick |
+| `tick_to_game_time(tick, game_start_tick)` | Convert tick to game time (seconds) |
+
+**Example:**
+```python
+from python_manta import format_game_time, TICKS_PER_SECOND
+
+# Format game time
+print(format_game_time(187))   # "3:07"
+print(format_game_time(-40))   # "-0:40"
+
+# Convert between ticks and game time
+game_start_tick = 27000
+tick = game_time_to_tick(300, game_start_tick)  # 5:00 -> tick 36000
+time = tick_to_game_time(36000, game_start_tick)  # tick 36000 -> 300.0
+```
+
+---
+
+### Hero Name Utilities
+
+| Function | Description |
+|----------|-------------|
+| `normalize_hero_name(name)` | Normalize hero names by replacing double underscores with single |
+
+Entity snapshots may use double underscores (`npc_dota_hero_shadow__demon`) while combat log uses single (`npc_dota_hero_shadow_demon`). This function ensures consistency for matching.
+
+**Example:**
+```python
+from python_manta import normalize_hero_name
+
+# Normalize hero names for consistent matching
+name = normalize_hero_name("npc_dota_hero_shadow__demon")
+print(name)  # "npc_dota_hero_shadow_demon"
+
+# Works with just the hero key too
+key = normalize_hero_name("shadow__demon")
+print(key)  # "shadow_demon"
+
+# No change if already normalized
+print(normalize_hero_name("shadow_demon"))  # "shadow_demon"
+```
+
+---
+
 ## Enums
 
 ### RuneType

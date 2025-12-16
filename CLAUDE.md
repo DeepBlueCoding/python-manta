@@ -96,6 +96,82 @@ python run_tests.py --integration
 python run_tests.py --all --coverage
 ```
 
+### Test Caching System (CRITICAL)
+
+Tests use a **global caching system** to avoid re-parsing replay files. This is essential for performance since parsing a full replay takes 5+ minutes.
+
+#### Architecture
+
+```
+tests/
+├── conftest.py           # ALL shared fixtures (module-scoped, cached)
+├── caching_parser.py     # Parser wrapper with global cache
+└── **/*.py               # Test files use fixtures from conftest.py
+```
+
+#### How It Works
+
+1. **`caching_parser.py`**: Wraps the real Parser with global caches for `parse()`, `build_index()`, and `snapshot()` results
+2. **`conftest.py`**: Defines module-scoped fixtures that use the caching parser
+3. **Cache keys**: Based on `(demo_path, json.dumps(kwargs))` - different kwargs = different cache entries
+
+#### Rules for Writing Tests
+
+**DO:**
+```python
+# ✅ Use fixtures from conftest.py
+def test_something(self, combat_log):
+    assert len(combat_log.entries) > 1000
+
+# ✅ Use the parser fixture for custom queries
+def test_custom_query(self, parser):
+    result = parser.parse(combat_log={"types": [4]})  # Will be cached
+```
+
+**DON'T:**
+```python
+# ❌ NEVER define local fixtures that duplicate conftest.py
+@pytest.fixture(scope="module")
+def parser():
+    return Parser(DEMO_FILE)  # BAD - duplicates conftest.py
+
+# ❌ NEVER import Parser directly in tests
+from python_manta import Parser  # BAD
+from caching_parser import Parser  # Only OK if using fixture pattern
+```
+
+#### Adding New Fixtures
+
+When you need a new cached result:
+
+1. **Add to `conftest.py`** (never in test files):
+```python
+@pytest.fixture(scope="module")
+def my_new_fixture(parser):
+    """Cached result for X."""
+    result = parser.parse(some_collector={"some_option": value})
+    assert result.success
+    return result.some_collector
+```
+
+2. **Use consistent kwargs** - same kwargs = same cache entry
+
+#### Available Fixtures
+
+| Fixture | Returns | Description |
+|---------|---------|-------------|
+| `parser` | Parser | Shared parser instance |
+| `header_result` | ParseResult | Header parsing result |
+| `game_info_result` | ParseResult | Game info parsing result |
+| `combat_log` | CombatLogResult | All combat log entries |
+| `attacks_result` | AttacksResult | All attack events |
+| `melee_attacks` | List[AttackEvent] | Filtered melee attacks |
+| `ranged_attacks` | List[AttackEvent] | Filtered ranged attacks |
+| `snapshot_30k` | HeroSnapshot | Hero state at tick 30000 |
+| `demo_index` | DemoIndex | Keyframe index |
+
+See `tests/conftest.py` for the full list.
+
 ### Install in development mode
 ```bash
 pip install -e '.[dev]'

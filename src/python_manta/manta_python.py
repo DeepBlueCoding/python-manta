@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List, Iterator
 from pydantic import BaseModel, Field
 
-
 # ============================================================================
 # TIME UTILITIES
 # ============================================================================
@@ -63,6 +62,24 @@ def tick_to_game_time(tick: int, game_start_tick: int) -> float:
         Seconds from horn (negative = pre-horn)
     """
     return (tick - game_start_tick) / TICKS_PER_SECOND
+
+
+def normalize_hero_name(name: str) -> str:
+    """Normalize hero names by replacing double underscores with single.
+
+    Entity snapshots may use double underscores (npc_dota_hero_shadow__demon)
+    while combat log uses single (npc_dota_hero_shadow_demon). This ensures
+    consistency for matching.
+
+    Args:
+        name: Hero name (e.g., "npc_dota_hero_shadow__demon" or "shadow__demon")
+
+    Returns:
+        Normalized name with single underscores (e.g., "npc_dota_hero_shadow_demon")
+    """
+    while "__" in name:
+        name = name.replace("__", "_")
+    return name
 
 
 class RuneType(str, Enum):
@@ -662,11 +679,13 @@ class Hero(int, Enum):
     VOID_SPIRIT = 126
     SNAPFIRE = 128
     MARS = 129
+    RINGMASTER = 131
     DAWNBREAKER = 135
     MARCI = 136
     PRIMAL_BEAST = 137
     MUERTA = 138
-    RINGMASTER = 145
+    KEZ = 145
+    LARGO = 155  # Added in 7.40
 
     @classmethod
     def from_id(cls, hero_id: int) -> Optional["Hero"]:
@@ -876,19 +895,21 @@ class NeutralItem(str, Enum):
         # Get all tier 1 items
         tier1 = NeutralItem.items_by_tier(0)
     """
-    # Tier 1 - Current
+    # Tier 1 - Current (7.40)
+    ASH_LEGION_SHIELD = "item_ash_legion_shield"  # New in 7.40
     CHIPPED_VEST = "item_chipped_vest"
     DORMANT_CURIO = "item_dormant_curio"
+    DUELIST_GLOVES = "item_duelist_gloves"  # Returned in 7.40
     KOBOLD_CUP = "item_kobold_cup"
     OCCULT_BRACELET = "item_occult_bracelet"
     POLLYWOG_CHARM = "item_pollywog_charm"
-    RIPPERS_LASH = "item_rippers_lash"
-    SISTERS_SHROUD = "item_sisters_shroud"
-    SPARK_OF_COURAGE = "item_spark_of_courage"
-    # Tier 1 - Retired
+    WEIGHTED_DICE = "item_weighted_dice"  # New in 7.40
+    # Tier 1 - Retired/Cycled out
     ARCANE_RING = "item_arcane_ring"
     BROOM_HANDLE = "item_broom_handle"
-    DUELIST_GLOVES = "item_duelist_gloves"
+    RIPPERS_LASH = "item_rippers_lash"  # Cycled out in 7.40
+    SISTERS_SHROUD = "item_sisters_shroud"  # Cycled out in 7.40
+    SPARK_OF_COURAGE = "item_spark_of_courage"  # Cycled out in 7.40
     FADED_BROACH = "item_faded_broach"
     FAIRYS_TRINKET = "item_fairys_trinket"
     IRONWOOD_TREE = "item_ironwood_tree"
@@ -903,14 +924,15 @@ class NeutralItem(str, Enum):
     SEEDS_OF_SERENITY = "item_seeds_of_serenity"
     TRUSTY_SHOVEL = "item_trusty_shovel"
 
-    # Tier 2 - Current
-    BRIGANDS_BLADE = "item_brigands_blade"
+    # Tier 2 - Current (7.40)
+    DEFIANT_SHELL = "item_defiant_shell"  # Returned in 7.40
     ESSENCE_RING = "item_essence_ring"
     MANA_DRAUGHT = "item_mana_draught"
     POOR_MANS_SHIELD = "item_poor_mans_shield"
     SEARING_SIGNET = "item_searing_signet"
     TUMBLERS_TOY = "item_tumblers_toy"
-    # Tier 2 - Retired
+    # Tier 2 - Retired/Cycled out
+    BRIGANDS_BLADE = "item_brigands_blade"  # Cycled out in 7.40
     BULLWHIP = "item_bullwhip"
     CLUMSY_NET = "item_clumsy_net"
     DAGGER_OF_RISTUL = "item_dagger_of_ristul"
@@ -944,7 +966,6 @@ class NeutralItem(str, Enum):
     CLOAK_OF_FLAMES = "item_cloak_of_flames"
     CRAGGY_COAT = "item_craggy_coat"
     DANDELION_AMULET = "item_dandelion_amulet"
-    DEFIANT_SHELL = "item_defiant_shell"
     DOUBLOON = "item_doubloon"
     ELVEN_TUNIC = "item_elven_tunic"
     ENCHANTED_QUIVER = "item_enchanted_quiver"
@@ -1315,6 +1336,7 @@ class HeaderInfo(BaseModel):
     network_protocol: int
     demo_file_stamp: str
     build_num: int
+    game_build: int = 0  # Extracted from game_directory (e.g., 6559 from /dota_v6559/)
     game: str
     server_start_tick: int
     success: bool
@@ -1371,8 +1393,8 @@ class GameInfo(BaseModel):
     # Players (Go returns as "player_info")
     players: List[PlayerInfo] = Field(default=[], alias="player_info")
 
-    # Draft
-    picks_bans: List[DraftEvent] = []
+    # Draft (None for pub matches without CM/CD)
+    picks_bans: Optional[List[DraftEvent]] = None
 
     # Playback info
     playback_time: float = 0.0
@@ -1736,28 +1758,38 @@ class CombatLogResult(BaseModel):
 class AttackEvent(BaseModel):
     """Represents a single attack (ranged projectile or melee).
 
-    Ranged attacks come from TE_Projectile and have entity indices.
-    Melee attacks come from combat log DAMAGE and have names + location.
+    Ranged attacks come from TE_Projectile and have projectile data.
+    Melee attacks come from combat log DAMAGE and have full combat data.
     Use is_melee to distinguish between them.
     """
     tick: int                        # Tick when attack was registered
     # Ranged attack fields (from TE_Projectile)
-    source_index: int = 0            # Entity index of attacker (0 for melee)
-    target_index: int = 0            # Entity index of target (0 for melee)
-    source_handle: int = 0           # Raw entity handle (0 for melee)
-    target_handle: int = 0           # Raw entity handle (0 for melee)
-    projectile_speed: int = 0        # Projectile move speed (0 for melee)
-    dodgeable: bool = False          # Can be disjointed
-    launch_tick: int = 0             # Tick when projectile was launched
+    source_index: int = 0            # Entity index of attacker
+    target_index: int = 0            # Entity index of target
+    source_handle: int = 0           # Raw entity handle (ranged only)
+    target_handle: int = 0           # Raw entity handle (ranged only)
+    projectile_speed: int = 0        # Projectile move speed (ranged only)
+    dodgeable: bool = False          # Can be disjointed (ranged only)
+    launch_tick: int = 0             # Tick when projectile was launched (ranged only)
     game_time: float = 0.0           # Game time in seconds
     game_time_str: str = ""          # Formatted game time (e.g., "12:34")
-    # Melee attack fields (from combat log)
-    is_melee: bool = False           # True if melee attack
-    attacker_name: str = ""          # Attacker name (for melee correlation)
-    target_name: str = ""            # Target name (for melee correlation)
-    damage: int = 0                  # Damage dealt (melee only)
-    location_x: float = 0.0          # Attack location X (for correlation)
-    location_y: float = 0.0          # Attack location Y (for correlation)
+    # Common fields (populated for both ranged and melee)
+    is_melee: bool = False           # True if melee attack (from combat log)
+    attacker_name: str = ""          # Attacker name
+    target_name: str = ""            # Target name
+    location_x: float = 0.0          # Attack location X
+    location_y: float = 0.0          # Attack location Y
+    # Melee attack fields (from combat log DAMAGE events)
+    damage: int = 0                  # Damage dealt (melee only, 0 for ranged)
+    target_health: int = 0           # Target health AFTER attack (melee only)
+    attacker_team: int = 0           # Attacker team: 2=Radiant, 3=Dire (melee only)
+    target_team: int = 0             # Target team: 2=Radiant, 3=Dire (melee only)
+    is_attacker_hero: bool = False   # Attacker is a hero (melee only)
+    is_target_hero: bool = False     # Target is a hero (melee only)
+    is_attacker_illusion: bool = False  # Attacker is an illusion (melee only)
+    is_target_illusion: bool = False    # Target is an illusion (melee only)
+    is_target_building: bool = False    # Target is a building (melee only)
+    damage_type: int = 0             # 1=physical, 2=magical, 4=pure (melee only)
 
 
 class AttacksResult(BaseModel):
@@ -1883,7 +1915,7 @@ def derive_respawn_events(
         if "npc_dota_hero_" not in entry.target_name:
             continue
 
-        hero_name = entry.target_name
+        hero_name = normalize_hero_name(entry.target_name)
         hero_key = hero_name.replace("npc_dota_hero_", "")
 
         level = hero_levels.get(hero_name, hero_levels.get(hero_key, 1))

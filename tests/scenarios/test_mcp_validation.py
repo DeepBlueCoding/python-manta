@@ -373,7 +373,7 @@ class TestLaningPhaseComparison:
         tick_10min = index.game_started + (10 * 60 * 30)
         snapshot = parser.snapshot(target_tick=tick_10min)
 
-        troll = next((h for h in snapshot.heroes if "trollwarlord" in h.hero_name), None)
+        troll = next((h for h in snapshot.heroes if "troll_warlord" in h.hero_name), None)
         assert troll is not None
         assert troll.level == 6
         assert troll.team == Team.RADIANT.value
@@ -445,7 +445,7 @@ class TestHeroSnapshotEconomy:
         tick_15min = index.game_started + (15 * 60 * 30)
         snapshot = parser.snapshot(target_tick=tick_15min)
 
-        troll = next((h for h in snapshot.heroes if "trollwarlord" in h.hero_name), None)
+        troll = next((h for h in snapshot.heroes if "troll_warlord" in h.hero_name), None)
         assert troll is not None
 
         # Carry should have significant farm by 15 min

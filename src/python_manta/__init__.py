@@ -18,6 +18,7 @@ from .manta_python import (
     format_game_time,
     game_time_to_tick,
     tick_to_game_time,
+    normalize_hero_name,
     # Main parser class
     Parser,
     # V2 config/result types
@@ -101,7 +102,7 @@ from .manta_python import (
     ParserInfo,
 )
 
-__version__ = "1.4.5.4.dev4"
+__version__ = "1.4.7.0.dev1"
 __author__ = "Equilibrium Coach Team"
 __description__ = "Python interface for Manta Dota 2 replay parser"
 
@@ -111,6 +112,7 @@ __all__ = [
     "format_game_time",
     "game_time_to_tick",
     "tick_to_game_time",
+    "normalize_hero_name",
     # Main parser class
     "Parser",
     # V2 config/result types

@@ -94,6 +94,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			headerInfo.NetworkProtocol = m.GetNetworkProtocol()
 			headerInfo.DemoFileStamp = m.GetDemoFileStamp()
 			headerInfo.BuildNum = m.GetBuildNum()
+			headerInfo.GameBuild = extractGameBuild(m.GetGameDirectory())
 			headerInfo.Game = m.GetGame()
 			headerInfo.ServerStartTick = m.GetServerStartTick()
 			headerInfo.Success = true
@@ -211,17 +212,15 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			// This allows checking both boolean flags AND name strings for hero detection
 
 			// Capture hero levels from entity state at this tick
-			// Normalize hero names to match entity format (e.g., "storm_spirit" -> "stormspirit")
+			// Names now match: both combat log and entity use underscored format (e.g., "npc_dota_hero_storm_spirit")
 			var attackerLevel, targetLevel int32
 			if attackerName, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetAttackerName())); ok {
-				normalizedAttacker := normalizeHeroName(attackerName)
-				if level, exists := heroLevels[normalizedAttacker]; exists {
+				if level, exists := heroLevels[attackerName]; exists {
 					attackerLevel = level
 				}
 			}
 			if targetName, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetTargetName())); ok {
-				normalizedTarget := normalizeHeroName(targetName)
-				if level, exists := heroLevels[normalizedTarget]; exists {
+				if level, exists := heroLevels[targetName]; exists {
 					targetLevel = level
 				}
 			}
@@ -439,14 +438,11 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			return nil
 		})
 
-		parser.Callbacks.OnCSVCMsg_ServerInfo(func(m *dota.CSVCMsg_ServerInfo) error {
-			parserInfoResult.GameBuild = m.GetProtocol()
-			return nil
-		})
+		// GameBuild is set after parsing from parser.GameBuild
 	}
 
 	// Attacks collector (from TE_Projectile and combat log)
-	// Track entity name → index mapping for melee attack correlation
+	// Track entity name → index mapping for melee attack correlation (heroes only)
 	entityNameToIndex := make(map[string]int)
 
 	if config.Attacks != nil {
@@ -456,6 +452,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		}
 
 		// Track entity name → index mapping for melee attack correlation
+		// Note: Only works reliably for heroes - creeps/neutrals don't have m_iszUnitName during streaming
 		parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
 			if e == nil || op.Flag(manta.EntityOpDeleted) {
 				return nil
@@ -464,12 +461,14 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			className := e.GetClassName()
 			entityID := int(e.GetIndex())
 
-			// Get unit name for heroes/creeps/etc
+			// Get unit name - works for heroes
 			var name string
 			if n, ok := e.GetString("m_iszUnitName"); ok && n != "" {
 				name = n
-			} else if strings.Contains(className, "CDOTA_Unit_Hero_") {
-				// Use entityClassToHeroName for proper CamelCase -> snake_case conversion
+			}
+
+			// Fallback for heroes: convert class name to npc_dota_hero_* format
+			if name == "" && strings.Contains(className, "CDOTA_Unit_Hero_") {
 				name = entityClassToHeroName(className)
 			}
 
@@ -582,7 +581,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 				targetName = name
 			}
 
-			// Look up entity indices from name → index mapping
+			// Look up entity indices from name→index map (heroes only)
 			sourceIndex := 0
 			targetIndex := 0
 			if idx, ok := entityNameToIndex[attackerName]; ok {
@@ -592,9 +591,10 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 				targetIndex = idx
 			}
 
-			// Get attacker position from entity (combat log doesn't have location for DAMAGE)
-			var locX, locY float32
-			if sourceIndex > 0 {
+			// Get location - prefer combat log location, fall back to entity lookup
+			locX := m.GetLocationX()
+			locY := m.GetLocationY()
+			if locX == 0 && locY == 0 && sourceIndex > 0 {
 				_, locX, locY = getEntityInfo(sourceIndex)
 			}
 
@@ -602,17 +602,26 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			gt := m.GetTimestamp() - gameStartTime
 
 			attacksResult.Events = append(attacksResult.Events, AttackEvent{
-				Tick:         int(parser.Tick),
-				SourceIndex:  sourceIndex,
-				TargetIndex:  targetIndex,
-				GameTime:     gt,
-				GameTimeStr:  FormatGameTime(gt),
-				IsMelee:      true,
-				AttackerName: attackerName,
-				TargetName:   targetName,
-				Damage:       int(m.GetValue()),
-				LocationX:    locX,
-				LocationY:    locY,
+				Tick:               int(parser.Tick),
+				SourceIndex:        sourceIndex,
+				TargetIndex:        targetIndex,
+				GameTime:           gt,
+				GameTimeStr:        FormatGameTime(gt),
+				IsMelee:            true,
+				AttackerName:       attackerName,
+				TargetName:         targetName,
+				LocationX:          locX,
+				LocationY:          locY,
+				Damage:             int(m.GetValue()),
+				TargetHealth:       int(m.GetHealth()),
+				AttackerTeam:       int(m.GetAttackerTeam()),
+				TargetTeam:         int(m.GetTargetTeam()),
+				IsAttackerHero:     m.GetIsAttackerHero(),
+				IsTargetHero:       m.GetIsTargetHero(),
+				IsAttackerIllusion: m.GetIsAttackerIllusion(),
+				IsTargetIllusion:   m.GetIsTargetIllusion(),
+				IsTargetBuilding:   m.GetIsTargetBuilding(),
+				DamageType:         int(m.GetDamageType()),
 			})
 
 			return nil
@@ -785,6 +794,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 	if parserInfoResult != nil {
 		parserInfoResult.Tick = parser.Tick
 		parserInfoResult.NetTick = parser.NetTick
+		parserInfoResult.GameBuild = int32(parser.GameBuild) // Use actual build from manta
 		entities := parser.FilterEntity(func(e *manta.Entity) bool {
 			return e != nil
 		})

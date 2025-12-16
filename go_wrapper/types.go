@@ -173,8 +173,8 @@ type AttacksConfig struct {
 // AttackEvent represents a single attack (ranged projectile or melee)
 type AttackEvent struct {
 	Tick            int     `json:"tick"`
-	SourceIndex     int     `json:"source_index"`      // Entity index of attacker (0 for melee)
-	TargetIndex     int     `json:"target_index"`      // Entity index of target (0 for melee)
+	SourceIndex     int     `json:"source_index"`      // Entity index of attacker (0 for melee without entity)
+	TargetIndex     int     `json:"target_index"`      // Entity index of target (0 for melee without entity)
 	SourceHandle    int64   `json:"source_handle"`     // Raw entity handle (0 for melee)
 	TargetHandle    int64   `json:"target_handle"`     // Raw entity handle (0 for melee)
 	ProjectileSpeed int     `json:"projectile_speed"`  // Projectile move speed (0 for melee)
@@ -182,13 +182,23 @@ type AttackEvent struct {
 	LaunchTick      int     `json:"launch_tick"`       // When projectile was launched
 	GameTime        float32 `json:"game_time"`         // Game time in seconds
 	GameTimeStr     string  `json:"game_time_str"`     // Formatted game time
-	// Melee attack fields (from combat log)
+	// Common fields (populated for both ranged and melee)
 	IsMelee      bool    `json:"is_melee"`       // True if melee attack (from combat log)
-	AttackerName string  `json:"attacker_name"`  // Attacker name (for melee correlation)
-	TargetName   string  `json:"target_name"`    // Target name (for melee correlation)
-	Damage       int     `json:"damage"`         // Damage dealt (melee only)
-	LocationX    float32 `json:"location_x"`     // Attack location X (for correlation)
-	LocationY    float32 `json:"location_y"`     // Attack location Y (for correlation)
+	AttackerName string  `json:"attacker_name"`  // Attacker name
+	TargetName   string  `json:"target_name"`    // Target name
+	LocationX    float32 `json:"location_x"`     // Attack location X
+	LocationY    float32 `json:"location_y"`     // Attack location Y
+	// Melee attack fields (from combat log DAMAGE events)
+	Damage             int   `json:"damage"`               // Damage dealt (melee only, 0 for ranged)
+	TargetHealth       int   `json:"target_health"`        // Target health AFTER attack (melee only)
+	AttackerTeam       int   `json:"attacker_team"`        // Attacker team: 2=Radiant, 3=Dire (melee only)
+	TargetTeam         int   `json:"target_team"`          // Target team: 2=Radiant, 3=Dire (melee only)
+	IsAttackerHero     bool  `json:"is_attacker_hero"`     // Attacker is a hero (melee only)
+	IsTargetHero       bool  `json:"is_target_hero"`       // Target is a hero (melee only)
+	IsAttackerIllusion bool  `json:"is_attacker_illusion"` // Attacker is an illusion (melee only)
+	IsTargetIllusion   bool  `json:"is_target_illusion"`   // Target is an illusion (melee only)
+	IsTargetBuilding   bool  `json:"is_target_building"`   // Target is a building (melee only)
+	DamageType         int   `json:"damage_type"`          // 1=physical, 2=magical, 4=pure (melee only)
 }
 
 // AttacksResult contains all attack events

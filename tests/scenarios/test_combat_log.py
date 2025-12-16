@@ -12,11 +12,8 @@ import pytest
 
 # Module-level markers: slow integration tests (~5min)
 pytestmark = [pytest.mark.slow, pytest.mark.integration]
-from caching_parser import Parser
-from tests.conftest import DEMO_FILE
 
 # Test data from OpenDota API for match 8447659831
-DEMO_PATH = DEMO_FILE
 
 # OpenDota verified data for Troll Warlord (hero_id=95)
 # Key item purchases for Troll Warlord (game_time in seconds, exact item name)
@@ -42,19 +39,6 @@ TROLL_WARLORD_EXPECTED_KILLS = [
     (1479, "npc_dota_hero_pugna"),      # 24:39
     (1552, "npc_dota_hero_faceless_void"),  # 25:52
 ]
-
-
-@pytest.fixture(scope="module")
-def parser():
-    return Parser(DEMO_PATH)
-
-
-@pytest.fixture(scope="module")
-def combat_log(parser):
-    """Parse all combat log entries once for all tests."""
-    result = parser.parse(combat_log={"max_entries": 0})
-    assert result.success, f"Failed to parse combat log: {result.error}"
-    return result.combat_log
 
 
 class TestCombatLogTypes:

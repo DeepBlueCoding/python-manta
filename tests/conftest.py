@@ -63,6 +63,13 @@ def combat_log_result(parser):
 
 
 @pytest.fixture(scope="module")
+def combat_log(combat_log_result):
+    """Cached combat log entries (extracted from result)."""
+    assert combat_log_result.success, f"Failed to parse combat log: {combat_log_result.error}"
+    return combat_log_result.combat_log
+
+
+@pytest.fixture(scope="module")
 def combat_log_result_secondary(parser_secondary):
     """Cached combat log for secondary demo file (all entries)."""
     return parser_secondary.parse(combat_log={})
@@ -303,7 +310,21 @@ def snapshot_lategame(parser):
 @pytest.fixture(scope="module")
 def attacks_result(parser):
     """Cached attacks parsing result (all attack events)."""
-    return parser.parse(attacks={})
+    result = parser.parse(attacks={"max_events": 0})
+    assert result.success, f"Failed to parse attacks: {result.error}"
+    return result.attacks
+
+
+@pytest.fixture(scope="module")
+def melee_attacks(attacks_result):
+    """Filter melee attacks from attacks_result."""
+    return [a for a in attacks_result.events if a.is_melee]
+
+
+@pytest.fixture(scope="module")
+def ranged_attacks(attacks_result):
+    """Filter ranged attacks from attacks_result."""
+    return [a for a in attacks_result.events if not a.is_melee]
 
 
 @pytest.fixture(scope="module")
