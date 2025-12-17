@@ -9,7 +9,7 @@ redundant parsing and improve test performance significantly.
 
 import pytest
 
-pytestmark = pytest.mark.integration
+pytestmark = pytest.mark.unit
 from caching_parser import Parser
 from tests.conftest import DEMO_FILE
 

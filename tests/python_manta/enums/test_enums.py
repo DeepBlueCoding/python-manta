@@ -9,7 +9,7 @@ redundant parsing and improve test performance significantly.
 
 import pytest
 
-pytestmark = pytest.mark.fast
+pytestmark = pytest.mark.unit
 from python_manta import (
     ChatWheelMessage,
     GameActivity,

@@ -9,7 +9,7 @@ redundant parsing and improve test performance significantly.
 
 import pytest
 
-pytestmark = pytest.mark.core
+pytestmark = pytest.mark.unit
 
 
 class TestIndexSeekFunctionality:

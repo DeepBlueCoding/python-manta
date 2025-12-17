@@ -5,7 +5,7 @@ Uses v2 Parser API exclusively.
 
 import pytest
 
-pytestmark = pytest.mark.fast
+pytestmark = pytest.mark.unit
 from caching_parser import Parser
 from tests.conftest import DEMO_FILE
 
