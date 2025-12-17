@@ -2,6 +2,9 @@
 
 Uses module-scoped fixtures to cache parsed results across tests,
 significantly improving test performance by avoiding redundant parsing.
+
+Replays are automatically downloaded from GCS on first use and cached
+in the replays/ directory. Similar to dotabuff/manta's test infrastructure.
 """
 
 import sys
@@ -12,12 +15,11 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import pytest
 from caching_parser import Parser
+from replay_cache import get_primary_demo, get_secondary_demo, PRIMARY_MATCH_ID, SECONDARY_MATCH_ID
 
-# Primary test demo file (Team Spirit vs Tundra - TI match)
-DEMO_FILE = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
-
-# Secondary demo file for NeutralCampType and other tests
-DEMO_FILE_SECONDARY = "/home/juanma/projects/equilibrium_coach/.data/replays/8461956309.dem"
+# Demo file paths (downloaded from GCS on first use)
+DEMO_FILE = get_primary_demo()
+DEMO_FILE_SECONDARY = get_secondary_demo()
 
 
 @pytest.fixture(scope="module")
