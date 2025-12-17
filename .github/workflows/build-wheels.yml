@@ -152,7 +152,7 @@ jobs:
           done
           ls -lh replays/
 
-      - name: Run pytest core tests
+      - name: Run all tests
         env:
           DOTA_REPLAY_CACHE: ${{ github.workspace }}/replays
         run: |
@@ -162,7 +162,7 @@ jobs:
           test_venv/bin/pip install pytest pytest-cov
           cp -r tests/ test_venv/
           cd test_venv
-          bin/python -m pytest tests/python_manta/ -m "core or unit" -v --no-cov || echo "⚠️ Tests failed"
+          bin/python -m pytest tests/python_manta/ -v --no-cov
           cd ..
 
       - name: Upload wheels artifact
@@ -258,7 +258,7 @@ jobs:
           done
           ls -lh replays/
 
-      - name: Run pytest core tests
+      - name: Run all tests
         if: matrix.arch == 'arm64'
         env:
           DOTA_REPLAY_CACHE: ${{ github.workspace }}/replays
@@ -269,7 +269,7 @@ jobs:
           test_venv/bin/pip install pytest pytest-cov
           cp -r tests/ test_venv/
           cd test_venv
-          bin/python -m pytest tests/python_manta/ -m "core or unit" -v --no-cov || echo "⚠️ Tests failed"
+          bin/python -m pytest tests/python_manta/ -v --no-cov
           cd ..
 
       - name: Upload wheels artifact
@@ -344,7 +344,7 @@ jobs:
           done
           ls -lh replays/
 
-      - name: Run pytest core tests
+      - name: Run all tests
         shell: bash
         env:
           DOTA_REPLAY_CACHE: ${{ github.workspace }}/replays
@@ -355,7 +355,7 @@ jobs:
           test_venv/Scripts/pip install pytest pytest-cov
           cp -r tests/ test_venv/
           cd test_venv
-          Scripts/python -m pytest tests/python_manta/ -m "core or unit" -v --no-cov || echo "⚠️ Tests failed"
+          Scripts/python -m pytest tests/python_manta/ -v --no-cov
           cd ..
 
       - name: Upload wheels artifact
