@@ -3,6 +3,8 @@ Test Parser error handling with real error scenarios.
 Uses v2 Parser API exclusively.
 """
 
+import tempfile
+
 import pytest
 
 pytestmark = pytest.mark.unit
@@ -33,7 +35,7 @@ class TestParserErrorHandling:
 
     def test_invalid_file_type_error(self):
         """Test Parser handles invalid file types properly."""
-        parser = Parser("/tmp")
+        parser = Parser(tempfile.gettempdir())
 
         # Directory instead of file should fail with ValueError
         with pytest.raises(ValueError) as exc_info:
@@ -81,12 +83,12 @@ class TestRealErrorConditions:
     def test_directory_instead_of_file_error(self):
         """Test proper error when directory provided instead of file."""
         # Test with actual directory
-        parser = Parser("/tmp")
+        parser = Parser(tempfile.gettempdir())
         with pytest.raises(ValueError) as exc_info:
             parser.parse(header=True)
         assert "is a directory" in str(exc_info.value)
 
-        parser = Parser("/tmp")
+        parser = Parser(tempfile.gettempdir())
         with pytest.raises((ValueError, Exception)) as exc_info:
             parser.parse(game_info=True)
         # May raise ValueError or ValidationError depending on implementation
@@ -117,7 +119,7 @@ class TestRealErrorConditions:
 
         # Directory instead of library file should also fail
         with pytest.raises((FileNotFoundError, OSError)) as exc_info:
-            Parser(DEMO_FILE, library_path="/tmp")
+            Parser(DEMO_FILE, library_path=tempfile.gettempdir())
         # Could be FileNotFoundError or OSError depending on ctypes behavior
 
 

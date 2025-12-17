@@ -128,7 +128,8 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/bin/pip install --upgrade pip
-          wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
+          wheel_venv/bin/pip install pydantic
+          wheel_venv/bin/pip install --no-index --find-links=./dist python-manta
           wheel_venv/bin/python -c "from python_manta import Parser; print('wheel import ok')"
 
       - name: Cache replay files
@@ -158,8 +159,8 @@ jobs:
         run: |
           python -m venv test_venv
           test_venv/bin/pip install --upgrade pip
-          test_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
-          test_venv/bin/pip install pytest pytest-cov
+          test_venv/bin/pip install pydantic pytest pytest-cov
+          test_venv/bin/pip install --no-index --find-links=./dist python-manta
           test_venv/bin/python -m pytest tests/python_manta/ -v --no-cov
 
       - name: Upload wheels artifact
@@ -228,8 +229,9 @@ jobs:
           echo ""
           python -m venv wheel_venv
           wheel_venv/bin/python -m pip install --upgrade pip
+          wheel_venv/bin/pip install pydantic
           echo "=== Attempting install ==="
-          wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta --verbose
+          wheel_venv/bin/pip install --no-index --find-links=./dist python-manta --verbose
           wheel_venv/bin/python -c "from python_manta import Parser; print('wheel import ok')"
 
       - name: Cache replay files
@@ -262,8 +264,8 @@ jobs:
         run: |
           python -m venv test_venv
           test_venv/bin/pip install --upgrade pip
-          test_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
-          test_venv/bin/pip install pytest pytest-cov
+          test_venv/bin/pip install pydantic pytest pytest-cov
+          test_venv/bin/pip install --no-index --find-links=./dist python-manta
           test_venv/bin/python -m pytest tests/python_manta/ -v --no-cov
 
       - name: Upload wheels artifact
@@ -313,7 +315,8 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/Scripts/python -m pip install --upgrade pip
-          wheel_venv/Scripts/pip install --find-links=./dist --no-cache-dir python-manta
+          wheel_venv/Scripts/pip install pydantic
+          wheel_venv/Scripts/pip install --no-index --find-links=./dist python-manta
           wheel_venv/Scripts/python -c "from python_manta import Parser; print('wheel import ok')"
 
       - name: Cache replay files
@@ -344,9 +347,9 @@ jobs:
           DOTA_REPLAY_CACHE: ${{ github.workspace }}/replays
         run: |
           python -m venv test_venv
-          test_venv/Scripts/pip install --upgrade pip
-          test_venv/Scripts/pip install --find-links=./dist --no-cache-dir python-manta
-          test_venv/Scripts/pip install pytest pytest-cov
+          test_venv/Scripts/python -m pip install --upgrade pip
+          test_venv/Scripts/pip install pydantic pytest pytest-cov
+          test_venv/Scripts/pip install --no-index --find-links=./dist python-manta
           test_venv/Scripts/python -m pytest tests/python_manta/ -v --no-cov
 
       - name: Upload wheels artifact
