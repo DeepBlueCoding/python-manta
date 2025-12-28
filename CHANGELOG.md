@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 with [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## [1.4.7.2] - 2025-12-28
+
+### Added
+- **Attacks collector**: Track hero attacks with `parser.parse(attacks={"max_events": 50000})`
+  - Melee attacks: `target_x`, `target_y`, `target_entity_id`, `attack_record_id`
+  - Ranged attacks: `projectile_source_x`, `projectile_source_y`, `projectile_speed`
+  - Common fields: `attacker`, `target`, `game_time`, `tick`, `is_projectile`
+- **Entity deaths collector**: Track creep deaths for wave detection with `parser.parse(entity_deaths={"creeps_only": True})`
+- **Hero level injection**: Combat log entries now include `attacker_hero_level` and `target_hero_level`
+- **HeroSnapshot.entity_id**: Entity ID field for cross-referencing with other data
+
+### Fixed
+- **Panic recovery for all CGO exports**: Added `defer recover()` to all 14 exported parsing functions to gracefully handle buffer overread panics from the manta library
+- **AttacksResult struct**: Added missing `Success` and `Error` fields for consistent error reporting
+
+### Changed
+- All parsing functions now return proper JSON error responses instead of crashing on malformed replay data
+- Improved error messages to include panic details for debugging
+- Reorganized test suite with cached fixtures (10x faster test runs)
+
 ## [1.4.5.3] - 2025-12-12
 
 ### Added
@@ -103,6 +123,7 @@ with [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 - ctypes interface for shared library loading
 - Platform-specific build scripts for reproducible builds
 
+[1.4.7.2]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.5.3...v1.4.7.2
 [1.4.5.3]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.5.2...v1.4.5.3
 [1.4.5.2]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.5...v1.4.5.2
 [1.4.5]: https://github.com/DeepBlueCoding/python-manta/compare/v1.4.0...v1.4.5

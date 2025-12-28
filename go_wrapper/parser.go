@@ -18,9 +18,19 @@ import (
 // This is the main entry point for the v2 API.
 //
 //export Parse
-func Parse(filePath *C.char, configJSON *C.char) *C.char {
+func Parse(filePath *C.char, configJSON *C.char) (cResult *C.char) {
 	goFilePath := C.GoString(filePath)
 	goConfigJSON := C.GoString(configJSON)
+
+	// Recover from any panics in manta library
+	defer func() {
+		if r := recover(); r != nil {
+			cResult = marshalParseResult(&ParseResult{
+				Success: false,
+				Error:   fmt.Sprintf("panic during parsing: %v", r),
+			})
+		}
+	}()
 
 	config := ParseConfig{}
 	if goConfigJSON != "" {
@@ -67,12 +77,19 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 	var gameInfo *CDotaGameInfo
 	var combatLogRaw []rawCombatLogEntry
 	var gameStartTime float32
+	var gameStartTick uint32
 	var entityState *entityCollectorState
 	var gameEventsResult *GameEventsResult
 	var modifiersResult *ModifiersResult
 	var stringTablesResult *StringTablesResult
 	var messagesResult *UniversalResult
 	var parserInfoResult *ParserInfo
+	var attacksResult *AttacksResult
+	var entityDeathsResult *EntityDeathsResult
+
+	// Hero level tracking for combat log enrichment
+	// Maps hero name (e.g., "npc_dota_hero_axe") to current level
+	heroLevels := make(map[string]int32)
 
 	// Setup collectors based on config
 
@@ -87,6 +104,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			headerInfo.NetworkProtocol = m.GetNetworkProtocol()
 			headerInfo.DemoFileStamp = m.GetDemoFileStamp()
 			headerInfo.BuildNum = m.GetBuildNum()
+			headerInfo.GameBuild = extractGameBuild(m.GetGameDirectory())
 			headerInfo.Game = m.GetGame()
 			headerInfo.ServerStartTick = m.GetServerStartTick()
 			headerInfo.Success = true
@@ -149,11 +167,34 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		combatLogRaw = make([]rawCombatLogEntry, 0)
 		clConfig := config.CombatLog
 
+		// Track hero levels from entity updates for combat log enrichment
+		parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
+			if e == nil {
+				return nil
+			}
+			className := e.GetClassName()
+			// Only process hero entities
+			if !strings.Contains(className, "CDOTA_Unit_Hero_") {
+				return nil
+			}
+			// Extract hero name using proper CamelCase -> snake_case conversion
+			heroName := entityClassToHeroName(className)
+			if heroName == "" {
+				return nil
+			}
+			// Get current level from entity
+			if level, ok := e.GetInt32("m_iCurrentLevel"); ok && level > 0 {
+				heroLevels[heroName] = level
+			}
+			return nil
+		})
+
 		parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
 			// Detect game start
 			if m.GetType() == dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_GAME_STATE {
 				if m.GetValue() == 5 {
 					gameStartTime = m.GetTimestamp()
+					gameStartTick = parser.Tick
 				}
 			}
 
@@ -177,15 +218,29 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 				}
 			}
 
-			// Apply heroes only filter
-			if clConfig.HeroesOnly && !m.GetIsAttackerHero() && !m.GetIsTargetHero() {
-				return nil
+			// NOTE: heroes_only filter is applied in finalizeCombatLog after name resolution
+			// This allows checking both boolean flags AND name strings for hero detection
+
+			// Capture hero levels from entity state at this tick
+			// Names now match: both combat log and entity use underscored format (e.g., "npc_dota_hero_storm_spirit")
+			var attackerLevel, targetLevel int32
+			if attackerName, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetAttackerName())); ok {
+				if level, exists := heroLevels[attackerName]; exists {
+					attackerLevel = level
+				}
+			}
+			if targetName, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetTargetName())); ok {
+				if level, exists := heroLevels[targetName]; exists {
+					targetLevel = level
+				}
 			}
 
 			combatLogRaw = append(combatLogRaw, rawCombatLogEntry{
-				tick:    parser.Tick,
-				netTick: parser.NetTick,
-				msg:     m,
+				tick:              parser.Tick,
+				netTick:           parser.NetTick,
+				msg:               m,
+				attackerHeroLevel: attackerLevel,
+				targetHeroLevel:   targetLevel,
 			})
 
 			return nil
@@ -393,8 +448,302 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			return nil
 		})
 
-		parser.Callbacks.OnCSVCMsg_ServerInfo(func(m *dota.CSVCMsg_ServerInfo) error {
-			parserInfoResult.GameBuild = m.GetProtocol()
+		// GameBuild is set after parsing from parser.GameBuild
+	}
+
+	// Attacks collector (from TE_Projectile and combat log)
+	// Track entity name → index mapping for melee attack correlation (heroes only)
+	entityNameToIndex := make(map[string]int)
+
+	if config.Attacks != nil {
+		attacksConfig := config.Attacks
+		attacksResult = &AttacksResult{
+			Events: make([]AttackEvent, 0),
+		}
+
+		// Track entity name → index mapping for melee attack correlation
+		// Note: Only works reliably for heroes - creeps/neutrals don't have m_iszUnitName during streaming
+		parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
+			if e == nil || op.Flag(manta.EntityOpDeleted) {
+				return nil
+			}
+
+			className := e.GetClassName()
+			entityID := int(e.GetIndex())
+
+			// Get unit name - works for heroes
+			var name string
+			if n, ok := e.GetString("m_iszUnitName"); ok && n != "" {
+				name = n
+			}
+
+			// Fallback for heroes: convert class name to npc_dota_hero_* format
+			if name == "" && strings.Contains(className, "CDOTA_Unit_Hero_") {
+				name = entityClassToHeroName(className)
+			}
+
+			if name != "" {
+				entityNameToIndex[name] = entityID
+			}
+
+			return nil
+		})
+
+		// Helper to get entity info by index
+		getEntityInfo := func(entityIndex int) (name string, x, y float32) {
+			e := parser.FindEntity(int32(entityIndex))
+			if e == nil {
+				return "", 0, 0
+			}
+
+			className := e.GetClassName()
+			if n, ok := e.GetString("m_iszUnitName"); ok && n != "" {
+				name = n
+			} else if strings.Contains(className, "CDOTA_Unit_Hero_") {
+				// Use entityClassToHeroName for proper CamelCase -> snake_case conversion
+				name = entityClassToHeroName(className)
+			}
+
+			// Get position
+			if cellX, ok := e.GetUint64("CBodyComponent.m_cellX"); ok {
+				if cellY, ok2 := e.GetUint64("CBodyComponent.m_cellY"); ok2 {
+					if vecX, ok3 := e.GetFloat32("CBodyComponent.m_vecX"); ok3 {
+						if vecY, ok4 := e.GetFloat32("CBodyComponent.m_vecY"); ok4 {
+							x = float32(cellX)*128.0 + vecX - 8192.0
+							y = float32(cellY)*128.0 + vecY - 8192.0
+						}
+					}
+				}
+			}
+
+			return name, x, y
+		}
+
+		// Ranged attacks from TE_Projectile
+		parser.Callbacks.OnCDOTAUserMsg_TE_Projectile(func(m *dota.CDOTAUserMsg_TE_Projectile) error {
+			// Only capture attack projectiles
+			if !m.GetIsAttack() {
+				return nil
+			}
+
+			if attacksConfig.MaxEvents > 0 && len(attacksResult.Events) >= attacksConfig.MaxEvents {
+				return nil
+			}
+
+			sourceHandle := int64(m.GetSource())
+			targetHandle := int64(m.GetTarget())
+
+			// Convert handles to entity indices (lower 14 bits)
+			sourceIndex := int(sourceHandle & 0x3FFF)
+			targetIndex := int(targetHandle & 0x3FFF)
+
+			// Look up entity names and positions
+			attackerName, locX, locY := getEntityInfo(sourceIndex)
+			targetName, _, _ := getEntityInfo(targetIndex)
+
+			// Calculate game time
+			gt := TickToGameTime(parser.Tick, gameStartTick)
+
+			attacksResult.Events = append(attacksResult.Events, AttackEvent{
+				Tick:            int(parser.Tick),
+				SourceIndex:     sourceIndex,
+				TargetIndex:     targetIndex,
+				SourceHandle:    sourceHandle,
+				TargetHandle:    targetHandle,
+				ProjectileSpeed: int(m.GetMoveSpeed()),
+				Dodgeable:       m.GetDodgeable(),
+				LaunchTick:      int(m.GetLaunchTick()),
+				GameTime:        gt,
+				GameTimeStr:     FormatGameTime(gt),
+				IsMelee:         false,
+				AttackerName:    attackerName,
+				TargetName:      targetName,
+				LocationX:       locX,
+				LocationY:       locY,
+			})
+
+			return nil
+		})
+
+		// Melee attacks from combat log DAMAGE events (always included)
+		parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
+			// Only DAMAGE events (type 0)
+			if m.GetType() != dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_DAMAGE {
+				return nil
+			}
+
+			// Only auto-attacks (no inflictor = no ability)
+			if m.GetInflictorName() != 0 {
+				return nil
+			}
+
+			if attacksConfig.MaxEvents > 0 && len(attacksResult.Events) >= attacksConfig.MaxEvents {
+				return nil
+			}
+
+			// Get names from string table
+			attackerName := ""
+			targetName := ""
+			if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetAttackerName())); ok {
+				attackerName = name
+			}
+			if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetTargetName())); ok {
+				targetName = name
+			}
+
+			// Look up entity indices from name→index map (heroes only)
+			sourceIndex := 0
+			targetIndex := 0
+			if idx, ok := entityNameToIndex[attackerName]; ok {
+				sourceIndex = idx
+			}
+			if idx, ok := entityNameToIndex[targetName]; ok {
+				targetIndex = idx
+			}
+
+			// Get location - prefer combat log location, fall back to entity lookup
+			locX := m.GetLocationX()
+			locY := m.GetLocationY()
+			if locX == 0 && locY == 0 && sourceIndex > 0 {
+				_, locX, locY = getEntityInfo(sourceIndex)
+			}
+
+			// Calculate game time from combat log timestamp
+			gt := m.GetTimestamp() - gameStartTime
+
+			attacksResult.Events = append(attacksResult.Events, AttackEvent{
+				Tick:               int(parser.Tick),
+				SourceIndex:        sourceIndex,
+				TargetIndex:        targetIndex,
+				GameTime:           gt,
+				GameTimeStr:        FormatGameTime(gt),
+				IsMelee:            true,
+				AttackerName:       attackerName,
+				TargetName:         targetName,
+				LocationX:          locX,
+				LocationY:          locY,
+				Damage:             int(m.GetValue()),
+				TargetHealth:       int(m.GetHealth()),
+				AttackerTeam:       int(m.GetAttackerTeam()),
+				TargetTeam:         int(m.GetTargetTeam()),
+				IsAttackerHero:     m.GetIsAttackerHero(),
+				IsTargetHero:       m.GetIsTargetHero(),
+				IsAttackerIllusion: m.GetIsAttackerIllusion(),
+				IsTargetIllusion:   m.GetIsTargetIllusion(),
+				IsTargetBuilding:   m.GetIsTargetBuilding(),
+				DamageType:         int(m.GetDamageType()),
+			})
+
+			return nil
+		})
+	}
+
+	// Entity deaths collector (tracks entity removals)
+	if config.EntityDeaths != nil {
+		entityDeathsConfig := config.EntityDeaths
+		entityDeathsResult = &EntityDeathsResult{
+			Events: make([]EntityDeath, 0),
+		}
+
+		parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
+			// Only track deletions
+			if !op.Flag(manta.EntityOpDeleted) {
+				return nil
+			}
+			if e == nil {
+				return nil
+			}
+
+			if entityDeathsConfig.MaxEvents > 0 && len(entityDeathsResult.Events) >= entityDeathsConfig.MaxEvents {
+				return nil
+			}
+
+			className := e.GetClassName()
+
+			// Determine entity type
+			isHero := strings.Contains(className, "CDOTA_Unit_Hero_")
+			isLaneCreep := strings.Contains(className, "Creep_Lane") || strings.Contains(className, "BaseNPC_Creep_Lane")
+			isNeutralCreep := strings.Contains(className, "Neutral") || strings.Contains(className, "NeutralCreep")
+			isCreep := isLaneCreep || isNeutralCreep
+			isBuilding := strings.Contains(className, "Tower") || strings.Contains(className, "Barracks") || strings.Contains(className, "Fort")
+			isSummon := strings.Contains(className, "CDOTA_BaseNPC") && !isCreep && !isHero && !isBuilding
+
+			// Skip items, abilities, and other non-unit entities
+			if strings.HasPrefix(className, "CDOTA_Item") || strings.HasPrefix(className, "CDOTA_Ability") {
+				return nil
+			}
+
+			// Apply filters
+			if entityDeathsConfig.HeroesOnly {
+				if !isHero {
+					return nil
+				}
+			} else if entityDeathsConfig.CreepsOnly {
+				if !isCreep {
+					return nil
+				}
+			} else if entityDeathsConfig.IncludeCreeps {
+				// Include heroes, creeps, buildings, summons
+				if !isHero && !isCreep && !isBuilding && !isSummon {
+					return nil
+				}
+			} else {
+				// Default: only heroes and buildings
+				if !isHero && !isBuilding {
+					return nil
+				}
+			}
+
+			// Extract entity data
+			var name string
+			if n, ok := e.GetString("m_iszUnitName"); ok {
+				name = n
+			} else if isHero {
+				// Use entityClassToHeroName for proper CamelCase -> snake_case conversion
+				name = entityClassToHeroName(className)
+			}
+
+			var team int
+			if t, ok := e.GetInt32("m_iTeamNum"); ok {
+				team = int(t)
+			}
+
+			var x, y float32
+			if cellX, ok := e.GetUint64("CBodyComponent.m_cellX"); ok {
+				if cellY, ok2 := e.GetUint64("CBodyComponent.m_cellY"); ok2 {
+					if vecX, ok3 := e.GetFloat32("CBodyComponent.m_vecX"); ok3 {
+						if vecY, ok4 := e.GetFloat32("CBodyComponent.m_vecY"); ok4 {
+							x = float32(cellX)*128.0 + vecX - 8192.0
+							y = float32(cellY)*128.0 + vecY - 8192.0
+						}
+					}
+				}
+			}
+
+			var health, maxHealth int
+			if h, ok := e.GetInt32("m_iHealth"); ok {
+				health = int(h)
+			}
+			if mh, ok := e.GetInt32("m_iMaxHealth"); ok {
+				maxHealth = int(mh)
+			}
+
+			entityDeathsResult.Events = append(entityDeathsResult.Events, EntityDeath{
+				Tick:       int(parser.Tick),
+				EntityID:   int(e.GetIndex()),
+				ClassName:  className,
+				Name:       name,
+				Team:       team,
+				X:          x,
+				Y:          y,
+				Health:     health,
+				MaxHealth:  maxHealth,
+				IsHero:     isHero,
+				IsCreep:    isCreep,
+				IsBuilding: isBuilding,
+				IsNeutral:  isNeutralCreep,
+			})
+
 			return nil
 		})
 	}
@@ -416,7 +765,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 
 	// Combat log: resolve names after parsing
 	if combatLogRaw != nil {
-		result.CombatLog = finalizeCombatLog(parser, combatLogRaw, gameStartTime)
+		result.CombatLog = finalizeCombatLog(parser, combatLogRaw, gameStartTime, gameStartTick, config.CombatLog)
 	}
 
 	// Entity snapshots
@@ -455,6 +804,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 	if parserInfoResult != nil {
 		parserInfoResult.Tick = parser.Tick
 		parserInfoResult.NetTick = parser.NetTick
+		parserInfoResult.GameBuild = int32(parser.GameBuild) // Use actual build from manta
 		entities := parser.FilterEntity(func(e *manta.Entity) bool {
 			return e != nil
 		})
@@ -463,22 +813,64 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		result.ParserInfo = parserInfoResult
 	}
 
+	// Attacks
+	if attacksResult != nil {
+		// Post-process: add game time to events
+		for i := range attacksResult.Events {
+			attacksResult.Events[i].GameTime = TickToGameTime(uint32(attacksResult.Events[i].Tick), gameStartTick)
+			attacksResult.Events[i].GameTimeStr = FormatGameTime(attacksResult.Events[i].GameTime)
+		}
+		attacksResult.TotalEvents = len(attacksResult.Events)
+		result.Attacks = attacksResult
+	}
+
+	// Entity deaths
+	if entityDeathsResult != nil {
+		// Post-process: add game time to events
+		for i := range entityDeathsResult.Events {
+			entityDeathsResult.Events[i].GameTime = TickToGameTime(uint32(entityDeathsResult.Events[i].Tick), gameStartTick)
+			entityDeathsResult.Events[i].GameTimeStr = FormatGameTime(entityDeathsResult.Events[i].GameTime)
+		}
+		entityDeathsResult.TotalEvents = len(entityDeathsResult.Events)
+		result.EntityDeaths = entityDeathsResult
+	}
+
 	return result, nil
 }
 
 // rawCombatLogEntry stores combat log data before name resolution
 type rawCombatLogEntry struct {
-	tick    uint32
-	netTick uint32
-	msg     *dota.CMsgDOTACombatLogEntry
+	tick             uint32
+	netTick          uint32
+	msg              *dota.CMsgDOTACombatLogEntry
+	attackerHeroLevel int32  // Captured from entity state at this tick
+	targetHeroLevel   int32  // Captured from entity state at this tick
+}
+
+// isHeroName checks if a name string indicates a hero
+func isHeroName(name string) bool {
+	return strings.Contains(name, "npc_dota_hero_")
+}
+
+// normalizeHeroName converts combat log hero names to entity class format.
+// Combat log uses "npc_dota_hero_storm_spirit" while entities use "npc_dota_hero_stormspirit".
+func normalizeHeroName(name string) string {
+	if !strings.HasPrefix(name, "npc_dota_hero_") {
+		return name
+	}
+	// Remove underscores from the hero name part (after "npc_dota_hero_")
+	suffix := strings.TrimPrefix(name, "npc_dota_hero_")
+	normalized := strings.ReplaceAll(suffix, "_", "")
+	return "npc_dota_hero_" + normalized
 }
 
 // finalizeCombatLog resolves names and builds the final result
-func finalizeCombatLog(parser *manta.Parser, rawEntries []rawCombatLogEntry, gameStartTime float32) *CombatLogResult {
+func finalizeCombatLog(parser *manta.Parser, rawEntries []rawCombatLogEntry, gameStartTime float32, gameStartTick uint32, clConfig *CombatLogConfig) *CombatLogResult {
 	result := &CombatLogResult{
 		Entries:       make([]CombatLogEntry, 0, len(rawEntries)),
 		Success:       true,
 		GameStartTime: gameStartTime,
+		GameStartTick: gameStartTick,
 	}
 
 	getName := func(idx uint32) string {
@@ -542,9 +934,7 @@ func finalizeCombatLog(parser *manta.Parser, rawEntries []rawCombatLogEntry, gam
 			Value:                    int32(m.GetValue()),
 			ValueName:                valueName,
 			Health:                   m.GetHealth(),
-			Timestamp:                m.GetTimestamp(),
-			TimestampRaw:             m.GetTimestampRaw(),
-			GameTime:                 m.GetTimestamp() - gameStartTime,
+			GameTime:                 TickToGameTime(raw.tick, gameStartTick),
 			StunDuration:             m.GetStunDuration(),
 			SlowDuration:             m.GetSlowDuration(),
 			IsAbilityToggleOn:        m.GetIsAbilityToggleOn(),
@@ -572,8 +962,8 @@ func finalizeCombatLog(parser *manta.Parser, rawEntries []rawCombatLogEntry, gam
 			StackCount:               int32(m.GetStackCount()),
 			HiddenModifier:           m.GetHiddenModifier(),
 			InvisibilityModifier:     m.GetInvisibilityModifier(),
-			AttackerHeroLevel:        int32(m.GetAttackerHeroLevel()),
-			TargetHeroLevel:          int32(m.GetTargetHeroLevel()),
+			AttackerHeroLevel:        raw.attackerHeroLevel, // From entity state (protobuf value is always 0)
+			TargetHeroLevel:          raw.targetHeroLevel,   // From entity state (protobuf value is always 0)
 			XPM:                      int32(m.GetXpm()),
 			GPM:                      int32(m.GetGpm()),
 			EventLocation:            int32(m.GetEventLocation()),
@@ -612,6 +1002,15 @@ func finalizeCombatLog(parser *manta.Parser, rawEntries []rawCombatLogEntry, gam
 			KillEaterEvent:           int32(m.GetKillEaterEvent()),
 			UnitStatusLabel:          int32(m.GetUnitStatusLabel()),
 			TrackedStatId:            int32(m.GetTrackedStatId()),
+		}
+
+		// Apply heroes_only filter (checks both boolean flags AND name strings)
+		if clConfig != nil && clConfig.HeroesOnly {
+			isHeroRelated := entry.IsAttackerHero || entry.IsTargetHero ||
+				isHeroName(entry.AttackerName) || isHeroName(entry.TargetName)
+			if !isHeroRelated {
+				continue
+			}
 		}
 
 		result.Entries = append(result.Entries, entry)
@@ -722,11 +1121,8 @@ func setupEntityCollector(parser *manta.Parser, state *entityCollectorState) {
 // This delegates to captureSnapshot from entity_parser.go which properly extracts
 // hero positions by finding CDOTA_Unit_Hero_* entities
 func captureEntitySnapshot(parser *manta.Parser, config *EntityParseConfig, gameStartTime float32, gameStartTick uint32) EntitySnapshot {
-	// Calculate game time from ticks since game start (30 ticks per second)
-	var gameTime float32 = 0
-	if gameStartTick > 0 && parser.Tick > gameStartTick {
-		gameTime = float32(parser.Tick-gameStartTick) / 30.0
-	}
+	// Calculate game time using centralized conversion
+	gameTime := TickToGameTime(parser.Tick, gameStartTick)
 
 	// Use the working captureSnapshot from entity_parser.go
 	entityConfig := EntityParseConfig{
@@ -736,6 +1132,7 @@ func captureEntitySnapshot(parser *manta.Parser, config *EntityParseConfig, game
 		TargetHeroes:  config.TargetHeroes,
 		EntityClasses: config.EntityClasses,
 		IncludeRaw:    config.IncludeRaw,
+		IncludeCreeps: config.IncludeCreeps,
 	}
 
 	result := captureSnapshot(parser, gameTime, entityConfig)
@@ -753,11 +1150,18 @@ func captureEntitySnapshot(parser *manta.Parser, config *EntityParseConfig, game
 
 // finalizeEntitySnapshots builds the final entity result
 func finalizeEntitySnapshots(state *entityCollectorState, totalTicks uint32) *EntityParseResult {
+	// Post-process: recalculate game_time for all snapshots now that we know gameStartTick
+	// This fixes pre-horn snapshots that were captured before gameStartTick was known
+	for i := range state.snapshots {
+		state.snapshots[i].GameTime = TickToGameTime(state.snapshots[i].Tick, state.gameStartTick)
+	}
+
 	return &EntityParseResult{
 		Snapshots:     state.snapshots,
 		Success:       true,
 		TotalTicks:    totalTicks,
 		SnapshotCount: len(state.snapshots),
+		GameStartTick: state.gameStartTick,
 	}
 }
 

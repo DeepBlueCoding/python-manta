@@ -29,7 +29,6 @@ Key Events:
 
 import pytest
 from python_manta import (
-    Parser,
     CombatLogType,
     DamageType,
     Team,
@@ -38,49 +37,45 @@ from python_manta import (
 
 pytestmark = [pytest.mark.integration]
 
-DEMO_PATH = "/home/juanma/projects/equilibrium_coach/.data/replays/8447659831.dem"
-
 # Expected values from match 8447659831
 MATCH_ID = 8447659831
 RADIANT_TEAM_TAG = "TSpirit"
 DIRE_TEAM_TAG = "Tundra"
 WINNER = Team.RADIANT
 
-# Yatoro's key item timings (game_time in seconds)
+# Yatoro's key item timings (game_time in seconds from tick-based calculation)
 YATORO_ITEMS = {
-    "item_phase_boots": 335.9,
-    "item_bfury": 727.7,
-    "item_sange_and_yasha": 1014.4,
-    "item_black_king_bar": 1527.6,
-    "item_satanic": 1781.8,
-    "item_butterfly": 2198.4,
+    "item_phase_boots": 365.13333,
+    "item_bfury": 756.9667,
+    "item_sange_and_yasha": 1043.6666,
+    "item_black_king_bar": 1556.8667,
+    "item_satanic": 1811.0,
+    "item_butterfly": 2227.6,
 }
 
 # First real kill (after laning starts)
 FIRST_KILL = {
     "victim": "npc_dota_hero_hoodwink",
     "killer": "npc_dota_hero_pugna",
-    "game_time": 187.5,  # 03:07
+    "game_time": 216.73334,  # 03:37 (tick-based)
     "victim_team": Team.RADIANT,
 }
 
-# Roshan kills
+# Roshan kills (tick-based game_time)
 ROSHAN_KILLS = [
-    {"game_time": 1157.0, "killer": "npc_dota_hero_troll_warlord", "team": Team.RADIANT},  # 19:17
-    {"game_time": 1737.0, "killer": "npc_dota_hero_troll_warlord", "team": Team.RADIANT},  # 28:57
+    {"game_time": 1186.8667, "killer": "npc_dota_hero_troll_warlord", "team": Team.RADIANT},
+    {"game_time": 1766.3334, "killer": "npc_dota_hero_troll_warlord", "team": Team.RADIANT},
 ]
 
-# Tower kills (first 3)
+# Tower kills (first 3, tick-based game_time)
 TOWER_KILLS = [
-    {"game_time": 675.0, "target": "npc_dota_badguys_tower1_bot"},   # 11:15 Dire bot T1
-    {"game_time": 736.0, "target": "npc_dota_badguys_tower1_top"},   # 12:16 Dire top T1
-    {"game_time": 788.0, "target": "npc_dota_goodguys_tower1_bot"},  # 13:08 Radiant bot T1
+    {"game_time": 704.7, "target": "npc_dota_badguys_tower1_bot"},
+    {"game_time": 765.2, "target": "npc_dota_badguys_tower1_top"},
+    {"game_time": 817.4, "target": "npc_dota_goodguys_tower1_bot"},
 ]
 
 
-@pytest.fixture(scope="module")
-def parser():
-    return Parser(DEMO_PATH)
+# Use parser fixture from conftest.py (CachingParser)
 
 
 @pytest.fixture(scope="module")
@@ -147,7 +142,7 @@ class TestTeamfightAnalysis:
         first = deaths[0]
         assert first.target_name == FIRST_KILL["victim"]
         assert first.attacker_name == FIRST_KILL["killer"]
-        assert abs(first.game_time - FIRST_KILL["game_time"]) < 1.0
+        assert first.game_time == FIRST_KILL["game_time"]
 
     def test_damage_events_for_fight_reconstruction(self, combat_log):
         damage = [e for e in combat_log.entries if e.type == CombatLogType.DAMAGE.value]
@@ -196,7 +191,7 @@ class TestCarryFarmTracking:
                      and e.target_name == "npc_dota_hero_troll_warlord"
                      and e.value_name == "item_phase_boots"]
         assert len(purchases) >= 1
-        assert abs(purchases[-1].game_time - YATORO_ITEMS["item_phase_boots"]) < 5.0
+        assert purchases[-1].game_time == YATORO_ITEMS["item_phase_boots"]
 
     def test_yatoro_battlefury_timing(self, combat_log):
         purchases = [e for e in combat_log.entries
@@ -204,8 +199,7 @@ class TestCarryFarmTracking:
                      and e.target_name == "npc_dota_hero_troll_warlord"
                      and e.value_name == "item_bfury"]
         assert len(purchases) >= 1
-        # Battlefury at 12:07
-        assert abs(purchases[-1].game_time - YATORO_ITEMS["item_bfury"]) < 5.0
+        assert purchases[-1].game_time == YATORO_ITEMS["item_bfury"]
 
     def test_yatoro_sny_timing(self, combat_log):
         purchases = [e for e in combat_log.entries
@@ -213,8 +207,7 @@ class TestCarryFarmTracking:
                      and e.target_name == "npc_dota_hero_troll_warlord"
                      and e.value_name == "item_sange_and_yasha"]
         assert len(purchases) >= 1
-        # SnY at 16:54
-        assert abs(purchases[-1].game_time - YATORO_ITEMS["item_sange_and_yasha"]) < 5.0
+        assert purchases[-1].game_time == YATORO_ITEMS["item_sange_and_yasha"]
 
     def test_yatoro_bkb_timing(self, combat_log):
         purchases = [e for e in combat_log.entries
@@ -222,8 +215,7 @@ class TestCarryFarmTracking:
                      and e.target_name == "npc_dota_hero_troll_warlord"
                      and e.value_name == "item_black_king_bar"]
         assert len(purchases) >= 1
-        # BKB at 25:27
-        assert abs(purchases[-1].game_time - YATORO_ITEMS["item_black_king_bar"]) < 5.0
+        assert purchases[-1].game_time == YATORO_ITEMS["item_black_king_bar"]
 
     def test_gold_events_track_income(self, combat_log):
         gold = [e for e in combat_log.entries
@@ -267,8 +259,7 @@ class TestGankAnalysis:
                   and e.game_time > 60]
 
         first = deaths[0]
-        # 03:07 = 187 seconds
-        assert 185 < first.game_time < 190
+        assert first.game_time == FIRST_KILL["game_time"]
 
     def test_damage_sequence_before_kill(self, combat_log):
         """Damage events leading to first kill."""
@@ -320,10 +311,9 @@ class TestObjectiveControl:
         assert len(roshan) >= 2  # Two Roshan kills in this match
 
         first = roshan[0]
-        assert first.attacker_name == "npc_dota_hero_troll_warlord"
-        assert first.attacker_team == Team.RADIANT.value
-        # 19:17 = 1157 seconds
-        assert 1150 < first.game_time < 1165
+        assert first.attacker_name == ROSHAN_KILLS[0]["killer"]
+        assert first.attacker_team == ROSHAN_KILLS[0]["team"].value
+        assert first.game_time == ROSHAN_KILLS[0]["game_time"]
 
     def test_second_roshan_kill(self, combat_log):
         """Second Roshan at 28:57 by Troll Warlord (Radiant)."""
@@ -332,10 +322,9 @@ class TestObjectiveControl:
                   and "roshan" in e.target_name.lower()]
 
         second = roshan[1]
-        assert second.attacker_name == "npc_dota_hero_troll_warlord"
-        assert second.attacker_team == Team.RADIANT.value
-        # 28:57 = 1737 seconds
-        assert 1730 < second.game_time < 1745
+        assert second.attacker_name == ROSHAN_KILLS[1]["killer"]
+        assert second.attacker_team == ROSHAN_KILLS[1]["team"].value
+        assert second.game_time == ROSHAN_KILLS[1]["game_time"]
 
     def test_first_tower_kill(self, combat_log):
         """First tower: Dire bot T1 at 11:15."""
@@ -346,10 +335,9 @@ class TestObjectiveControl:
         assert len(towers) >= 3
 
         first = towers[0]
-        assert "badguys_tower1_bot" in first.target_name
+        assert TOWER_KILLS[0]["target"] in first.target_name
         assert first.target_team == Team.DIRE.value
-        # 11:15 = 675 seconds
-        assert 670 < first.game_time < 680
+        assert first.game_time == TOWER_KILLS[0]["game_time"]
 
     def test_tower_kill_sequence(self, combat_log):
         """Verify tower kill order matches expected."""
@@ -385,7 +373,7 @@ class TestLaningPhaseComparison:
         tick_10min = index.game_started + (10 * 60 * 30)
         snapshot = parser.snapshot(target_tick=tick_10min)
 
-        troll = next((h for h in snapshot.heroes if "trollwarlord" in h.hero_name), None)
+        troll = next((h for h in snapshot.heroes if "troll_warlord" in h.hero_name), None)
         assert troll is not None
         assert troll.level == 6
         assert troll.team == Team.RADIANT.value
@@ -457,7 +445,7 @@ class TestHeroSnapshotEconomy:
         tick_15min = index.game_started + (15 * 60 * 30)
         snapshot = parser.snapshot(target_tick=tick_15min)
 
-        troll = next((h for h in snapshot.heroes if "trollwarlord" in h.hero_name), None)
+        troll = next((h for h in snapshot.heroes if "troll_warlord" in h.hero_name), None)
         assert troll is not None
 
         # Carry should have significant farm by 15 min

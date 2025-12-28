@@ -128,19 +128,40 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/bin/pip install --upgrade pip
-          wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
+          wheel_venv/bin/pip install pydantic
+          wheel_venv/bin/pip install --no-index --find-links=./dist python-manta
           wheel_venv/bin/python -c "from python_manta import Parser; print('wheel import ok')"
 
-      - name: Run pytest unit tests
+      - name: Cache replay files
+        uses: actions/cache@v4
+        with:
+          path: replays
+          key: replays-v1-${{ hashFiles('tests/replay_cache.py') }}
+          restore-keys: |
+            replays-v1-
+
+      - name: Download replays if not cached
+        run: |
+          mkdir -p replays
+          for match_id in 8447659831 8461956309; do
+            if [ ! -f "replays/${match_id}.dem" ]; then
+              echo "Downloading replay ${match_id}..."
+              curl -sL "https://storage.googleapis.com/dota-replays/${match_id}.dem" -o "replays/${match_id}.dem"
+            else
+              echo "Replay ${match_id} already cached"
+            fi
+          done
+          ls -lh replays/
+
+      - name: Run all tests
+        env:
+          DOTA_REPLAY_CACHE: ${{ github.workspace }}/replays
         run: |
           python -m venv test_venv
           test_venv/bin/pip install --upgrade pip
-          test_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
-          test_venv/bin/pip install pytest pytest-cov
-          cp -r tests/ test_venv/
-          cd test_venv
-          bin/python -m pytest tests/test_models.py tests/test_parser.py tests/test_convenience.py tests/test_edge_cases.py -m unit -v || echo "⚠️  Unit tests not marked or failed"
-          cd ..
+          test_venv/bin/pip install pydantic pytest pytest-cov
+          test_venv/bin/pip install --no-index --find-links=./dist python-manta
+          test_venv/bin/python -m pytest tests/python_manta/ -v --no-cov
 
       - name: Upload wheels artifact
         uses: actions/upload-artifact@v4
@@ -208,21 +229,44 @@ jobs:
           echo ""
           python -m venv wheel_venv
           wheel_venv/bin/python -m pip install --upgrade pip
+          wheel_venv/bin/pip install pydantic
           echo "=== Attempting install ==="
-          wheel_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta --verbose
+          wheel_venv/bin/pip install --no-index --find-links=./dist python-manta --verbose
           wheel_venv/bin/python -c "from python_manta import Parser; print('wheel import ok')"
 
-      - name: Run pytest unit tests
+      - name: Cache replay files
+        if: matrix.arch == 'arm64'
+        uses: actions/cache@v4
+        with:
+          path: replays
+          key: replays-v1-${{ hashFiles('tests/replay_cache.py') }}
+          restore-keys: |
+            replays-v1-
+
+      - name: Download replays if not cached
         if: matrix.arch == 'arm64'
         run: |
+          mkdir -p replays
+          for match_id in 8447659831 8461956309; do
+            if [ ! -f "replays/${match_id}.dem" ]; then
+              echo "Downloading replay ${match_id}..."
+              curl -sL "https://storage.googleapis.com/dota-replays/${match_id}.dem" -o "replays/${match_id}.dem"
+            else
+              echo "Replay ${match_id} already cached"
+            fi
+          done
+          ls -lh replays/
+
+      - name: Run all tests
+        if: matrix.arch == 'arm64'
+        env:
+          DOTA_REPLAY_CACHE: ${{ github.workspace }}/replays
+        run: |
           python -m venv test_venv
-          test_venv/bin/python -m pip install --upgrade pip
-          test_venv/bin/pip install --find-links=./dist --no-cache-dir python-manta
-          test_venv/bin/pip install pytest pytest-cov
-          cp -r tests/ test_venv/
-          cd test_venv
-          bin/python -m pytest tests/test_models.py tests/test_parser.py tests/test_convenience.py tests/test_edge_cases.py -m unit -v || echo "⚠️  Unit tests not marked or failed"
-          cd ..
+          test_venv/bin/pip install --upgrade pip
+          test_venv/bin/pip install pydantic pytest pytest-cov
+          test_venv/bin/pip install --no-index --find-links=./dist python-manta
+          test_venv/bin/python -m pytest tests/python_manta/ -v --no-cov
 
       - name: Upload wheels artifact
         uses: actions/upload-artifact@v4
@@ -271,20 +315,42 @@ jobs:
         run: |
           python -m venv wheel_venv
           wheel_venv/Scripts/python -m pip install --upgrade pip
-          wheel_venv/Scripts/pip install --find-links=./dist --no-cache-dir python-manta
+          wheel_venv/Scripts/pip install pydantic
+          wheel_venv/Scripts/pip install --no-index --find-links=./dist python-manta
           wheel_venv/Scripts/python -c "from python_manta import Parser; print('wheel import ok')"
 
-      - name: Run pytest unit tests
+      - name: Cache replay files
+        uses: actions/cache@v4
+        with:
+          path: replays
+          key: replays-v1-${{ hashFiles('tests/replay_cache.py') }}
+          restore-keys: |
+            replays-v1-
+
+      - name: Download replays if not cached
         shell: bash
+        run: |
+          mkdir -p replays
+          for match_id in 8447659831 8461956309; do
+            if [ ! -f "replays/${match_id}.dem" ]; then
+              echo "Downloading replay ${match_id}..."
+              curl -sL "https://storage.googleapis.com/dota-replays/${match_id}.dem" -o "replays/${match_id}.dem"
+            else
+              echo "Replay ${match_id} already cached"
+            fi
+          done
+          ls -lh replays/
+
+      - name: Run all tests
+        shell: bash
+        env:
+          DOTA_REPLAY_CACHE: ${{ github.workspace }}/replays
         run: |
           python -m venv test_venv
           test_venv/Scripts/python -m pip install --upgrade pip
-          test_venv/Scripts/pip install --find-links=./dist --no-cache-dir python-manta
-          test_venv/Scripts/pip install pytest pytest-cov
-          cp -r tests/ test_venv/
-          cd test_venv
-          Scripts/python -m pytest tests/test_models.py tests/test_parser.py tests/test_convenience.py tests/test_edge_cases.py -m unit -v || echo "⚠️  Unit tests not marked or failed"
-          cd ..
+          test_venv/Scripts/pip install pydantic pytest pytest-cov
+          test_venv/Scripts/pip install --no-index --find-links=./dist python-manta
+          test_venv/Scripts/python -m pytest tests/python_manta/ -v --no-cov
 
       - name: Upload wheels artifact
         uses: actions/upload-artifact@v4

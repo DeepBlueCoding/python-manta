@@ -5,7 +5,9 @@ Tests are run against TI 2025 Grand Finals Game 5 (Match ID: 8461956309).
 These tests verify the examples work and capture real output for documentation.
 Uses v2 Parser API exclusively.
 
-Run with: uv run pytest tests/integration/test_examples.py -v -s
+Run with: uv run pytest tests/scenarios/test_examples.py -v -s
+
+Note: Uses parser_secondary fixture from conftest.py.
 """
 import pytest
 
@@ -13,25 +15,17 @@ import pytest
 pytestmark = [pytest.mark.slow, pytest.mark.integration]
 from collections import defaultdict
 from python_manta import (
-    Parser, Hero, CombatLogType, RuneType,
+    Hero, CombatLogType, RuneType,
     NeutralItem, NeutralItemTier
 )
-
-# TI 2025 Grand Finals Game 5
-DEMO_PATH = "/home/juanma/projects/equilibrium_coach/.data/replays/8461956309.dem"
-
-
-@pytest.fixture(scope="module")
-def parser():
-    return Parser(DEMO_PATH)
 
 
 class TestMatchSummary:
     """Test Match Summary example."""
 
-    def test_header_info(self, parser):
+    def test_header_info(self, parser_secondary):
         """Verify header parsing returns expected data."""
-        result = parser.parse(header=True)
+        result = parser_secondary.parse(header=True)
         header = result.header
 
         assert result.success
@@ -44,9 +38,9 @@ class TestMatchSummary:
         print(f"Build: {header.build_num}")
         print(f"Server: {header.server_name}")
 
-    def test_game_info_draft(self, parser):
+    def test_game_info_draft(self, parser_secondary):
         """Verify draft picks with Hero enum."""
-        result = parser.parse(game_info=True)
+        result = parser_secondary.parse(game_info=True)
         game_info = result.game_info
 
         assert result.success
@@ -80,9 +74,9 @@ class TestKillTimeline:
     Use combat log DEATH type and filter for hero targets.
     """
 
-    def test_kill_events(self, parser):
+    def test_kill_events(self, parser_secondary):
         """Verify hero kills are captured via combat log deaths."""
-        result = parser.parse(
+        result = parser_secondary.parse(
             combat_log={"types": [CombatLogType.DEATH], "max_entries": 5000}
         )
 
@@ -104,9 +98,9 @@ class TestKillTimeline:
 class TestItemBuildTracker:
     """Test Item Build Tracker example."""
 
-    def test_item_purchases(self, parser):
+    def test_item_purchases(self, parser_secondary):
         """Verify item purchases are tracked."""
-        result = parser.parse(
+        result = parser_secondary.parse(
             combat_log={"types": [CombatLogType.PURCHASE], "max_entries": 2000}
         )
 
@@ -139,9 +133,9 @@ class TestItemBuildTracker:
 class TestDamageReport:
     """Test Damage Report example."""
 
-    def test_damage_dealt(self, parser):
+    def test_damage_dealt(self, parser_secondary):
         """Verify damage tracking."""
-        result = parser.parse(
+        result = parser_secondary.parse(
             combat_log={"types": [CombatLogType.DAMAGE], "heroes_only": True, "max_entries": 50000}
         )
 
@@ -161,9 +155,9 @@ class TestDamageReport:
 class TestChatLog:
     """Test Chat Log example."""
 
-    def test_chat_messages(self, parser):
+    def test_chat_messages(self, parser_secondary):
         """Verify chat messages are captured."""
-        result = parser.parse(
+        result = parser_secondary.parse(
             messages={"filter": "CDOTAUserMsg_ChatMessage", "max_messages": 1000}
         )
 
@@ -190,9 +184,9 @@ class TestChatLog:
 class TestRuneTracking:
     """Test Rune Tracking example."""
 
-    def test_rune_pickups(self, parser):
+    def test_rune_pickups(self, parser_secondary):
         """Verify rune pickups via modifier tracking."""
-        result = parser.parse(
+        result = parser_secondary.parse(
             combat_log={"types": [CombatLogType.MODIFIER_ADD], "heroes_only": True, "max_entries": 50000}
         )
 
@@ -211,9 +205,7 @@ class TestRuneTracking:
             hero = pickup.target_name.replace("npc_dota_hero_", "")
             rune = RuneType.from_modifier(pickup.inflictor_name)
             rune_name = rune.display_name if rune else pickup.inflictor_name
-            minutes = int(pickup.timestamp // 60)
-            seconds = int(pickup.timestamp % 60)
-            print(f"[{minutes:02d}:{seconds:02d}] {hero:<20} picked up {rune_name}")
+            print(f"[{pickup.game_time_str}] {hero:<20} picked up {rune_name}")
 
         # Summary by hero
         hero_runes = defaultdict(list)
@@ -231,9 +223,9 @@ class TestRuneTracking:
 class TestItemUsage:
     """Test Item Usage Tracker example."""
 
-    def test_item_activations(self, parser):
+    def test_item_activations(self, parser_secondary):
         """Verify item usage tracking."""
-        result = parser.parse(
+        result = parser_secondary.parse(
             combat_log={"types": [CombatLogType.ITEM], "heroes_only": True, "max_entries": 5000}
         )
 
@@ -258,9 +250,9 @@ class TestItemUsage:
 class TestTeamFightDetector:
     """Test Team Fight Detector example."""
 
-    def test_team_fights(self, parser):
+    def test_team_fights(self, parser_secondary):
         """Verify team fight detection via death clustering."""
-        result = parser.parse(
+        result = parser_secondary.parse(
             combat_log={"types": [CombatLogType.DEATH], "heroes_only": True, "max_entries": 500}
         )
 
@@ -300,9 +292,9 @@ class TestTeamFightDetector:
 class TestNeutralItems:
     """Test Neutral Item Tracker example."""
 
-    def test_neutral_item_drops(self, parser):
+    def test_neutral_item_drops(self, parser_secondary):
         """Verify neutral item tracking."""
-        result = parser.parse(
+        result = parser_secondary.parse(
             messages={"filter": "FoundNeutralItem", "max_messages": 100}
         )
 
@@ -332,9 +324,9 @@ class TestNeutralItems:
 class TestLotusOrbDetection:
     """Test Lotus Orb / Ability Trigger detection."""
 
-    def test_ability_triggers(self, parser):
+    def test_ability_triggers(self, parser_secondary):
         """Verify ability trigger tracking."""
-        result = parser.parse(
+        result = parser_secondary.parse(
             combat_log={"types": [CombatLogType.ABILITY_TRIGGER], "max_entries": 500}
         )
 
@@ -353,14 +345,14 @@ class TestLotusOrbDetection:
 class TestCompleteAnalysis:
     """Test Complete Analysis Pipeline example."""
 
-    def test_full_pipeline(self, parser):
+    def test_full_pipeline(self, parser_secondary):
         """Verify complete analysis pipeline."""
         print("\n" + "=" * 70)
         print("COMPREHENSIVE MATCH ANALYSIS")
         print("=" * 70)
 
         # 1. Basic Info + Parser Info + Game Info in single pass
-        result = parser.parse(
+        result = parser_secondary.parse(
             header=True,
             game_info=True,
             parser_info=True,
@@ -380,12 +372,12 @@ class TestCompleteAnalysis:
         print(f"    Bans: {len(bans)}")
 
         # 3. Kill Summary
-        kills_result = parser.parse(game_events={"event_filter": "dota_player_kill", "max_events": 500})
+        kills_result = parser_secondary.parse(game_events={"event_filter": "dota_player_kill", "max_events": 500})
         print(f"\n[3] Kills")
         print(f"    Total: {len(kills_result.game_events.events)}")
 
         # 4. Combat Log Stats
-        combat_result = parser.parse(combat_log={"heroes_only": True, "max_entries": 5000})
+        combat_result = parser_secondary.parse(combat_log={"heroes_only": True, "max_entries": 5000})
         damage_entries = [e for e in combat_result.combat_log.entries if e.type == 0]
         death_entries = [e for e in combat_result.combat_log.entries if e.type == 4]
 
@@ -394,12 +386,12 @@ class TestCompleteAnalysis:
         print(f"    Death events: {len(death_entries)}")
 
         # 5. Chat Activity
-        chat_result = parser.parse(messages={"filter": "CDOTAUserMsg_ChatMessage", "max_messages": 500})
+        chat_result = parser_secondary.parse(messages={"filter": "CDOTAUserMsg_ChatMessage", "max_messages": 500})
         print(f"\n[5] Communication")
         print(f"    Chat messages: {len(chat_result.messages.messages)}")
 
         # 6. Item Economy
-        items_result = parser.parse(combat_log={"types": [CombatLogType.PURCHASE], "max_entries": 2000})
+        items_result = parser_secondary.parse(combat_log={"types": [CombatLogType.PURCHASE], "max_entries": 2000})
         print(f"\n[6] Economy")
         print(f"    Item purchases: {items_result.combat_log.total_entries}")
 

@@ -71,9 +71,21 @@ type RangeParseResult struct {
 }
 
 //export BuildIndex
-func BuildIndex(filePath *C.char, intervalTicks C.int) *C.char {
+func BuildIndex(filePath *C.char, intervalTicks C.int) (cResult *C.char) {
 	path := C.GoString(filePath)
 	interval := int(intervalTicks)
+
+	// Recover from any panics in manta library
+	defer func() {
+		if r := recover(); r != nil {
+			result := &DemoIndex{
+				Success: false,
+				Error:   fmt.Sprintf("panic during parsing: %v", r),
+			}
+			jsonResult, _ := json.Marshal(result)
+			cResult = C.CString(string(jsonResult))
+		}
+	}()
 
 	if interval <= 0 {
 		interval = 1800 // Default: every 60 seconds (30 ticks/sec * 60)
@@ -108,9 +120,8 @@ func buildDemoIndex(filePath string, intervalTicks int) *DemoIndex {
 	}
 
 	lastKeyframeTick := -intervalTicks
-	var gameStartTick int
+	var gameStartTick uint32
 	var gameStartTime float32
-	const ticksPerSecond = 30.0
 
 	// Track game time and create keyframes
 	parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
@@ -125,7 +136,7 @@ func buildDemoIndex(filePath string, intervalTicks int) *DemoIndex {
 		if strings.Contains(className, "CDOTAGamerulesProxy") {
 			if gst, ok := e.GetFloat32("m_pGameRules.m_flGameStartTime"); ok && gst > 0 && gameStartTime == 0 {
 				gameStartTime = gst
-				gameStartTick = currentTick
+				gameStartTick = parser.Tick
 				index.GameStarted = currentTick
 			}
 		}
@@ -137,11 +148,8 @@ func buildDemoIndex(filePath string, intervalTicks int) *DemoIndex {
 
 		// Add keyframe if enough ticks have passed
 		if currentTick-lastKeyframeTick >= intervalTicks {
-			// Calculate game time based on ticks elapsed since game start
-			var gameTime float32
-			if gameStartTick > 0 && currentTick >= gameStartTick {
-				gameTime = float32(currentTick-gameStartTick) / ticksPerSecond
-			}
+			// Calculate game time using centralized conversion
+			gameTime := TickToGameTime(parser.Tick, gameStartTick)
 
 			index.Keyframes = append(index.Keyframes, Keyframe{
 				Tick:     currentTick,
@@ -168,9 +176,21 @@ func buildDemoIndex(filePath string, intervalTicks int) *DemoIndex {
 }
 
 //export GetSnapshot
-func GetSnapshot(filePath *C.char, configJSON *C.char) *C.char {
+func GetSnapshot(filePath *C.char, configJSON *C.char) (cResult *C.char) {
 	path := C.GoString(filePath)
 	configStr := C.GoString(configJSON)
+
+	// Recover from any panics in manta library
+	defer func() {
+		if r := recover(); r != nil {
+			result := &EntityStateSnapshot{
+				Success: false,
+				Error:   fmt.Sprintf("panic during parsing: %v", r),
+			}
+			jsonResult, _ := json.Marshal(result)
+			cResult = C.CString(string(jsonResult))
+		}
+	}()
 
 	var config SnapshotConfig
 	if err := json.Unmarshal([]byte(configStr), &config); err != nil {
@@ -210,10 +230,9 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 		Success: true,
 	}
 
-	var gameStartTick int
+	var gameStartTick uint32
 	var gameStartTime float32
 	reachedTarget := false
-	const ticksPerSecond = 30.0
 
 	// Track entities by their index (handle)
 	heroByIndex := make(map[uint32]*manta.Entity)
@@ -233,7 +252,7 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 		if strings.Contains(className, "CDOTAGamerulesProxy") {
 			if gst, ok := e.GetFloat32("m_pGameRules.m_flGameStartTime"); ok && gst > 0 && gameStartTime == 0 {
 				gameStartTime = gst
-				gameStartTick = currentTick
+				gameStartTick = parser.Tick
 			}
 		}
 
@@ -278,10 +297,8 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 			snapshot.Tick = currentTick
 			snapshot.NetTick = int(parser.NetTick)
 
-			// Calculate game time
-			if gameStartTick > 0 && currentTick >= gameStartTick {
-				snapshot.GameTime = float32(currentTick-gameStartTick) / ticksPerSecond
-			}
+			// Calculate game time using centralized conversion
+			snapshot.GameTime = TickToGameTime(parser.Tick, gameStartTick)
 
 			// Build set of main hero entity indices
 			mainHeroIndices := make(map[uint32]int) // entity index -> player index
@@ -374,9 +391,21 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 // Note: extractFullHeroSnapshot and extractAbilitiesForSnapshot are defined in entity_parser.go
 
 //export ParseRange
-func ParseRange(filePath *C.char, configJSON *C.char) *C.char {
+func ParseRange(filePath *C.char, configJSON *C.char) (cResult *C.char) {
 	path := C.GoString(filePath)
 	configStr := C.GoString(configJSON)
+
+	// Recover from any panics in manta library
+	defer func() {
+		if r := recover(); r != nil {
+			result := &RangeParseResult{
+				Success: false,
+				Error:   fmt.Sprintf("panic during parsing: %v", r),
+			}
+			jsonResult, _ := json.Marshal(result)
+			cResult = C.CString(string(jsonResult))
+		}
+	}()
 
 	var config RangeParseConfig
 	if err := json.Unmarshal([]byte(configStr), &config); err != nil {

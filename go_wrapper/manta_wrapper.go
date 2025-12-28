@@ -8,25 +8,42 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 	"unsafe"
 
 	"github.com/dotabuff/manta"
 	"github.com/dotabuff/manta/dota"
 )
 
+// gameBuildRegexp extracts game build from game_directory (e.g., 6559 from /dota_v6559/)
+var gameBuildRegexp = regexp.MustCompile(`/dota_v(\d+)/`)
+
+// extractGameBuild extracts the game build number from a game directory path
+func extractGameBuild(gameDir string) int32 {
+	matches := gameBuildRegexp.FindStringSubmatch(gameDir)
+	if len(matches) >= 2 {
+		if build, err := strconv.ParseInt(matches[1], 10, 32); err == nil {
+			return int32(build)
+		}
+	}
+	return 0
+}
+
 // HeaderInfo represents the basic demo file header information
 type HeaderInfo struct {
-	MapName        string `json:"map_name"`
-	ServerName     string `json:"server_name"`
-	ClientName     string `json:"client_name"`
-	GameDirectory  string `json:"game_directory"`
+	MapName         string `json:"map_name"`
+	ServerName      string `json:"server_name"`
+	ClientName      string `json:"client_name"`
+	GameDirectory   string `json:"game_directory"`
 	NetworkProtocol int32  `json:"network_protocol"`
-	DemoFileStamp  string `json:"demo_file_stamp"`
-	BuildNum       int32  `json:"build_num"`
-	Game           string `json:"game"`
+	DemoFileStamp   string `json:"demo_file_stamp"`
+	BuildNum        int32  `json:"build_num"`
+	GameBuild       int32  `json:"game_build"` // Extracted from game_directory (e.g., 6559 from /dota_v6559/)
+	Game            string `json:"game"`
 	ServerStartTick int32  `json:"server_start_tick"`
-	Success        bool   `json:"success"`
-	Error          string `json:"error,omitempty"`
+	Success         bool   `json:"success"`
+	Error           string `json:"error,omitempty"`
 }
 
 // CHeroSelectEvent represents a pick or ban event - matches Manta naming
@@ -77,12 +94,21 @@ type CDotaGameInfo struct {
 }
 
 //export ParseHeader
-func ParseHeader(filePath *C.char) *C.char {
+func ParseHeader(filePath *C.char) (result *C.char) {
 	goFilePath := C.GoString(filePath)
-	
+
 	header := &HeaderInfo{
 		Success: false,
 	}
+
+	// Recover from any panics in manta library
+	defer func() {
+		if r := recover(); r != nil {
+			header.Success = false
+			header.Error = fmt.Sprintf("panic during parsing: %v", r)
+			result = marshalAndReturn(header)
+		}
+	}()
 
 	// Open the file
 	file, err := os.Open(goFilePath)
@@ -109,11 +135,12 @@ func ParseHeader(filePath *C.char) *C.char {
 		header.NetworkProtocol = m.GetNetworkProtocol()
 		header.DemoFileStamp = m.GetDemoFileStamp()
 		header.BuildNum = m.GetBuildNum()
+		header.GameBuild = extractGameBuild(m.GetGameDirectory())
 		header.Game = m.GetGame()
 		header.ServerStartTick = m.GetServerStartTick()
 		header.Success = true
 		headerFound = true
-		
+
 		// Stop parsing after getting header
 		parser.Stop()
 		return nil
@@ -169,12 +196,21 @@ func marshalAndReturnGameInfo(gameInfo *CDotaGameInfo) *C.char {
 }
 
 //export ParseMatchInfo
-func ParseMatchInfo(filePath *C.char) *C.char {
+func ParseMatchInfo(filePath *C.char) (result *C.char) {
 	goFilePath := C.GoString(filePath)
 
 	gameInfo := &CDotaGameInfo{
 		Success: false,
 	}
+
+	// Recover from any panics in manta library
+	defer func() {
+		if r := recover(); r != nil {
+			gameInfo.Success = false
+			gameInfo.Error = fmt.Sprintf("panic during parsing: %v", r)
+			result = marshalAndReturnGameInfo(gameInfo)
+		}
+	}()
 
 	// Open the file
 	file, err := os.Open(goFilePath)

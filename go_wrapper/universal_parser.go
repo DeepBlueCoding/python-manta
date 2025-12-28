@@ -30,10 +30,22 @@ type MessageEvent struct {
 }
 
 //export ParseUniversal
-func ParseUniversal(filePath *C.char, messageFilter *C.char, maxMessages C.int) *C.char {
+func ParseUniversal(filePath *C.char, messageFilter *C.char, maxMessages C.int) (cResult *C.char) {
 	goFilePath := C.GoString(filePath)
 	filter := C.GoString(messageFilter)
 	maxMsgs := int(maxMessages)
+
+	// Recover from any panics in manta library
+	defer func() {
+		if r := recover(); r != nil {
+			failure := &UniversalParseResult{
+				Messages: make([]MessageEvent, 0),
+				Success:  false,
+				Error:    fmt.Sprintf("panic during parsing: %v", r),
+			}
+			cResult = marshalAndReturnUniversal(failure)
+		}
+	}()
 
 	result, err := RunUniversal(goFilePath, filter, maxMsgs)
 	if err != nil {

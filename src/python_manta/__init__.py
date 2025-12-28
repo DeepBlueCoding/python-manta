@@ -13,6 +13,12 @@ Usage:
 """
 
 from .manta_python import (
+    # Time utilities
+    TICKS_PER_SECOND,
+    format_game_time,
+    game_time_to_tick,
+    tick_to_game_time,
+    normalize_hero_name,
     # Main parser class
     Parser,
     # V2 config/result types
@@ -56,6 +62,7 @@ from .manta_python import (
     UniversalParseResult,
     # Entity state snapshots
     TeamState,
+    CreepSnapshot,
     EntitySnapshot,
     EntityParseConfig,
     EntityParseResult,
@@ -79,15 +86,33 @@ from .manta_python import (
     CombatLogEntry,
     CombatLogConfig,
     CombatLogResult,
+    # Attacks (from TE_Projectile)
+    AttackEvent,
+    AttacksConfig,
+    AttacksResult,
+    # Entity deaths (from entity lifecycle)
+    EntityDeath,
+    EntityDeathsConfig,
+    EntityDeathsResult,
+    # Respawn events (derived from combat log)
+    HeroRespawnEvent,
+    calculate_respawn_time,
+    derive_respawn_events,
     # Parser info
     ParserInfo,
 )
 
-__version__ = "1.4.5.2"
+__version__ = "1.4.7.0.dev1"
 __author__ = "Equilibrium Coach Team"
 __description__ = "Python interface for Manta Dota 2 replay parser"
 
 __all__ = [
+    # Time utilities
+    "TICKS_PER_SECOND",
+    "format_game_time",
+    "game_time_to_tick",
+    "tick_to_game_time",
+    "normalize_hero_name",
     # Main parser class
     "Parser",
     # V2 config/result types
@@ -131,6 +156,7 @@ __all__ = [
     "UniversalParseResult",
     # Entity state snapshots
     "TeamState",
+    "CreepSnapshot",
     "EntitySnapshot",
     "EntityParseConfig",
     "EntityParseResult",
@@ -154,6 +180,18 @@ __all__ = [
     "CombatLogEntry",
     "CombatLogConfig",
     "CombatLogResult",
+    # Attacks (from TE_Projectile)
+    "AttackEvent",
+    "AttacksConfig",
+    "AttacksResult",
+    # Entity deaths (from entity lifecycle)
+    "EntityDeath",
+    "EntityDeathsConfig",
+    "EntityDeathsResult",
+    # Respawn events (derived from combat log)
+    "HeroRespawnEvent",
+    "calculate_respawn_time",
+    "derive_respawn_events",
     # Parser info
     "ParserInfo",
 ]

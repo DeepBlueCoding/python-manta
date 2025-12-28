@@ -6,6 +6,59 @@
 
 ---
 
+## Utility Functions
+
+### Time Utilities
+
+| Function | Description |
+|----------|-------------|
+| `TICKS_PER_SECOND` | Constant: 30.0 ticks per second |
+| `format_game_time(seconds)` | Format game time as `"-0:40"` or `"3:07"` |
+| `game_time_to_tick(game_time, game_start_tick)` | Convert game time (seconds) to tick |
+| `tick_to_game_time(tick, game_start_tick)` | Convert tick to game time (seconds) |
+
+**Example:**
+```python
+from python_manta import format_game_time, TICKS_PER_SECOND
+
+# Format game time
+print(format_game_time(187))   # "3:07"
+print(format_game_time(-40))   # "-0:40"
+
+# Convert between ticks and game time
+game_start_tick = 27000
+tick = game_time_to_tick(300, game_start_tick)  # 5:00 -> tick 36000
+time = tick_to_game_time(36000, game_start_tick)  # tick 36000 -> 300.0
+```
+
+---
+
+### Hero Name Utilities
+
+| Function | Description |
+|----------|-------------|
+| `normalize_hero_name(name)` | Normalize hero names by replacing double underscores with single |
+
+Entity snapshots may use double underscores (`npc_dota_hero_shadow__demon`) while combat log uses single (`npc_dota_hero_shadow_demon`). This function ensures consistency for matching.
+
+**Example:**
+```python
+from python_manta import normalize_hero_name
+
+# Normalize hero names for consistent matching
+name = normalize_hero_name("npc_dota_hero_shadow__demon")
+print(name)  # "npc_dota_hero_shadow_demon"
+
+# Works with just the hero key too
+key = normalize_hero_name("shadow__demon")
+print(key)  # "shadow_demon"
+
+# No change if already normalized
+print(normalize_hero_name("shadow_demon"))  # "shadow_demon"
+```
+
+---
+
 ## Enums
 
 ### RuneType
@@ -799,7 +852,8 @@ class MessageEvent(BaseModel):
     tick: int                    # Game tick when message occurred
     net_tick: int                # Network tick
     data: Any                    # Message-specific data (dict)
-    timestamp: Optional[int]     # Unix timestamp in milliseconds
+    game_time: float             # Game time in seconds (negative before horn)
+    game_time_str: str           # Formatted game time (e.g., "-0:40", "5:32")
 ```
 
 **Example:**
@@ -897,7 +951,8 @@ class CombatLogEntry(BaseModel):
     is_visible_dire: bool         # Visible to Dire
     value: int                    # Damage/heal value
     health: int                   # Target health after
-    timestamp: float              # Game time in seconds
+    game_time: float              # Game time in seconds (negative before horn)
+    game_time_str: str            # Formatted game time (e.g., "-0:40", "5:32")
     stun_duration: float          # Stun duration if applicable
     slow_duration: float          # Slow duration if applicable
     is_ability_toggle_on: bool    # Ability toggled on
@@ -908,15 +963,100 @@ class CombatLogEntry(BaseModel):
     last_hits: int                # Last hits at time
     attacker_team: int            # Attacker team ID
     target_team: int              # Target team ID
+    attacker_hero_level: int      # Attacker's hero level (from entity state)
+    target_hero_level: int        # Target's hero level (from entity state)
+```
+
+!!! success "Hero Levels Now Available (v1.4.5.4+)"
+    `attacker_hero_level` and `target_hero_level` are now populated from entity state during parsing. 100% of hero deaths have `target_hero_level`, 94%+ have `attacker_hero_level`.
+
+**Example:**
+```python
+result = parser.parse(combat_log={"types": [4], "heroes_only": True, "max_entries": 100})
+
+for entry in result.combat_log.entries:
+    if entry.type == 4:  # DEATH
+        print(f"[{entry.game_time_str}] {entry.attacker_name} (lvl {entry.attacker_hero_level}) "
+              f"killed {entry.target_name} (lvl {entry.target_hero_level})")
+```
+
+---
+
+## Attack Models
+
+Attack models capture auto-attack projectiles from `TE_Projectile` messages. Unlike combat log which only records damage/kill events, attacks capture the actual attack action including tower attacks on creeps and neutral aggro.
+
+### AttacksResult
+
+Result container for attacks parsing.
+
+```python
+class AttacksResult(BaseModel):
+    events: List[AttackEvent] = []  # Attack events
+    total_events: int = 0           # Total events captured
+```
+
+### AttackEvent
+
+Single attack event (ranged projectile or melee hit).
+
+```python
+class AttackEvent(BaseModel):
+    # Timing
+    tick: int                        # Game tick when attack was registered
+    game_time: float = 0.0           # Game time in seconds
+    game_time_str: str = ""          # Formatted game time (e.g., "15:34")
+    launch_tick: int = 0             # Tick when projectile was launched (ranged only)
+
+    # Entity identification
+    source_index: int = 0            # Entity index of attacker
+    target_index: int = 0            # Entity index of target
+    source_handle: int = 0           # Raw entity handle (ranged only)
+    target_handle: int = 0           # Raw entity handle (ranged only)
+    attacker_name: str = ""          # Unit name (e.g., "npc_dota_hero_troll_warlord")
+    target_name: str = ""            # Target unit name
+
+    # Attack properties
+    is_melee: bool = False           # True if melee attack (from combat log)
+    projectile_speed: int = 0        # Projectile move speed (ranged only)
+    dodgeable: bool = False          # Can be disjointed (ranged only)
+    location_x: float = 0.0          # Attacker position X
+    location_y: float = 0.0          # Attacker position Y
+
+    # Melee-specific fields (from combat log DAMAGE events)
+    damage: int = 0                  # Damage dealt (melee only)
+    target_health: int = 0           # Target health AFTER attack (melee only)
+    attacker_team: int = 0           # Attacker team: 2=Radiant, 3=Dire (melee only)
+    target_team: int = 0             # Target team: 2=Radiant, 3=Dire (melee only)
+    is_attacker_hero: bool = False   # Attacker is a hero (melee only)
+    is_target_hero: bool = False     # Target is a hero (melee only)
 ```
 
 **Example:**
 ```python
-result = parser.parse_combat_log("match.dem", types=[0], heroes_only=True, max_entries=100)
+from python_manta import Parser
 
-for entry in result.entries:
-    if entry.type == 0:  # DAMAGE
-        print(f"[{entry.timestamp:.1f}s] {entry.attacker_name} hit {entry.target_name} for {entry.value}")
+parser = Parser("match.dem")
+result = parser.parse(attacks={})
+
+# Separate ranged and melee attacks
+ranged = [a for a in result.attacks.events if not a.is_melee]
+melee = [a for a in result.attacks.events if a.is_melee]
+print(f"Ranged: {len(ranged)}, Melee: {len(melee)}")
+
+# Hero vs hero melee combat (uses melee-specific fields)
+hero_fights = [
+    a for a in melee
+    if a.is_attacker_hero and a.is_target_hero
+]
+for a in hero_fights[:5]:
+    atk = a.attacker_name.replace("npc_dota_hero_", "")
+    tgt = a.target_name.replace("npc_dota_hero_", "")
+    print(f"[{a.game_time_str}] {atk} -> {tgt}: {a.damage} dmg, target HP: {a.target_health}")
+
+# Ranged projectile analysis
+fast_projectiles = [a for a in ranged if a.projectile_speed > 1000]
+print(f"Fast projectiles (>1000 speed): {len(fast_projectiles)}")
 ```
 
 ---

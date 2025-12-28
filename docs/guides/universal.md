@@ -167,7 +167,8 @@ Each `MessageEvent` contains:
 | `tick` | int | Game tick when message occurred |
 | `net_tick` | int | Network tick |
 | `data` | dict | Message-specific payload |
-| `timestamp` | int | Unix timestamp in milliseconds (if available) |
+| `game_time` | float | Game time in seconds (negative before horn) |
+| `game_time_str` | str | Formatted game time (e.g., "-0:40", "5:32") |
 
 The `data` dictionary structure varies by message type.
 
