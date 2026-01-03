@@ -107,6 +107,15 @@ type TalentChoice struct {
 	Name   string `json:"name"`
 }
 
+// ItemSnapshot captures an item's state in inventory
+type ItemSnapshot struct {
+	Slot        int     `json:"slot"`         // Inventory slot (0-5: main, 6-8: backpack, 9: TP, 10-15: stash, 16: neutral)
+	Name        string  `json:"name"`         // Item class name (e.g., "item_blink", "item_power_treads")
+	Charges     int     `json:"charges"`      // Current charges (for items like Magic Stick, Bottle)
+	Cooldown    float32 `json:"cooldown"`     // Remaining cooldown
+	MaxCooldown float32 `json:"max_cooldown"` // Max cooldown duration
+}
+
 // HeroSnapshot captures a hero's complete state (shared between entity_parser and index)
 type HeroSnapshot struct {
 	// Identity
@@ -159,6 +168,9 @@ type HeroSnapshot struct {
 	Abilities     []AbilitySnapshot `json:"abilities,omitempty"`
 	Talents       []TalentChoice    `json:"talents,omitempty"`
 	AbilityPoints int               `json:"ability_points"`
+
+	// Inventory (slots 0-5: main, 6-8: backpack, 9: TP, 10-15: stash, 16: neutral)
+	Inventory []ItemSnapshot `json:"inventory,omitempty"`
 
 	// Clone/illusion flags
 	IsClone    bool `json:"is_clone,omitempty"`

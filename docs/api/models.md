@@ -1200,6 +1200,38 @@ class TalentChoice(BaseModel):
     side: str                     # "left" or "right"
 ```
 
+### ItemSnapshot
+
+State of a single item in hero inventory at a specific tick.
+
+```python
+class ItemSnapshot(BaseModel):
+    slot: int = 0                 # Inventory slot (0-16)
+    name: str = ""                # Item class name (e.g., "item_blink")
+    charges: int = 0              # Current charges (wand, wards, etc.)
+    cooldown: float = 0.0         # Remaining cooldown
+    max_cooldown: float = 0.0     # Maximum cooldown length
+
+    # Properties
+    short_name: str               # Name without "item_" prefix (e.g., "blink")
+    is_main_inventory: bool       # True if slot 0-5
+    is_backpack: bool             # True if slot 6-8
+    is_tp_slot: bool              # True if slot 9
+    is_stash: bool                # True if slot 10-15
+    is_neutral_slot: bool         # True if slot 16
+    is_on_cooldown: bool          # True if cooldown > 0
+```
+
+**Inventory Slot Layout:**
+
+| Slot | Location |
+|------|----------|
+| 0-5 | Main Inventory |
+| 6-8 | Backpack |
+| 9 | TP Slot |
+| 10-15 | Stash |
+| 16 | Neutral Item |
+
 ### HeroSnapshot
 
 Hero state captured at a specific tick via `parser.snapshot()`.
@@ -1235,12 +1267,22 @@ class HeroSnapshot(BaseModel):
     abilities: List[AbilitySnapshot] = []  # All hero abilities with levels
     talents: List[TalentChoice] = []       # Chosen talents
     ability_points: int = 0                # Unspent ability points
+    # Inventory (slots 0-5: main, 6-8: backpack, 9: TP, 10-15: stash, 16: neutral)
+    inventory: List[ItemSnapshot] = []     # All items in inventory
 
     # Properties and methods
     has_ultimate: bool            # True if ultimate ability has been learned
     talents_chosen: int           # Number of talents selected (0-4)
     get_ability(name) -> Optional[AbilitySnapshot]  # Find ability by name (partial match)
     get_talent_at_tier(tier) -> Optional[TalentChoice]  # Get talent at tier (10/15/20/25)
+    # Inventory helpers
+    main_inventory: List[ItemSnapshot]    # Items in slots 0-5
+    backpack: List[ItemSnapshot]          # Items in slots 6-8
+    stash: List[ItemSnapshot]             # Items in slots 10-15
+    neutral_item: Optional[ItemSnapshot]  # Item in slot 16
+    tp_scroll: Optional[ItemSnapshot]     # Item in slot 9
+    get_item(name) -> Optional[ItemSnapshot]  # Find item by name (partial match)
+    has_item(name) -> bool                # Check if hero has item
 ```
 
 ### EntityStateSnapshot
@@ -1309,6 +1351,35 @@ for hero in snap.heroes:
     lvl20_talent = hero.get_talent_at_tier(20)
     if lvl20_talent:
         print(f"  Level 20 talent: {lvl20_talent.side}")
+```
+
+**Example - Inventory:**
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+snap = parser.snapshot(target_tick=60000)  # ~17 minutes
+
+for hero in snap.heroes:
+    print(f"{hero.hero_name}")
+
+    # Main inventory
+    for item in hero.main_inventory:
+        charges = f" x{item.charges}" if item.charges else ""
+        print(f"  [{item.slot}] {item.short_name}{charges}")
+
+    # Neutral item
+    if hero.neutral_item:
+        print(f"  Neutral: {hero.neutral_item.short_name}")
+
+    # Find specific item
+    bkb = hero.get_item("black_king_bar")
+    if bkb:
+        print(f"  Has BKB in slot {bkb.slot}")
+
+    # Check item presence
+    if hero.has_item("blink"):
+        print("  Has Blink Dagger!")
 ```
 
 ---

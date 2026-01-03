@@ -866,6 +866,7 @@ func extractFullHeroSnapshot(entity *manta.Entity, playerIdx int, heroID int, pa
 	// Extract abilities and talents
 	if parser != nil {
 		extractAbilitiesForSnapshot(entity, parser, &hero)
+		extractInventoryForSnapshot(entity, parser, &hero)
 	}
 
 	return hero
@@ -991,6 +992,57 @@ func sortInts(a []int) {
 				a[i], a[j] = a[j], a[i]
 			}
 		}
+	}
+}
+
+// extractInventoryForSnapshot extracts inventory items from a hero entity
+// Dota 2 inventory slots:
+//   - 0-5: Main inventory (6 slots)
+//   - 6-8: Backpack (3 slots)
+//   - 9: TP scroll slot
+//   - 10-15: Stash (6 slots)
+//   - 16: Neutral item slot
+func extractInventoryForSnapshot(entity *manta.Entity, parser *manta.Parser, hero *HeroSnapshot) {
+	hero.Inventory = make([]ItemSnapshot, 0)
+
+	// Check all possible item slots (0-16)
+	for slot := 0; slot <= 16; slot++ {
+		key := fmt.Sprintf("m_hItems.%04d", slot)
+		val := entity.Get(key)
+
+		handle, ok := val.(uint32)
+		if !ok || handle == 16777215 { // 16777215 = invalid/empty handle
+			continue
+		}
+
+		itemEntity := parser.FindEntityByHandle(uint64(handle))
+		if itemEntity == nil {
+			continue
+		}
+
+		itemClassName := itemEntity.GetClassName()
+		// Convert CDOTA_Item_blink -> item_blink
+		itemName := strings.TrimPrefix(itemClassName, "CDOTA_Item_")
+		if itemName != itemClassName {
+			itemName = "item_" + strings.ToLower(itemName)
+		} else {
+			// Fallback for non-standard item class names
+			itemName = strings.ToLower(itemClassName)
+		}
+
+		// Extract item properties
+		charges, _ := itemEntity.GetInt32("m_iCurrentCharges")
+		cooldown, _ := itemEntity.GetFloat32("m_fCooldown")
+		maxCooldown, _ := itemEntity.GetFloat32("m_flCooldownLength")
+
+		item := ItemSnapshot{
+			Slot:        slot,
+			Name:        itemName,
+			Charges:     int(charges),
+			Cooldown:    cooldown,
+			MaxCooldown: maxCooldown,
+		}
+		hero.Inventory = append(hero.Inventory, item)
 	}
 }
 

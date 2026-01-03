@@ -474,3 +474,344 @@ class TestHeroLevelInjection:
         assert pugna_death is not None
         assert pugna_death.target_hero_level == 3
         assert pugna_death.attacker_hero_level == 3
+
+
+class TestHeroInventory:
+    """Test hero inventory extraction from entity state.
+
+    Inventory slots:
+        - 0-5: Main inventory (6 slots)
+        - 6-8: Backpack (3 slots)
+        - 9: TP scroll slot
+        - 10-15: Stash (6 slots)
+        - 16: Neutral item slot
+
+    Real data from match 8447659831 (Team Spirit vs Tundra).
+    All values are exact from replay parsing.
+    """
+
+    def test_troll_warlord_inventory_tick_30000(self, snapshot_30k):
+        """Test Troll Warlord exact inventory at tick 30000 (game_time=11.87s).
+
+        Exact inventory: 6 items total.
+        """
+        snap = snapshot_30k
+        assert snap.game_time == pytest.approx(11.866667, abs=0.01)
+
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+        assert len(troll.inventory) == 6
+
+        # Exact items with slot, name, charges
+        expected = [
+            (0, "item_tango", 3),
+            (1, "item_magicstick", 1),
+            (3, "item_ironwoodbranch", 0),
+            (4, "item_ironwoodbranch", 0),
+            (5, "item_quellingblade", 0),
+            (15, "item_teleportscroll", 2),
+        ]
+        actual = [(i.slot, i.name, i.charges) for i in sorted(troll.inventory, key=lambda x: x.slot)]
+        assert actual == expected
+
+    def test_chen_inventory_tick_30000(self, snapshot_30k):
+        """Test Chen exact inventory at tick 30000.
+
+        Exact inventory: 7 items total.
+        """
+        snap = snapshot_30k
+        chen = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_chen")
+        assert len(chen.inventory) == 7
+
+        expected = [
+            (0, "item_tango", 3),
+            (1, "item_circlet", 0),
+            (2, "item_sentryward", 2),
+            (3, "item_ironwoodbranch", 0),
+            (4, "item_faerie_fire", 1),
+            (5, "item_blood_grenade", 1),
+            (15, "item_teleportscroll", 1),
+        ]
+        actual = [(i.slot, i.name, i.charges) for i in sorted(chen.inventory, key=lambda x: x.slot)]
+        assert actual == expected
+
+    def test_hoodwink_inventory_tick_30000(self, snapshot_30k):
+        """Test Hoodwink exact inventory at tick 30000.
+
+        Has backpack item in slot 6.
+        """
+        snap = snapshot_30k
+        hoodwink = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_hoodwink")
+        assert len(hoodwink.inventory) == 8
+
+        expected = [
+            (0, "item_tango", 3),
+            (1, "item_sentryward", 1),
+            (2, "item_faerie_fire", 1),
+            (3, "item_blood_grenade", 1),
+            (4, "item_magicstick", 1),
+            (5, "item_ironwoodbranch", 0),
+            (6, "item_ironwoodbranch", 0),  # Backpack
+            (15, "item_teleportscroll", 1),
+        ]
+        actual = [(i.slot, i.name, i.charges) for i in sorted(hoodwink.inventory, key=lambda x: x.slot)]
+        assert actual == expected
+
+    def test_shadow_shaman_inventory_tick_30000(self, snapshot_30k):
+        """Test Shadow Shaman exact inventory at tick 30000.
+
+        Has backpack item in slot 6.
+        """
+        snap = snapshot_30k
+        shaman = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_shadow_shaman")
+        assert len(shaman.inventory) == 7
+
+        expected = [
+            (0, "item_tango", 3),
+            (2, "item_magicstick", 3),
+            (3, "item_ironwoodbranch", 0),
+            (4, "item_ironwoodbranch", 0),
+            (5, "item_faerie_fire", 1),
+            (6, "item_sentryward", 1),  # Backpack
+            (15, "item_teleportscroll", 1),
+        ]
+        actual = [(i.slot, i.name, i.charges) for i in sorted(shaman.inventory, key=lambda x: x.slot)]
+        assert actual == expected
+
+    def test_troll_warlord_inventory_tick_60000(self, snapshot_60k):
+        """Test Troll Warlord exact inventory at tick 60000 (game_time=1011.87s).
+
+        Has neutral item, backpack item, and TP slot item.
+        """
+        snap = snapshot_60k
+        assert snap.game_time == pytest.approx(1011.866667, abs=0.01)
+
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+        assert len(troll.inventory) == 9
+
+        expected = [
+            (0, "item_circlet", 0),
+            (1, "item_phaseboots", 0),
+            (2, "item_magicstick", 5),
+            (3, "item_ogreaxe", 0),
+            (4, "item_yasha", 0),
+            (5, "item_battlefury", 0),
+            (6, "item_ironwoodbranch", 0),  # Backpack
+            (9, "item_beltofstrength", 0),  # TP slot
+            (16, "item_poormansshield", 0),  # Neutral
+        ]
+        actual = [(i.slot, i.name, i.charges) for i in sorted(troll.inventory, key=lambda x: x.slot)]
+        assert actual == expected
+
+    def test_chen_inventory_tick_60000(self, snapshot_60k):
+        """Test Chen exact inventory at tick 60000.
+
+        Magic wand with 20 charges.
+        """
+        snap = snapshot_60k
+        chen = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_chen")
+        assert len(chen.inventory) == 9
+
+        expected = [
+            (0, "item_sentryward", 1),
+            (1, "item_circlet", 0),
+            (2, "item_magicwand", 20),
+            (3, "item_ancient_janggo", 0),
+            (4, "item_ring_of_basilius", 0),
+            (5, "item_clarity", 2),
+            (6, "item_windlace", 0),  # Backpack
+            (15, "item_teleportscroll", 1),  # Stash
+            (16, "item_dormant_curio", 0),  # Neutral
+        ]
+        actual = [(i.slot, i.name, i.charges) for i in sorted(chen.inventory, key=lambda x: x.slot)]
+        assert actual == expected
+
+    def test_bristleback_inventory_tick_60000(self, snapshot_60k):
+        """Test Bristleback exact inventory at tick 60000.
+
+        Full main inventory, backpack items, neutral item.
+        """
+        snap = snapshot_60k
+        bristle = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_bristleback")
+        assert len(bristle.inventory) == 10
+
+        expected = [
+            (0, "item_powertreads", 0),
+            (1, "item_magicwand", 20),
+            (2, "item_blade_mail", 0),
+            (3, "item_nulltalisman", 0),
+            (4, "item_platemail", 0),
+            (5, "item_bracer", 0),
+            (6, "item_perseverance", 0),  # Backpack
+            (7, "item_recipe_lotus_orb", 0),  # Backpack
+            (15, "item_teleportscroll", 1),  # Stash
+            (16, "item_occult_bracelet", 0),  # Neutral
+        ]
+        actual = [(i.slot, i.name, i.charges) for i in sorted(bristle.inventory, key=lambda x: x.slot)]
+        assert actual == expected
+
+    def test_hoodwink_inventory_tick_60000(self, snapshot_60k):
+        """Test Hoodwink exact inventory at tick 60000.
+
+        Full backpack (slots 6, 7, 8).
+        """
+        snap = snapshot_60k
+        hoodwink = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_hoodwink")
+        assert len(hoodwink.inventory) == 10
+
+        expected = [
+            (0, "item_arcane_boots", 0),
+            (1, "item_ward_dispenser", 1),
+            (2, "item_flask", 1),
+            (4, "item_magicwand", 9),
+            (5, "item_infused_raindrop", 3),
+            (6, "item_smoke_of_deceit", 1),  # Backpack
+            (7, "item_famango", 1),  # Backpack
+            (8, "item_ward_dispenser", 1),  # Backpack
+            (15, "item_teleportscroll", 1),  # Stash
+            (16, "item_kobold_cup", 0),  # Neutral
+        ]
+        actual = [(i.slot, i.name, i.charges) for i in sorted(hoodwink.inventory, key=lambda x: x.slot)]
+        assert actual == expected
+
+    def test_pugna_inventory_tick_60000(self, snapshot_60k):
+        """Test Pugna exact inventory at tick 60000.
+
+        No stash items, neutral item present.
+        """
+        snap = snapshot_60k
+        pugna = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_pugna")
+        assert len(pugna.inventory) == 5
+
+        expected = [
+            (2, "item_arcane_boots", 0),
+            (3, "item_magicwand", 13),
+            (4, "item_sentryward", 2),
+            (5, "item_pavise", 0),
+            (16, "item_dormant_curio", 0),  # Neutral
+        ]
+        actual = [(i.slot, i.name, i.charges) for i in sorted(pugna.inventory, key=lambda x: x.slot)]
+        assert actual == expected
+
+    def test_all_heroes_neutral_items_tick_60000(self, snapshot_60k):
+        """Test exact neutral items for all 10 heroes at tick 60000."""
+        snap = snapshot_60k
+
+        expected_neutrals = {
+            "npc_dota_hero_troll_warlord": "item_poormansshield",
+            "npc_dota_hero_chen": "item_dormant_curio",
+            "npc_dota_hero_monkey_king": "item_spark_of_courage",
+            "npc_dota_hero_hoodwink": "item_kobold_cup",
+            "npc_dota_hero_bristleback": "item_occult_bracelet",
+            "npc_dota_hero_lycan": "item_ripperslash",
+            "npc_dota_hero_pugna": "item_dormant_curio",
+            "npc_dota_hero_faceless_void": "item_ripperslash",
+            "npc_dota_hero_storm_spirit": "item_dormant_curio",
+            "npc_dota_hero_shadow_shaman": "item_kobold_cup",
+        }
+
+        for hero in snap.heroes:
+            expected = expected_neutrals[hero.hero_name]
+            assert hero.neutral_item is not None, f"{hero.hero_name} should have neutral item"
+            assert hero.neutral_item.name == expected, \
+                f"{hero.hero_name}: expected {expected}, got {hero.neutral_item.name}"
+
+    def test_main_inventory_property(self, snapshot_60k):
+        """Test main_inventory property returns only slots 0-5."""
+        snap = snapshot_60k
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+
+        main = troll.main_inventory
+        assert len(main) == 6
+        assert [i.slot for i in main] == [0, 1, 2, 3, 4, 5]
+
+    def test_backpack_property(self, snapshot_60k):
+        """Test backpack property returns only slots 6-8."""
+        snap = snapshot_60k
+        hoodwink = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_hoodwink")
+
+        backpack = hoodwink.backpack
+        assert len(backpack) == 3
+        assert [i.slot for i in backpack] == [6, 7, 8]
+
+    def test_stash_property(self, snapshot_60k):
+        """Test stash property returns only slots 10-15."""
+        snap = snapshot_60k
+        chen = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_chen")
+
+        stash = chen.stash
+        assert len(stash) == 1
+        assert stash[0].slot == 15
+        assert stash[0].name == "item_teleportscroll"
+
+    def test_neutral_item_property(self, snapshot_60k):
+        """Test neutral_item property returns slot 16."""
+        snap = snapshot_60k
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+
+        neutral = troll.neutral_item
+        assert neutral is not None
+        assert neutral.slot == 16
+        assert neutral.name == "item_poormansshield"
+
+    def test_tp_scroll_property(self, snapshot_60k):
+        """Test tp_scroll property returns slot 9."""
+        snap = snapshot_60k
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+
+        tp = troll.tp_scroll
+        assert tp is not None
+        assert tp.slot == 9
+        assert tp.name == "item_beltofstrength"
+
+    def test_get_item_method(self, snapshot_60k):
+        """Test get_item returns correct item by partial name match."""
+        snap = snapshot_60k
+        bristle = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_bristleback")
+
+        treads = bristle.get_item("treads")
+        assert treads is not None
+        assert treads.name == "item_powertreads"
+        assert treads.slot == 0
+
+        wand = bristle.get_item("magicwand")
+        assert wand is not None
+        assert wand.charges == 20
+
+        assert bristle.get_item("radiance") is None
+
+    def test_has_item_method(self, snapshot_60k):
+        """Test has_item returns True/False correctly."""
+        snap = snapshot_60k
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+
+        assert troll.has_item("battlefury") is True
+        assert troll.has_item("phaseboots") is True
+        assert troll.has_item("radiance") is False
+
+    def test_item_short_name_property(self, snapshot_60k):
+        """Test ItemSnapshot.short_name removes item_ prefix."""
+        snap = snapshot_60k
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+
+        bf = troll.get_item("battlefury")
+        assert bf.name == "item_battlefury"
+        assert bf.short_name == "battlefury"
+
+    def test_item_slot_classification_properties(self, snapshot_60k):
+        """Test is_main_inventory, is_backpack, is_stash, is_neutral_slot properties."""
+        snap = snapshot_60k
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+
+        for item in troll.inventory:
+            if item.slot <= 5:
+                assert item.is_main_inventory is True
+                assert item.is_backpack is False
+            elif item.slot <= 8:
+                assert item.is_backpack is True
+                assert item.is_main_inventory is False
+            elif item.slot == 9:
+                assert item.is_tp_slot is True
+            elif item.slot <= 15:
+                assert item.is_stash is True
+            elif item.slot == 16:
+                assert item.is_neutral_slot is True

@@ -2145,6 +2145,60 @@ class TalentChoice(BaseModel):
         return "left" if self.is_left else "right"
 
 
+class ItemSnapshot(BaseModel):
+    """State of a single item in inventory at a specific tick.
+
+    Items are tracked from hero entity's m_hItems array. Dota 2 inventory slots:
+        - 0-5: Main inventory (6 slots)
+        - 6-8: Backpack (3 slots)
+        - 9: TP scroll slot
+        - 10-15: Stash (6 slots)
+        - 16: Neutral item slot
+    """
+    slot: int = 0
+    name: str = ""
+    charges: int = 0
+    cooldown: float = 0.0
+    max_cooldown: float = 0.0
+
+    @property
+    def short_name(self) -> str:
+        """Return item name without 'item_' prefix (e.g., 'blink' instead of 'item_blink')."""
+        if self.name.startswith("item_"):
+            return self.name[5:]
+        return self.name
+
+    @property
+    def is_main_inventory(self) -> bool:
+        """True if item is in main inventory (slots 0-5)."""
+        return 0 <= self.slot <= 5
+
+    @property
+    def is_backpack(self) -> bool:
+        """True if item is in backpack (slots 6-8)."""
+        return 6 <= self.slot <= 8
+
+    @property
+    def is_tp_slot(self) -> bool:
+        """True if item is in TP scroll slot (slot 9)."""
+        return self.slot == 9
+
+    @property
+    def is_stash(self) -> bool:
+        """True if item is in stash (slots 10-15)."""
+        return 10 <= self.slot <= 15
+
+    @property
+    def is_neutral_slot(self) -> bool:
+        """True if item is in neutral item slot (slot 16)."""
+        return self.slot == 16
+
+    @property
+    def is_on_cooldown(self) -> bool:
+        """True if item is currently on cooldown."""
+        return self.cooldown > 0
+
+
 class HeroSnapshot(BaseModel):
     """Complete hero state at a specific tick.
 
@@ -2203,6 +2257,9 @@ class HeroSnapshot(BaseModel):
     talents: List[TalentChoice] = []
     ability_points: int = 0
 
+    # Inventory (slots 0-5: main, 6-8: backpack, 9: TP, 10-15: stash, 16: neutral)
+    inventory: List[ItemSnapshot] = []
+
     # Clone/illusion flags
     is_illusion: bool = False
     is_clone: bool = False
@@ -2239,6 +2296,49 @@ class HeroSnapshot(BaseModel):
             if talent.tier == tier:
                 return talent
         return None
+
+    @property
+    def main_inventory(self) -> List[ItemSnapshot]:
+        """Get items in main inventory (slots 0-5)."""
+        return [item for item in self.inventory if item.is_main_inventory]
+
+    @property
+    def backpack(self) -> List[ItemSnapshot]:
+        """Get items in backpack (slots 6-8)."""
+        return [item for item in self.inventory if item.is_backpack]
+
+    @property
+    def stash(self) -> List[ItemSnapshot]:
+        """Get items in stash (slots 10-15)."""
+        return [item for item in self.inventory if item.is_stash]
+
+    @property
+    def neutral_item(self) -> Optional[ItemSnapshot]:
+        """Get the neutral item (slot 16), or None if empty."""
+        for item in self.inventory:
+            if item.is_neutral_slot:
+                return item
+        return None
+
+    @property
+    def tp_scroll(self) -> Optional[ItemSnapshot]:
+        """Get the TP scroll (slot 9), or None if empty."""
+        for item in self.inventory:
+            if item.is_tp_slot:
+                return item
+        return None
+
+    def get_item(self, name: str) -> Optional[ItemSnapshot]:
+        """Get item by name (partial match supported)."""
+        name_lower = name.lower()
+        for item in self.inventory:
+            if name_lower in item.name.lower():
+                return item
+        return None
+
+    def has_item(self, name: str) -> bool:
+        """Check if hero has an item by name (partial match supported)."""
+        return self.get_item(name) is not None
 
 
 class EntityStateSnapshot(BaseModel):

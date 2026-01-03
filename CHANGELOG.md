@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 with [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## [1.4.7.4.dev1] - 2026-01-03
+
+### Added
+- **HeroSnapshot inventory tracking**: Full hero inventory data in entity snapshots
+  - `inventory`: List of `ItemSnapshot` with all items across all slots
+  - Slot layout: 0-5 (main), 6-8 (backpack), 9 (TP), 10-15 (stash), 16 (neutral)
+  - Item properties: `name`, `charges`, `cooldown`, `max_cooldown`
+  - Helper properties: `short_name`, `is_main_inventory`, `is_backpack`, `is_tp_slot`, `is_stash`, `is_neutral_slot`
+- **HeroSnapshot inventory helpers**:
+  - `main_inventory`: Items in slots 0-5
+  - `backpack`: Items in slots 6-8
+  - `stash`: Items in slots 10-15
+  - `neutral_item`: Item in slot 16 (or None)
+  - `tp_scroll`: Item in slot 9 (or None)
+  - `get_item(name)`: Find item by name (partial match)
+  - `has_item(name)`: Check if hero has item
+- **ItemSnapshot model**: New model for item state tracking with slot, name, charges, and cooldown
+
 ## [1.4.7.3] - 2025-12-29
 
 ### Fixed

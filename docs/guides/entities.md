@@ -535,6 +535,7 @@ Each hero in a snapshot includes:
 | `intellect` | float | Intellect attribute |
 | `abilities` | list | List of `AbilitySnapshot` |
 | `talents` | list | List of `TalentChoice` |
+| `inventory` | list | List of `ItemSnapshot` |
 | `is_illusion` | bool | True if illusion |
 | `is_clone` | bool | True if clone (e.g., Meepo) |
 
@@ -675,6 +676,145 @@ for hero in snap.heroes:
             print(f"  {ability.short_name}: {ability.cooldown:.1f}s remaining")
         elif ability.level > 0:
             print(f"  {ability.short_name}: ready")
+```
+
+---
+
+## Hero Inventory
+
+The `parser.snapshot()` method returns hero state including full inventory data: main inventory, backpack, stash, TP slot, and neutral item.
+
+### Inventory Slot Layout
+
+| Slot | Location | Description |
+|------|----------|-------------|
+| 0-5 | Main Inventory | 6 primary item slots |
+| 6-8 | Backpack | 3 backpack slots |
+| 9 | TP Slot | Dedicated TP scroll slot |
+| 10-15 | Stash | 6 stash slots at base |
+| 16 | Neutral Item | Equipped neutral item |
+
+### Basic Inventory Tracking
+
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+snap = parser.snapshot(target_tick=60000)  # ~17 minutes
+
+for hero in snap.heroes:
+    print(f"{hero.hero_name}:")
+
+    # Main inventory
+    for item in hero.main_inventory:
+        charges = f" ({item.charges})" if item.charges > 0 else ""
+        print(f"  Slot {item.slot}: {item.short_name}{charges}")
+
+    # Neutral item
+    if hero.neutral_item:
+        print(f"  Neutral: {hero.neutral_item.short_name}")
+```
+
+### ItemSnapshot Properties
+
+Each `ItemSnapshot` includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `slot` | int | Inventory slot (0-16) |
+| `name` | str | Item class name (e.g., `item_blink`) |
+| `charges` | int | Current charges (wand, wards, etc.) |
+| `cooldown` | float | Remaining cooldown |
+| `max_cooldown` | float | Maximum cooldown length |
+
+**Helper Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `short_name` | str | Name without "item_" prefix |
+| `is_main_inventory` | bool | True if slot 0-5 |
+| `is_backpack` | bool | True if slot 6-8 |
+| `is_tp_slot` | bool | True if slot 9 |
+| `is_stash` | bool | True if slot 10-15 |
+| `is_neutral_slot` | bool | True if slot 16 |
+| `is_on_cooldown` | bool | True if cooldown > 0 |
+
+### HeroSnapshot Inventory Helpers
+
+```python
+snap = parser.snapshot(target_tick=60000)
+
+for hero in snap.heroes:
+    # Access inventory by location
+    main = hero.main_inventory      # List[ItemSnapshot] - slots 0-5
+    backpack = hero.backpack        # List[ItemSnapshot] - slots 6-8
+    stash = hero.stash              # List[ItemSnapshot] - slots 10-15
+    neutral = hero.neutral_item     # Optional[ItemSnapshot] - slot 16
+    tp = hero.tp_scroll             # Optional[ItemSnapshot] - slot 9
+
+    # Find items by name
+    bkb = hero.get_item("black_king_bar")
+    if bkb:
+        print(f"BKB in slot {bkb.slot}")
+
+    # Check if hero has item
+    if hero.has_item("blink"):
+        print("Has Blink Dagger!")
+```
+
+### Tracking Item Timings
+
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+
+# Check item progression
+for tick in [30000, 60000, 90000, 120000]:
+    snap = parser.snapshot(target_tick=tick)
+
+    for hero in snap.heroes:
+        if "troll_warlord" in hero.hero_name:
+            items = [item.short_name for item in hero.main_inventory]
+            print(f"Tick {tick}: {items}")
+```
+
+### Item Charges Tracking
+
+```python
+snap = parser.snapshot(target_tick=60000)
+
+for hero in snap.heroes:
+    wand = hero.get_item("magicwand")
+    if wand:
+        print(f"{hero.hero_name}: Magic Wand with {wand.charges} charges")
+```
+
+### Full Inventory Example
+
+```python
+snap = parser.snapshot(target_tick=60000)
+
+for hero in snap.heroes:
+    print(f"\n{hero.hero_name} Inventory:")
+    print("  Main:")
+    for item in hero.main_inventory:
+        charges = f" x{item.charges}" if item.charges else ""
+        print(f"    [{item.slot}] {item.short_name}{charges}")
+
+    if hero.backpack:
+        print("  Backpack:")
+        for item in hero.backpack:
+            print(f"    [{item.slot}] {item.short_name}")
+
+    if hero.neutral_item:
+        print(f"  Neutral: {hero.neutral_item.short_name}")
+
+    if hero.stash:
+        print("  Stash:")
+        for item in hero.stash:
+            charges = f" x{item.charges}" if item.charges else ""
+            print(f"    [{item.slot}] {item.short_name}{charges}")
 ```
 
 ---
