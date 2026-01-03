@@ -3931,12 +3931,15 @@
 <a id="__codelineno-50-7" name="__codelineno-50-7" href="#__codelineno-50-7"></a>
 <a id="__codelineno-50-8" name="__codelineno-50-8" href="#__codelineno-50-8"></a>    <span class="c1"># Properties</span>
 <a id="__codelineno-50-9" name="__codelineno-50-9" href="#__codelineno-50-9"></a>    <span class="n">short_name</span><span class="p">:</span> <span class="nb">str</span>               <span class="c1"># Name without &quot;item_&quot; prefix (e.g., &quot;blink&quot;)</span>
-<a id="__codelineno-50-10" name="__codelineno-50-10" href="#__codelineno-50-10"></a>    <span class="n">is_main_inventory</span><span class="p">:</span> <span class="nb">bool</span>       <span class="c1"># True if slot 0-5</span>
-<a id="__codelineno-50-11" name="__codelineno-50-11" href="#__codelineno-50-11"></a>    <span class="n">is_backpack</span><span class="p">:</span> <span class="nb">bool</span>             <span class="c1"># True if slot 6-8</span>
-<a id="__codelineno-50-12" name="__codelineno-50-12" href="#__codelineno-50-12"></a>    <span class="n">is_tp_slot</span><span class="p">:</span> <span class="nb">bool</span>              <span class="c1"># True if slot 9</span>
-<a id="__codelineno-50-13" name="__codelineno-50-13" href="#__codelineno-50-13"></a>    <span class="n">is_stash</span><span class="p">:</span> <span class="nb">bool</span>                <span class="c1"># True if slot 10-15</span>
-<a id="__codelineno-50-14" name="__codelineno-50-14" href="#__codelineno-50-14"></a>    <span class="n">is_neutral_slot</span><span class="p">:</span> <span class="nb">bool</span>         <span class="c1"># True if slot 16</span>
-<a id="__codelineno-50-15" name="__codelineno-50-15" href="#__codelineno-50-15"></a>    <span class="n">is_on_cooldown</span><span class="p">:</span> <span class="nb">bool</span>          <span class="c1"># True if cooldown &gt; 0</span>
+<a id="__codelineno-50-10" name="__codelineno-50-10" href="#__codelineno-50-10"></a>    <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>             <span class="c1"># Human-readable name (e.g., &quot;Battlefury&quot;, &quot;Poor Man&#39;s Shield&quot;)</span>
+<a id="__codelineno-50-11" name="__codelineno-50-11" href="#__codelineno-50-11"></a>    <span class="n">is_main_inventory</span><span class="p">:</span> <span class="nb">bool</span>       <span class="c1"># True if slot 0-5</span>
+<a id="__codelineno-50-12" name="__codelineno-50-12" href="#__codelineno-50-12"></a>    <span class="n">is_backpack</span><span class="p">:</span> <span class="nb">bool</span>             <span class="c1"># True if slot 6-8</span>
+<a id="__codelineno-50-13" name="__codelineno-50-13" href="#__codelineno-50-13"></a>    <span class="n">is_tp_slot</span><span class="p">:</span> <span class="nb">bool</span>              <span class="c1"># True if slot 9</span>
+<a id="__codelineno-50-14" name="__codelineno-50-14" href="#__codelineno-50-14"></a>    <span class="n">is_stash</span><span class="p">:</span> <span class="nb">bool</span>                <span class="c1"># True if slot 10-15</span>
+<a id="__codelineno-50-15" name="__codelineno-50-15" href="#__codelineno-50-15"></a>    <span class="n">is_neutral_slot</span><span class="p">:</span> <span class="nb">bool</span>         <span class="c1"># True if slot 16</span>
+<a id="__codelineno-50-16" name="__codelineno-50-16" href="#__codelineno-50-16"></a>    <span class="n">is_on_cooldown</span><span class="p">:</span> <span class="nb">bool</span>          <span class="c1"># True if cooldown &gt; 0</span>
+<a id="__codelineno-50-17" name="__codelineno-50-17" href="#__codelineno-50-17"></a>    <span class="n">is_neutral_item</span><span class="p">:</span> <span class="nb">bool</span>         <span class="c1"># True if item is a neutral item (any slot)</span>
+<a id="__codelineno-50-18" name="__codelineno-50-18" href="#__codelineno-50-18"></a>    <span class="n">neutral_item_enum</span><span class="p">:</span> <span class="n">NeutralItem</span> <span class="o">|</span> <span class="kc">None</span>  <span class="c1"># NeutralItem enum if applicable</span>
 </code></pre></div>
 <p><strong>Inventory Slot Layout:</strong></p>
 <table>
