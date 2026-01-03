@@ -2198,6 +2198,28 @@ class ItemSnapshot(BaseModel):
         """True if item is currently on cooldown."""
         return self.cooldown > 0
 
+    @property
+    def neutral_item_enum(self) -> Optional["NeutralItem"]:
+        """Get NeutralItem enum if this is a neutral item, None otherwise."""
+        return NeutralItem.from_item_name(self.name)
+
+    @property
+    def is_neutral_item(self) -> bool:
+        """True if this item is a neutral item (regardless of slot)."""
+        return self.neutral_item_enum is not None
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable item name.
+
+        For neutral items, returns the display name from NeutralItem enum.
+        For regular items, converts short_name to title case.
+        """
+        neutral = self.neutral_item_enum
+        if neutral:
+            return neutral.display_name
+        return self.short_name.replace("_", " ").title()
+
 
 class HeroSnapshot(BaseModel):
     """Complete hero state at a specific tick.

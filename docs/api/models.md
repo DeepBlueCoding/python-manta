@@ -1214,12 +1214,15 @@ class ItemSnapshot(BaseModel):
 
     # Properties
     short_name: str               # Name without "item_" prefix (e.g., "blink")
+    display_name: str             # Human-readable name (e.g., "Battlefury", "Poor Man's Shield")
     is_main_inventory: bool       # True if slot 0-5
     is_backpack: bool             # True if slot 6-8
     is_tp_slot: bool              # True if slot 9
     is_stash: bool                # True if slot 10-15
     is_neutral_slot: bool         # True if slot 16
     is_on_cooldown: bool          # True if cooldown > 0
+    is_neutral_item: bool         # True if item is a neutral item (any slot)
+    neutral_item_enum: NeutralItem | None  # NeutralItem enum if applicable
 ```
 
 **Inventory Slot Layout:**

@@ -815,3 +815,41 @@ class TestHeroInventory:
                 assert item.is_stash is True
             elif item.slot == 16:
                 assert item.is_neutral_slot is True
+
+    def test_neutral_item_enum_property(self, snapshot_60k):
+        """Test neutral_item_enum returns NeutralItem enum for neutral items."""
+        from python_manta import NeutralItem
+
+        snap = snapshot_60k
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+
+        # Troll has item_poormansshield in neutral slot
+        neutral = troll.neutral_item
+        assert neutral is not None
+        assert neutral.name == "item_poormansshield"
+        assert neutral.neutral_item_enum == NeutralItem.POOR_MANS_SHIELD
+        assert neutral.is_neutral_item is True
+
+        # Regular item should return None for neutral_item_enum
+        bf = troll.get_item("battlefury")
+        assert bf is not None
+        assert bf.neutral_item_enum is None
+        assert bf.is_neutral_item is False
+
+    def test_item_display_name_property(self, snapshot_60k):
+        """Test display_name returns human-readable names."""
+        snap = snapshot_60k
+
+        # Neutral item uses NeutralItem.display_name
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+        neutral = troll.neutral_item
+        assert neutral.display_name == "Poor Man's Shield"
+
+        # Regular item uses title case
+        bf = troll.get_item("battlefury")
+        assert bf.display_name == "Battlefury"
+
+        # Item with underscores
+        chen = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_chen")
+        janggo = chen.get_item("ancient_janggo")
+        assert janggo.display_name == "Ancient Janggo"

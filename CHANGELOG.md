@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 with [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
-## [1.4.7.4.dev1] - 2026-01-03
+## [1.4.7.4.dev2] - 2026-01-03
 
 ### Added
 - **HeroSnapshot inventory tracking**: Full hero inventory data in entity snapshots
@@ -23,6 +23,9 @@ with [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
   - `get_item(name)`: Find item by name (partial match)
   - `has_item(name)`: Check if hero has item
 - **ItemSnapshot model**: New model for item state tracking with slot, name, charges, and cooldown
+  - `display_name`: Human-readable name (uses `NeutralItem` enum for neutral items)
+  - `is_neutral_item`: True if item is a neutral item (regardless of slot)
+  - `neutral_item_enum`: Returns `NeutralItem` enum if applicable
 
 ## [1.4.7.3] - 2025-12-29
 
