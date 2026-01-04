@@ -823,7 +823,7 @@ class TestHeroInventory:
         snap = snapshot_60k
         troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
 
-        # Troll has item_poormansshield in neutral slot
+        # Troll has item_poormansshield in neutral slot (alias resolves to POOR_MANS_SHIELD)
         neutral = troll.neutral_item
         assert neutral is not None
         assert neutral.name == "item_poormansshield"
@@ -845,11 +845,187 @@ class TestHeroInventory:
         neutral = troll.neutral_item
         assert neutral.display_name == "Poor Man's Shield"
 
-        # Regular item uses title case
+        # Regular item uses Item enum
         bf = troll.get_item("battlefury")
-        assert bf.display_name == "Battlefury"
+        assert bf.display_name == "Battle Fury"
 
         # Item with underscores
         chen = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_chen")
         janggo = chen.get_item("ancient_janggo")
-        assert janggo.display_name == "Ancient Janggo"
+        assert janggo.display_name == "Drum of Endurance"
+
+    def test_item_enum_property(self, snapshot_60k):
+        """Test item_enum returns Item enum for purchasable items."""
+        from python_manta import Item
+
+        snap = snapshot_60k
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+
+        # Battle Fury should return Item enum (alias resolves to BATTLE_FURY)
+        bf = troll.get_item("battlefury")
+        assert bf is not None
+        assert bf.item_enum == Item.BATTLE_FURY
+        assert bf.is_purchasable_item is True
+
+        # Yasha should return Item enum
+        yasha = troll.get_item("yasha")
+        assert yasha is not None
+        assert yasha.item_enum == Item.YASHA
+        assert yasha.is_purchasable_item is True
+
+    def test_item_enum_display_name_uses_item_enum(self, snapshot_60k):
+        """Test display_name uses Item enum for proper display names."""
+        from python_manta import Item
+
+        snap = snapshot_60k
+
+        # Troll has battle fury
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+        bf = troll.get_item("battlefury")
+        assert bf.display_name == "Battle Fury"  # Uses Item enum
+
+        # Chen has Drum of Endurance (item_ancient_janggo)
+        chen = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_chen")
+        janggo = chen.get_item("ancient_janggo")
+        assert janggo.display_name == "Drum of Endurance"  # Uses Item enum
+
+        # Hoodwink has famango
+        hoodwink = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_hoodwink")
+        mango = hoodwink.get_item("famango")
+        assert mango is not None
+        assert mango.display_name == "Enchanted Mango"  # Uses Item enum
+
+    def test_item_enum_category(self, snapshot_60k):
+        """Test Item enum category property."""
+        from python_manta import Item
+
+        snap = snapshot_60k
+        troll = next(h for h in snap.heroes if h.hero_name == "npc_dota_hero_troll_warlord")
+
+        bf = troll.get_item("battlefury")
+        assert bf.item_enum.category == "weapon"
+
+        yasha = troll.get_item("yasha")
+        assert yasha.item_enum.category == "magical"
+
+
+class TestItemEnum:
+    """Test Item enum functionality."""
+
+    def test_from_item_name_blink(self):
+        """Test Item.from_item_name for Blink Dagger."""
+        from python_manta import Item
+
+        item = Item.from_item_name("item_blink")
+        assert item == Item.BLINK_DAGGER
+        assert item.display_name == "Blink Dagger"
+        assert item.category == "artifact"
+
+    def test_from_item_name_bkb(self):
+        """Test Item.from_item_name for Black King Bar."""
+        from python_manta import Item
+
+        item = Item.from_item_name("item_black_king_bar")
+        assert item == Item.BLACK_KING_BAR
+        assert item.display_name == "Black King Bar"
+        assert item.category == "armor"
+
+    def test_from_item_name_tango(self):
+        """Test Item.from_item_name for Tango."""
+        from python_manta import Item
+
+        item = Item.from_item_name("item_tango")
+        assert item == Item.TANGO
+        assert item.display_name == "Tango"
+        assert item.category == "consumable"
+
+    def test_from_item_name_famango(self):
+        """Test Item.from_item_name for Famango alias resolves to ENCHANTED_MANGO."""
+        from python_manta import Item
+
+        item = Item.from_item_name("item_famango")
+        assert item == Item.ENCHANTED_MANGO
+        assert item.display_name == "Enchanted Mango"
+        assert item.category == "consumable"
+
+    def test_from_item_name_euls(self):
+        """Test Item.from_item_name for Eul's Scepter."""
+        from python_manta import Item
+
+        item = Item.from_item_name("item_cyclone")
+        assert item == Item.EULS_SCEPTER
+        assert item.display_name == "Eul's Scepter of Divinity"
+        assert item.category == "magical"
+
+    def test_from_item_name_drum(self):
+        """Test Item.from_item_name for Drum of Endurance."""
+        from python_manta import Item
+
+        item = Item.from_item_name("item_ancient_janggo")
+        assert item == Item.DRUM_OF_ENDURANCE
+        assert item.display_name == "Drum of Endurance"
+        assert item.category == "support"
+
+    def test_from_item_name_unknown(self):
+        """Test Item.from_item_name returns None for unknown items."""
+        from python_manta import Item
+
+        item = Item.from_item_name("item_unknown_item_xyz")
+        assert item is None
+
+    def test_is_purchasable_item(self):
+        """Test Item.is_purchasable_item classmethod."""
+        from python_manta import Item
+
+        assert Item.is_purchasable_item("item_blink") is True
+        assert Item.is_purchasable_item("item_tango") is True
+        assert Item.is_purchasable_item("item_battlefury") is True  # Alt name
+        assert Item.is_purchasable_item("item_bfury") is True
+        assert Item.is_purchasable_item("item_unknown") is False
+
+    def test_items_by_category_consumable(self):
+        """Test Item.items_by_category for consumables."""
+        from python_manta import Item
+
+        consumables = Item.items_by_category("consumable")
+        assert len(consumables) > 0
+        assert Item.TANGO in consumables
+        assert Item.CLARITY in consumables
+        assert Item.SMOKE_OF_DECEIT in consumables
+        assert Item.BLINK_DAGGER not in consumables
+
+    def test_items_by_category_weapon(self):
+        """Test Item.items_by_category for weapons."""
+        from python_manta import Item
+
+        weapons = Item.items_by_category("weapon")
+        assert len(weapons) > 0
+        assert Item.BATTLE_FURY in weapons
+        assert Item.DAEDALUS in weapons
+        assert Item.BUTTERFLY in weapons
+        assert Item.TANGO not in weapons
+
+    def test_all_item_names(self):
+        """Test Item.all_item_names returns all item names."""
+        from python_manta import Item
+
+        names = Item.all_item_names()
+        assert len(names) > 100  # Should have many items
+        assert "item_blink" in names
+        assert "item_tango" in names
+        assert "item_black_king_bar" in names
+
+
+class TestItemCategory:
+    """Test ItemCategory enum."""
+
+    def test_item_category_values(self):
+        """Test ItemCategory enum has expected values."""
+        from python_manta import ItemCategory
+
+        assert ItemCategory.CONSUMABLE.value == "consumable"
+        assert ItemCategory.WEAPON.value == "weapon"
+        assert ItemCategory.ARMOR.value == "armor"
+        assert ItemCategory.ARTIFACT.value == "artifact"
+        assert ItemCategory.MAGICAL.value == "magical"
+        assert ItemCategory.SUPPORT.value == "support"

@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 with [PEP 440](https://peps.python.org/pep-0440/) version identifiers.
 
+## [1.4.7.4.dev4] - 2026-01-04
+
+### Added
+- **Hero.from_hero_name()**: Lookup hero by internal name with alias resolution
+  - Handles prefixed names like `npc_dota_hero_nevermore`
+  - Resolves aliases: `nevermore` → `SHADOW_FIEND`, `zuus` → `ZEUS`, etc.
+- **EntityType.display_name**: Human-readable entity type names
+
+### Changed
+- **Enum design philosophy**: All enums now follow canonical-only pattern
+  - No `_ALT` suffix variants anywhere
+  - Aliases resolve to canonical enum members via `_*_ALIASES` dicts
+  - `from_*_name()` methods handle alias resolution transparently
+  - Updated CLAUDE.md to document this philosophy
+
+## [1.4.7.4.dev3] - 2026-01-03
+
+### Added
+- **Item enum**: Comprehensive enum for all ~200 purchasable Dota 2 items
+  - `Item.from_item_name(name)`: Get Item enum from internal name
+  - `Item.is_purchasable_item(name)`: Check if name is a known item
+  - `Item.items_by_category(category)`: Get all items in a category
+  - `Item.display_name`: Human-readable item name
+  - `Item.category`: Item category (consumable, weapon, armor, etc.)
+- **ItemCategory enum**: Item category classification
+  - Categories: consumable, attribute, equipment, secret_shop, support, magical, armor, weapon, artifact, accessory
+- **ItemSnapshot enhancements**:
+  - `item_enum`: Returns `Item` enum for purchasable items
+  - `is_purchasable_item`: True if item is a purchasable shop item
+  - `display_name` now uses `Item` enum for proper display names (e.g., "Enchanted Mango" instead of "Famango")
+
 ## [1.4.7.4.dev2] - 2026-01-03
 
 ### Added

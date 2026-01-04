@@ -28,6 +28,34 @@ Python Manta is a **low-level data extraction library**, not an analytics tool.
 
 When adding new features, ask: "Is this raw data access or analysis?" Only raw data access belongs here.
 
+### Enum Design Philosophy
+
+**Return canonical enum types by default. Let consuming tools convert to display text.**
+
+All enums follow this pattern:
+1. **Canonical members only** - No `_ALT` or duplicate members
+2. **Alias resolution** - Internal names resolve to canonical enums via `_*_ALIASES` dicts
+3. **`from_*_name()` methods** - Handle alias resolution transparently
+4. **`display_name` property** - Human-readable text for display
+
+```python
+# ✅ CORRECT - Aliases resolve to canonical enum
+Item.from_item_name("item_famango")  # Returns Item.ENCHANTED_MANGO
+Hero.from_hero_name("npc_dota_hero_nevermore")  # Returns Hero.SHADOW_FIEND
+NeutralItem.from_item_name("item_poormansshield")  # Returns NeutralItem.POOR_MANS_SHIELD
+
+# ✅ CORRECT - Use .display_name for text output
+hero = Hero.SHADOW_FIEND
+print(hero.display_name)  # "Shadow Fiend"
+
+# ❌ WRONG - Never create separate enum members for aliases
+class Item(str, Enum):
+    FAMANGO = "item_famango"  # BAD - should resolve to ENCHANTED_MANGO
+    ENCHANTED_MANGO_ALT = "item_famango"  # BAD - no ALT variants
+```
+
+**Alias dictionaries** (e.g., `_HERO_ALIASES`, `_ITEM_ALIASES`, `_NEUTRAL_ITEM_ALIASES`) map internal replay names to canonical enum member names. The `from_*_name()` methods use these to resolve aliases before lookup.
+
 ## Architecture
 
 ```

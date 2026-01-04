@@ -235,6 +235,11 @@ class EntityType(str, Enum):
         """True if this is a building or ward."""
         return self in (EntityType.BUILDING, EntityType.WARD)
 
+    @property
+    def display_name(self) -> str:
+        """Human-readable entity type name."""
+        return self.name.replace("_", " ").title()
+
 
 class CombatLogType(int, Enum):
     """Dota 2 combat log event types.
@@ -557,6 +562,23 @@ class NeutralCampType(int, Enum):
         return cls.SMALL
 
 
+# Hero name aliases - maps internal replay names to canonical enum member names
+_HERO_ALIASES: Dict[str, str] = {
+    "nevermore": "shadow_fiend",
+    "zuus": "zeus",
+    "furion": "natures_prophet",
+    "wisp": "io",
+    "skeleton_king": "wraith_king",
+    "obsidian_destroyer": "outworld_destroyer",
+    "rattletrap": "clockwerk",
+    "shredder": "timbersaw",
+    "windrunner": "windranger",
+    "necrolyte": "necrophos",
+    "magnataur": "magnus",
+    "abyssal_underlord": "underlord",
+}
+
+
 class Hero(int, Enum):
     """Dota 2 hero IDs."""
     ANTI_MAGE = 1
@@ -695,10 +717,686 @@ class Hero(int, Enum):
                 return hero
         return None
 
+    @classmethod
+    def from_hero_name(cls, hero_name: str) -> Optional["Hero"]:
+        """Get Hero from internal hero name (handles aliases).
+
+        Args:
+            hero_name: Internal name like "npc_dota_hero_nevermore" or "nevermore"
+
+        Returns:
+            Hero enum or None if not found
+        """
+        if not hero_name:
+            return None
+        # Strip prefix if present
+        name = hero_name.lower()
+        if name.startswith("npc_dota_hero_"):
+            name = name[14:]  # len("npc_dota_hero_")
+        # Resolve alias to canonical name
+        canonical = _HERO_ALIASES.get(name, name)
+        # Find matching enum member
+        for hero in cls:
+            if hero.name.lower() == canonical:
+                return hero
+        return None
+
     @property
     def display_name(self) -> str:
         """Human-readable hero name."""
         return self.name.replace("_", " ").title()
+
+
+# Category constants for item classification
+class ItemCategory(str, Enum):
+    """Item category classification."""
+    CONSUMABLE = "consumable"
+    ATTRIBUTE = "attribute"
+    EQUIPMENT = "equipment"
+    SECRET_SHOP = "secret_shop"
+    SUPPORT = "support"
+    MAGICAL = "magical"
+    ARMOR = "armor"
+    WEAPON = "weapon"
+    ARTIFACT = "artifact"
+    ACCESSORY = "accessory"
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable category name."""
+        return self.name.replace("_", " ").title()
+
+
+# All purchasable items with their category and display name
+_ITEMS_DATA: Dict[str, Tuple[str, str]] = {
+    # === CONSUMABLES ===
+    "item_clarity": ("consumable", "Clarity"),
+    "item_tango": ("consumable", "Tango"),
+    "item_tango_single": ("consumable", "Tango (Shared)"),
+    "item_flask": ("consumable", "Healing Salve"),
+    "item_faerie_fire": ("consumable", "Faerie Fire"),
+    "item_enchanted_mango": ("consumable", "Enchanted Mango"),
+    "item_famango": ("consumable", "Enchanted Mango"),  # Alt name in replays
+    "item_blood_grenade": ("consumable", "Blood Grenade"),
+    "item_smoke_of_deceit": ("consumable", "Smoke of Deceit"),
+    "item_ward_observer": ("consumable", "Observer Ward"),
+    "item_ward_sentry": ("consumable", "Sentry Ward"),
+    "item_dust": ("consumable", "Dust of Appearance"),
+    "item_tome_of_knowledge": ("consumable", "Tome of Knowledge"),
+    "item_aghanims_shard": ("consumable", "Aghanim's Shard"),
+    "item_cheese": ("consumable", "Cheese"),
+    "item_refresher_shard": ("consumable", "Refresher Shard"),
+    "item_roshan_banner": ("consumable", "Roshan Banner"),
+    "item_gem": ("consumable", "Gem of True Sight"),
+    "item_courier": ("consumable", "Animal Courier"),
+    "item_flying_courier": ("consumable", "Flying Courier"),
+    "item_bottle": ("consumable", "Bottle"),
+    "item_ward_dispenser": ("consumable", "Observer and Sentry Wards"),
+
+    # === ATTRIBUTES ===
+    "item_branches": ("attribute", "Iron Branch"),
+    "item_ironwoodbranch": ("attribute", "Iron Branch"),  # Alt name
+    "item_gauntlets": ("attribute", "Gauntlets of Strength"),
+    "item_slippers": ("attribute", "Slippers of Agility"),
+    "item_mantle": ("attribute", "Mantle of Intelligence"),
+    "item_circlet": ("attribute", "Circlet"),
+    "item_belt_of_strength": ("attribute", "Belt of Strength"),
+    "item_boots_of_elves": ("attribute", "Band of Elvenskin"),
+    "item_robe": ("attribute", "Robe of the Magi"),
+    "item_ogre_axe": ("attribute", "Ogre Axe"),
+    "item_blade_of_alacrity": ("attribute", "Blade of Alacrity"),
+    "item_staff_of_wizardry": ("attribute", "Staff of Wizardry"),
+    "item_crown": ("attribute", "Crown"),
+    "item_diadem": ("attribute", "Diadem"),
+    "item_tiara_of_selemene": ("attribute", "Tiara of Selemene"),
+
+    # === EQUIPMENT ===
+    "item_quelling_blade": ("equipment", "Quelling Blade"),
+    "item_quellingblade": ("equipment", "Quelling Blade"),  # Alt name
+    "item_blight_stone": ("equipment", "Blight Stone"),
+    "item_orb_of_venom": ("equipment", "Orb of Venom"),
+    "item_orb_of_corrosion": ("equipment", "Orb of Corrosion"),
+    "item_ring_of_protection": ("equipment", "Ring of Protection"),
+    "item_stout_shield": ("equipment", "Stout Shield"),
+    "item_blades_of_attack": ("equipment", "Blades of Attack"),
+    "item_chainmail": ("equipment", "Chainmail"),
+    "item_quarterstaff": ("equipment", "Quarterstaff"),
+    "item_helm_of_iron_will": ("equipment", "Helm of Iron Will"),
+    "item_javelin": ("equipment", "Javelin"),
+    "item_broadsword": ("equipment", "Broadsword"),
+    "item_claymore": ("equipment", "Claymore"),
+    "item_mithril_hammer": ("equipment", "Mithril Hammer"),
+
+    # === BOOTS ===
+    "item_boots": ("equipment", "Boots of Speed"),
+    "item_power_treads": ("equipment", "Power Treads"),
+    "item_phase_boots": ("equipment", "Phase Boots"),
+    "item_arcane_boots": ("equipment", "Arcane Boots"),
+    "item_tranquil_boots": ("equipment", "Tranquil Boots"),
+    "item_guardian_greaves": ("equipment", "Guardian Greaves"),
+    "item_travel_boots": ("equipment", "Boots of Travel"),
+    "item_travel_boots_2": ("equipment", "Boots of Travel 2"),
+
+    # === SECRET SHOP ===
+    "item_ring_of_health": ("secret_shop", "Ring of Health"),
+    "item_void_stone": ("secret_shop", "Void Stone"),
+    "item_energy_booster": ("secret_shop", "Energy Booster"),
+    "item_vitality_booster": ("secret_shop", "Vitality Booster"),
+    "item_point_booster": ("secret_shop", "Point Booster"),
+    "item_platemail": ("secret_shop", "Platemail"),
+    "item_talisman_of_evasion": ("secret_shop", "Talisman of Evasion"),
+    "item_ultimate_orb": ("secret_shop", "Ultimate Orb"),
+    "item_hyperstone": ("secret_shop", "Hyperstone"),
+    "item_demon_edge": ("secret_shop", "Demon Edge"),
+    "item_mystic_staff": ("secret_shop", "Mystic Staff"),
+    "item_reaver": ("secret_shop", "Reaver"),
+    "item_eaglesong": ("secret_shop", "Eaglesong"),
+    "item_relic": ("secret_shop", "Sacred Relic"),
+    "item_cornucopia": ("secret_shop", "Cornucopia"),
+    "item_blitz_knuckles": ("secret_shop", "Blitz Knuckles"),
+
+    # === MAGICAL ===
+    "item_magic_stick": ("magical", "Magic Stick"),
+    "item_magicstick": ("magical", "Magic Stick"),  # Alt name
+    "item_magic_wand": ("magical", "Magic Wand"),
+    "item_null_talisman": ("magical", "Null Talisman"),
+    "item_wraith_band": ("magical", "Wraith Band"),
+    "item_bracer": ("magical", "Bracer"),
+    "item_soul_ring": ("magical", "Soul Ring"),
+    "item_ring_of_basilius": ("magical", "Ring of Basilius"),
+    "item_headdress": ("magical", "Headdress"),
+    "item_buckler": ("magical", "Buckler"),
+    "item_urn_of_shadows": ("magical", "Urn of Shadows"),
+    "item_spirit_vessel": ("magical", "Spirit Vessel"),
+    "item_medallion_of_courage": ("magical", "Medallion of Courage"),
+    "item_solar_crest": ("magical", "Solar Crest"),
+    "item_ring_of_tarrasque": ("magical", "Ring of Tarrasque"),
+    "item_infused_raindrop": ("magical", "Infused Raindrop"),
+    "item_wind_lace": ("magical", "Wind Lace"),
+    "item_cloak": ("magical", "Cloak"),
+    "item_glimmer_cape": ("magical", "Glimmer Cape"),
+    "item_ghost": ("magical", "Ghost Scepter"),
+    "item_ethereal_blade": ("magical", "Ethereal Blade"),
+    "item_veil_of_discord": ("magical", "Veil of Discord"),
+    "item_aether_lens": ("magical", "Aether Lens"),
+    "item_octarine_core": ("magical", "Octarine Core"),
+    "item_rod_of_atos": ("magical", "Rod of Atos"),
+    "item_gungir": ("magical", "Gleipnir"),
+    "item_cyclone": ("magical", "Eul's Scepter of Divinity"),
+    "item_wind_waker": ("magical", "Wind Waker"),
+    "item_force_staff": ("magical", "Force Staff"),
+    "item_hurricane_pike": ("magical", "Hurricane Pike"),
+    "item_dagon": ("magical", "Dagon"),
+    "item_dagon_2": ("magical", "Dagon 2"),
+    "item_dagon_3": ("magical", "Dagon 3"),
+    "item_dagon_4": ("magical", "Dagon 4"),
+    "item_dagon_5": ("magical", "Dagon 5"),
+    "item_necronomicon": ("magical", "Necronomicon"),
+    "item_necronomicon_2": ("magical", "Necronomicon 2"),
+    "item_necronomicon_3": ("magical", "Necronomicon 3"),
+    "item_ultimate_scepter": ("magical", "Aghanim's Scepter"),
+    "item_ultimate_scepter_2": ("magical", "Aghanim's Blessing"),
+    "item_refresher": ("magical", "Refresher Orb"),
+    "item_sheepstick": ("magical", "Scythe of Vyse"),
+    "item_kaya": ("magical", "Kaya"),
+    "item_yasha": ("magical", "Yasha"),
+    "item_sange": ("magical", "Sange"),
+    "item_kaya_and_sange": ("magical", "Kaya and Sange"),
+    "item_yasha_and_kaya": ("magical", "Yasha and Kaya"),
+    "item_sange_and_yasha": ("magical", "Sange and Yasha"),
+    "item_phylactery": ("magical", "Phylactery"),
+    "item_mage_slayer": ("magical", "Mage Slayer"),
+    "item_witch_blade": ("magical", "Witch Blade"),
+    "item_parasma": ("magical", "Parasma"),
+
+    # === SUPPORT ===
+    "item_mekansm": ("support", "Mekansm"),
+    "item_pipe": ("support", "Pipe of Insight"),
+    "item_holy_locket": ("support", "Holy Locket"),
+    "item_vladmir": ("support", "Vladmir's Offering"),
+    "item_crimson_guard": ("support", "Crimson Guard"),
+    "item_lotus_orb": ("support", "Lotus Orb"),
+    "item_solar_crest": ("support", "Solar Crest"),
+    "item_ancient_janggo": ("support", "Drum of Endurance"),
+    "item_boots_of_bearing": ("support", "Boots of Bearing"),
+    "item_pavise": ("support", "Pavise"),
+    "item_vanguard": ("support", "Vanguard"),
+    "item_ring_of_regen": ("support", "Ring of Regen"),
+    "item_sobi_mask": ("support", "Sage's Mask"),
+
+    # === ARMOR ===
+    "item_blade_mail": ("armor", "Blade Mail"),
+    "item_assault": ("armor", "Assault Cuirass"),
+    "item_shivas_guard": ("armor", "Shiva's Guard"),
+    "item_heart": ("armor", "Heart of Tarrasque"),
+    "item_eternal_shroud": ("armor", "Eternal Shroud"),
+    "item_hood_of_defiance": ("armor", "Hood of Defiance"),
+    "item_aeon_disk": ("armor", "Aeon Disk"),
+    "item_sphere": ("armor", "Linken's Sphere"),
+    "item_manta": ("armor", "Manta Style"),
+    "item_black_king_bar": ("armor", "Black King Bar"),
+    "item_platemail": ("armor", "Platemail"),
+    "item_heavens_halberd": ("armor", "Heaven's Halberd"),
+    "item_harpoon": ("armor", "Harpoon"),
+    "item_lotus_orb": ("armor", "Lotus Orb"),
+
+    # === WEAPONS ===
+    "item_bfury": ("weapon", "Battle Fury"),
+    "item_battlefury": ("weapon", "Battle Fury"),  # Alt name in replays
+    "item_mask_of_madness": ("weapon", "Mask of Madness"),
+    "item_moon_shard": ("weapon", "Moon Shard"),
+    "item_greater_crit": ("weapon", "Daedalus"),
+    "item_lesser_crit": ("weapon", "Crystalys"),
+    "item_maelstrom": ("weapon", "Maelstrom"),
+    "item_mjollnir": ("weapon", "Mjollnir"),
+    "item_desolator": ("weapon", "Desolator"),
+    "item_desolator_2": ("weapon", "Stygian Desolator"),
+    "item_monkey_king_bar": ("weapon", "Monkey King Bar"),
+    "item_diffusal_blade": ("weapon", "Diffusal Blade"),
+    "item_basher": ("weapon", "Skull Basher"),
+    "item_abyssal_blade": ("weapon", "Abyssal Blade"),
+    "item_butterfly": ("weapon", "Butterfly"),
+    "item_rapier": ("weapon", "Divine Rapier"),
+    "item_radiance": ("weapon", "Radiance"),
+    "item_armlet": ("weapon", "Armlet of Mordiggian"),
+    "item_echo_sabre": ("weapon", "Echo Sabre"),
+    "item_silver_edge": ("weapon", "Silver Edge"),
+    "item_invis_sword": ("weapon", "Shadow Blade"),
+    "item_nullifier": ("weapon", "Nullifier"),
+    "item_bloodthorn": ("weapon", "Bloodthorn"),
+    "item_orchid": ("weapon", "Orchid Malevolence"),
+    "item_meteor_hammer": ("weapon", "Meteor Hammer"),
+    "item_dragon_lance": ("weapon", "Dragon Lance"),
+    "item_falcon_blade": ("weapon", "Falcon Blade"),
+    "item_oblivion_staff": ("weapon", "Oblivion Staff"),
+    "item_perseverance": ("weapon", "Perseverance"),
+    "item_hand_of_midas": ("weapon", "Hand of Midas"),
+    "item_aghs_shard": ("weapon", "Aghanim's Shard"),
+
+    # === ARTIFACTS ===
+    "item_blink": ("artifact", "Blink Dagger"),
+    "item_overwhelming_blink": ("artifact", "Overwhelming Blink"),
+    "item_swift_blink": ("artifact", "Swift Blink"),
+    "item_arcane_blink": ("artifact", "Arcane Blink"),
+    "item_satanic": ("artifact", "Satanic"),
+    "item_skadi": ("artifact", "Eye of Skadi"),
+    "item_disperser": ("artifact", "Disperser"),
+    "item_bloodstone": ("artifact", "Bloodstone"),
+    "item_khanda": ("artifact", "Khanda"),
+    "item_angels_demise": ("artifact", "Revenant's Brooch"),
+    "item_revenants_brooch": ("artifact", "Revenant's Brooch"),
+    "item_devastator": ("artifact", "Devastator"),
+    "item_samurai_tabi": ("artifact", "Samurai Tabi"),
+
+    # === ACCESSORIES ===
+    "item_teleportscroll": ("accessory", "Town Portal Scroll"),
+    "item_tpscroll": ("accessory", "Town Portal Scroll"),  # Alt name
+    "item_lifesteal": ("accessory", "Morbid Mask"),
+    "item_mask_of_death": ("accessory", "Morbid Mask"),  # Alt name
+    "item_helm_of_the_dominator": ("accessory", "Helm of the Dominator"),
+    "item_helm_of_the_overlord": ("accessory", "Helm of the Overlord"),
+    "item_soul_booster": ("accessory", "Soul Booster"),
+    "item_voodoo_mask": ("accessory", "Voodoo Mask"),
+    "item_fluffy_hat": ("accessory", "Fluffy Hat"),
+
+    # === RECIPES ===
+    "item_recipe_magic_wand": ("recipe", "Magic Wand Recipe"),
+    "item_recipe_null_talisman": ("recipe", "Null Talisman Recipe"),
+    "item_recipe_wraith_band": ("recipe", "Wraith Band Recipe"),
+    "item_recipe_bracer": ("recipe", "Bracer Recipe"),
+    "item_recipe_soul_ring": ("recipe", "Soul Ring Recipe"),
+    "item_recipe_phase_boots": ("recipe", "Phase Boots Recipe"),
+    "item_recipe_power_treads": ("recipe", "Power Treads Recipe"),
+    "item_recipe_hand_of_midas": ("recipe", "Hand of Midas Recipe"),
+    "item_recipe_mekansm": ("recipe", "Mekansm Recipe"),
+    "item_recipe_vladmir": ("recipe", "Vladmir's Offering Recipe"),
+    "item_recipe_buckler": ("recipe", "Buckler Recipe"),
+    "item_recipe_ring_of_basilius": ("recipe", "Ring of Basilius Recipe"),
+    "item_recipe_pipe": ("recipe", "Pipe of Insight Recipe"),
+    "item_recipe_urn_of_shadows": ("recipe", "Urn of Shadows Recipe"),
+    "item_recipe_headdress": ("recipe", "Headdress Recipe"),
+    "item_recipe_sheepstick": ("recipe", "Scythe of Vyse Recipe"),
+    "item_recipe_orchid": ("recipe", "Orchid Malevolence Recipe"),
+    "item_recipe_cyclone": ("recipe", "Eul's Scepter Recipe"),
+    "item_recipe_force_staff": ("recipe", "Force Staff Recipe"),
+    "item_recipe_dagon": ("recipe", "Dagon Recipe"),
+    "item_recipe_dagon_2": ("recipe", "Dagon 2 Recipe"),
+    "item_recipe_dagon_3": ("recipe", "Dagon 3 Recipe"),
+    "item_recipe_dagon_4": ("recipe", "Dagon 4 Recipe"),
+    "item_recipe_dagon_5": ("recipe", "Dagon 5 Recipe"),
+    "item_recipe_necronomicon": ("recipe", "Necronomicon Recipe"),
+    "item_recipe_necronomicon_2": ("recipe", "Necronomicon 2 Recipe"),
+    "item_recipe_necronomicon_3": ("recipe", "Necronomicon 3 Recipe"),
+    "item_recipe_ultimate_scepter": ("recipe", "Aghanim's Scepter Recipe"),
+    "item_recipe_refresher": ("recipe", "Refresher Orb Recipe"),
+    "item_recipe_assault": ("recipe", "Assault Cuirass Recipe"),
+    "item_recipe_heart": ("recipe", "Heart of Tarrasque Recipe"),
+    "item_recipe_black_king_bar": ("recipe", "Black King Bar Recipe"),
+    "item_recipe_shivas_guard": ("recipe", "Shiva's Guard Recipe"),
+    "item_recipe_bloodstone": ("recipe", "Bloodstone Recipe"),
+    "item_recipe_sphere": ("recipe", "Linken's Sphere Recipe"),
+    "item_recipe_vanguard": ("recipe", "Vanguard Recipe"),
+    "item_recipe_crimson_guard": ("recipe", "Crimson Guard Recipe"),
+    "item_recipe_blade_mail": ("recipe", "Blade Mail Recipe"),
+    "item_recipe_hood_of_defiance": ("recipe", "Hood of Defiance Recipe"),
+    "item_recipe_manta": ("recipe", "Manta Style Recipe"),
+    "item_recipe_diffusal_blade": ("recipe", "Diffusal Blade Recipe"),
+    "item_recipe_basher": ("recipe", "Skull Basher Recipe"),
+    "item_recipe_bfury": ("recipe", "Battle Fury Recipe"),
+    "item_recipe_butterfly": ("recipe", "Butterfly Recipe"),
+    "item_recipe_greater_crit": ("recipe", "Daedalus Recipe"),
+    "item_recipe_armlet": ("recipe", "Armlet Recipe"),
+    "item_recipe_invis_sword": ("recipe", "Shadow Blade Recipe"),
+    "item_recipe_silver_edge": ("recipe", "Silver Edge Recipe"),
+    "item_recipe_desolator": ("recipe", "Desolator Recipe"),
+    "item_recipe_mask_of_madness": ("recipe", "Mask of Madness Recipe"),
+    "item_recipe_satanic": ("recipe", "Satanic Recipe"),
+    "item_recipe_mjollnir": ("recipe", "Mjollnir Recipe"),
+    "item_recipe_maelstrom": ("recipe", "Maelstrom Recipe"),
+    "item_recipe_skadi": ("recipe", "Eye of Skadi Recipe"),
+    "item_recipe_sange": ("recipe", "Sange Recipe"),
+    "item_recipe_yasha": ("recipe", "Yasha Recipe"),
+    "item_recipe_kaya": ("recipe", "Kaya Recipe"),
+    "item_recipe_radiance": ("recipe", "Radiance Recipe"),
+    "item_recipe_travel_boots": ("recipe", "Boots of Travel Recipe"),
+    "item_recipe_travel_boots_2": ("recipe", "Boots of Travel 2 Recipe"),
+    "item_recipe_ancient_janggo": ("recipe", "Drum of Endurance Recipe"),
+    "item_recipe_medallion_of_courage": ("recipe", "Medallion of Courage Recipe"),
+    "item_recipe_solar_crest": ("recipe", "Solar Crest Recipe"),
+    "item_recipe_glimmer_cape": ("recipe", "Glimmer Cape Recipe"),
+    "item_recipe_aether_lens": ("recipe", "Aether Lens Recipe"),
+    "item_recipe_octarine_core": ("recipe", "Octarine Core Recipe"),
+    "item_recipe_dragon_lance": ("recipe", "Dragon Lance Recipe"),
+    "item_recipe_echo_sabre": ("recipe", "Echo Sabre Recipe"),
+    "item_recipe_lotus_orb": ("recipe", "Lotus Orb Recipe"),
+    "item_recipe_meteor_hammer": ("recipe", "Meteor Hammer Recipe"),
+    "item_recipe_nullifier": ("recipe", "Nullifier Recipe"),
+    "item_recipe_aeon_disk": ("recipe", "Aeon Disk Recipe"),
+    "item_recipe_spirit_vessel": ("recipe", "Spirit Vessel Recipe"),
+    "item_recipe_holy_locket": ("recipe", "Holy Locket Recipe"),
+    "item_recipe_guardian_greaves": ("recipe", "Guardian Greaves Recipe"),
+    "item_recipe_rod_of_atos": ("recipe", "Rod of Atos Recipe"),
+    "item_recipe_abyssal_blade": ("recipe", "Abyssal Blade Recipe"),
+    "item_recipe_bloodthorn": ("recipe", "Bloodthorn Recipe"),
+    "item_recipe_hurricane_pike": ("recipe", "Hurricane Pike Recipe"),
+    "item_recipe_monkey_king_bar": ("recipe", "Monkey King Bar Recipe"),
+    "item_recipe_helm_of_the_dominator": ("recipe", "Helm of the Dominator Recipe"),
+    "item_recipe_helm_of_the_overlord": ("recipe", "Helm of the Overlord Recipe"),
+    "item_recipe_tranquil_boots": ("recipe", "Tranquil Boots Recipe"),
+    "item_recipe_ethereal_blade": ("recipe", "Ethereal Blade Recipe"),
+    "item_recipe_veil_of_discord": ("recipe", "Veil of Discord Recipe"),
+    "item_recipe_boots_of_bearing": ("recipe", "Boots of Bearing Recipe"),
+    "item_recipe_wind_waker": ("recipe", "Wind Waker Recipe"),
+    "item_recipe_eternal_shroud": ("recipe", "Eternal Shroud Recipe"),
+    "item_recipe_gungir": ("recipe", "Gleipnir Recipe"),
+    "item_recipe_overwhelming_blink": ("recipe", "Overwhelming Blink Recipe"),
+    "item_recipe_swift_blink": ("recipe", "Swift Blink Recipe"),
+    "item_recipe_arcane_blink": ("recipe", "Arcane Blink Recipe"),
+    "item_recipe_witch_blade": ("recipe", "Witch Blade Recipe"),
+    "item_recipe_falcon_blade": ("recipe", "Falcon Blade Recipe"),
+    "item_recipe_orb_of_corrosion": ("recipe", "Orb of Corrosion Recipe"),
+    "item_recipe_mage_slayer": ("recipe", "Mage Slayer Recipe"),
+    "item_recipe_harpoon": ("recipe", "Harpoon Recipe"),
+    "item_recipe_pavise": ("recipe", "Pavise Recipe"),
+    "item_recipe_phylactery": ("recipe", "Phylactery Recipe"),
+    "item_recipe_disperser": ("recipe", "Disperser Recipe"),
+    "item_recipe_heavens_halberd": ("recipe", "Heaven's Halberd Recipe"),
+    "item_recipe_khanda": ("recipe", "Khanda Recipe"),
+    "item_recipe_parasma": ("recipe", "Parasma Recipe"),
+}
+
+# Alias mapping: alternate internal names -> canonical names
+_ITEM_ALIASES: Dict[str, str] = {
+    "item_famango": "item_enchanted_mango",
+    "item_ironwoodbranch": "item_branches",
+    "item_quellingblade": "item_quelling_blade",
+    "item_magicstick": "item_magic_stick",
+    "item_tpscroll": "item_teleportscroll",
+    "item_mask_of_death": "item_lifesteal",
+    "item_battlefury": "item_bfury",
+    "item_angels_demise": "item_revenants_brooch",
+}
+
+
+class Item(str, Enum):
+    """All Dota 2 purchasable items.
+
+    Usage:
+        # Get item from internal name
+        item = Item.from_item_name("item_blink")
+        print(f"Item: {item.display_name}")  # "Blink Dagger"
+
+        # Check if an item name is a known purchasable item
+        if Item.is_purchasable_item("item_butterfly"):
+            item = Item.from_item_name("item_butterfly")
+            print(f"Category: {item.category}")  # "weapon"
+
+        # Get all items in a category
+        weapons = Item.items_by_category("weapon")
+    """
+    # === CONSUMABLES ===
+    CLARITY = "item_clarity"
+    TANGO = "item_tango"
+    TANGO_SINGLE = "item_tango_single"
+    HEALING_SALVE = "item_flask"
+    FAERIE_FIRE = "item_faerie_fire"
+    ENCHANTED_MANGO = "item_enchanted_mango"
+    BLOOD_GRENADE = "item_blood_grenade"
+    SMOKE_OF_DECEIT = "item_smoke_of_deceit"
+    OBSERVER_WARD = "item_ward_observer"
+    SENTRY_WARD = "item_ward_sentry"
+    DUST = "item_dust"
+    TOME_OF_KNOWLEDGE = "item_tome_of_knowledge"
+    AGHANIMS_SHARD = "item_aghanims_shard"
+    CHEESE = "item_cheese"
+    REFRESHER_SHARD = "item_refresher_shard"
+    ROSHAN_BANNER = "item_roshan_banner"
+    GEM = "item_gem"
+    COURIER = "item_courier"
+    FLYING_COURIER = "item_flying_courier"
+    BOTTLE = "item_bottle"
+    WARD_DISPENSER = "item_ward_dispenser"
+
+    # === ATTRIBUTES ===
+    IRON_BRANCH = "item_branches"
+    GAUNTLETS = "item_gauntlets"
+    SLIPPERS = "item_slippers"
+    MANTLE = "item_mantle"
+    CIRCLET = "item_circlet"
+    BELT_OF_STRENGTH = "item_belt_of_strength"
+    BAND_OF_ELVENSKIN = "item_boots_of_elves"
+    ROBE_OF_THE_MAGI = "item_robe"
+    OGRE_AXE = "item_ogre_axe"
+    BLADE_OF_ALACRITY = "item_blade_of_alacrity"
+    STAFF_OF_WIZARDRY = "item_staff_of_wizardry"
+    CROWN = "item_crown"
+    DIADEM = "item_diadem"
+    TIARA_OF_SELEMENE = "item_tiara_of_selemene"
+
+    # === EQUIPMENT ===
+    QUELLING_BLADE = "item_quelling_blade"
+    BLIGHT_STONE = "item_blight_stone"
+    ORB_OF_VENOM = "item_orb_of_venom"
+    ORB_OF_CORROSION = "item_orb_of_corrosion"
+    RING_OF_PROTECTION = "item_ring_of_protection"
+    STOUT_SHIELD = "item_stout_shield"
+    BLADES_OF_ATTACK = "item_blades_of_attack"
+    CHAINMAIL = "item_chainmail"
+    QUARTERSTAFF = "item_quarterstaff"
+    HELM_OF_IRON_WILL = "item_helm_of_iron_will"
+    JAVELIN = "item_javelin"
+    BROADSWORD = "item_broadsword"
+    CLAYMORE = "item_claymore"
+    MITHRIL_HAMMER = "item_mithril_hammer"
+
+    # === BOOTS ===
+    BOOTS = "item_boots"
+    POWER_TREADS = "item_power_treads"
+    PHASE_BOOTS = "item_phase_boots"
+    ARCANE_BOOTS = "item_arcane_boots"
+    TRANQUIL_BOOTS = "item_tranquil_boots"
+    GUARDIAN_GREAVES = "item_guardian_greaves"
+    BOOTS_OF_TRAVEL = "item_travel_boots"
+    BOOTS_OF_TRAVEL_2 = "item_travel_boots_2"
+
+    # === SECRET SHOP ===
+    RING_OF_HEALTH = "item_ring_of_health"
+    VOID_STONE = "item_void_stone"
+    ENERGY_BOOSTER = "item_energy_booster"
+    VITALITY_BOOSTER = "item_vitality_booster"
+    POINT_BOOSTER = "item_point_booster"
+    PLATEMAIL = "item_platemail"
+    TALISMAN_OF_EVASION = "item_talisman_of_evasion"
+    ULTIMATE_ORB = "item_ultimate_orb"
+    HYPERSTONE = "item_hyperstone"
+    DEMON_EDGE = "item_demon_edge"
+    MYSTIC_STAFF = "item_mystic_staff"
+    REAVER = "item_reaver"
+    EAGLESONG = "item_eaglesong"
+    SACRED_RELIC = "item_relic"
+    CORNUCOPIA = "item_cornucopia"
+    BLITZ_KNUCKLES = "item_blitz_knuckles"
+
+    # === MAGICAL ===
+    MAGIC_STICK = "item_magic_stick"
+    MAGIC_WAND = "item_magic_wand"
+    NULL_TALISMAN = "item_null_talisman"
+    WRAITH_BAND = "item_wraith_band"
+    BRACER = "item_bracer"
+    SOUL_RING = "item_soul_ring"
+    RING_OF_BASILIUS = "item_ring_of_basilius"
+    HEADDRESS = "item_headdress"
+    BUCKLER = "item_buckler"
+    URN_OF_SHADOWS = "item_urn_of_shadows"
+    SPIRIT_VESSEL = "item_spirit_vessel"
+    MEDALLION_OF_COURAGE = "item_medallion_of_courage"
+    SOLAR_CREST = "item_solar_crest"
+    RING_OF_TARRASQUE = "item_ring_of_tarrasque"
+    INFUSED_RAINDROP = "item_infused_raindrop"
+    WIND_LACE = "item_wind_lace"
+    CLOAK = "item_cloak"
+    GLIMMER_CAPE = "item_glimmer_cape"
+    GHOST_SCEPTER = "item_ghost"
+    ETHEREAL_BLADE = "item_ethereal_blade"
+    VEIL_OF_DISCORD = "item_veil_of_discord"
+    AETHER_LENS = "item_aether_lens"
+    OCTARINE_CORE = "item_octarine_core"
+    ROD_OF_ATOS = "item_rod_of_atos"
+    GLEIPNIR = "item_gungir"
+    EULS_SCEPTER = "item_cyclone"
+    WIND_WAKER = "item_wind_waker"
+    FORCE_STAFF = "item_force_staff"
+    HURRICANE_PIKE = "item_hurricane_pike"
+    DAGON = "item_dagon"
+    DAGON_2 = "item_dagon_2"
+    DAGON_3 = "item_dagon_3"
+    DAGON_4 = "item_dagon_4"
+    DAGON_5 = "item_dagon_5"
+    NECRONOMICON = "item_necronomicon"
+    NECRONOMICON_2 = "item_necronomicon_2"
+    NECRONOMICON_3 = "item_necronomicon_3"
+    AGHANIMS_SCEPTER = "item_ultimate_scepter"
+    AGHANIMS_BLESSING = "item_ultimate_scepter_2"
+    REFRESHER_ORB = "item_refresher"
+    SCYTHE_OF_VYSE = "item_sheepstick"
+    KAYA = "item_kaya"
+    YASHA = "item_yasha"
+    SANGE = "item_sange"
+    KAYA_AND_SANGE = "item_kaya_and_sange"
+    YASHA_AND_KAYA = "item_yasha_and_kaya"
+    SANGE_AND_YASHA = "item_sange_and_yasha"
+    PHYLACTERY = "item_phylactery"
+    MAGE_SLAYER = "item_mage_slayer"
+    WITCH_BLADE = "item_witch_blade"
+    PARASMA = "item_parasma"
+
+    # === SUPPORT ===
+    MEKANSM = "item_mekansm"
+    PIPE = "item_pipe"
+    HOLY_LOCKET = "item_holy_locket"
+    VLADMIRS = "item_vladmir"
+    CRIMSON_GUARD = "item_crimson_guard"
+    LOTUS_ORB = "item_lotus_orb"
+    DRUM_OF_ENDURANCE = "item_ancient_janggo"
+    BOOTS_OF_BEARING = "item_boots_of_bearing"
+    PAVISE = "item_pavise"
+    VANGUARD = "item_vanguard"
+    RING_OF_REGEN = "item_ring_of_regen"
+    SAGES_MASK = "item_sobi_mask"
+
+    # === ARMOR ===
+    BLADE_MAIL = "item_blade_mail"
+    ASSAULT_CUIRASS = "item_assault"
+    SHIVAS_GUARD = "item_shivas_guard"
+    HEART = "item_heart"
+    ETERNAL_SHROUD = "item_eternal_shroud"
+    HOOD_OF_DEFIANCE = "item_hood_of_defiance"
+    AEON_DISK = "item_aeon_disk"
+    LINKENS_SPHERE = "item_sphere"
+    MANTA_STYLE = "item_manta"
+    BLACK_KING_BAR = "item_black_king_bar"
+    HEAVENS_HALBERD = "item_heavens_halberd"
+    HARPOON = "item_harpoon"
+
+    # === WEAPONS ===
+    BATTLE_FURY = "item_bfury"
+    MASK_OF_MADNESS = "item_mask_of_madness"
+    MOON_SHARD = "item_moon_shard"
+    DAEDALUS = "item_greater_crit"
+    CRYSTALYS = "item_lesser_crit"
+    MAELSTROM = "item_maelstrom"
+    MJOLLNIR = "item_mjollnir"
+    DESOLATOR = "item_desolator"
+    STYGIAN_DESOLATOR = "item_desolator_2"
+    MONKEY_KING_BAR = "item_monkey_king_bar"
+    DIFFUSAL_BLADE = "item_diffusal_blade"
+    SKULL_BASHER = "item_basher"
+    ABYSSAL_BLADE = "item_abyssal_blade"
+    BUTTERFLY = "item_butterfly"
+    DIVINE_RAPIER = "item_rapier"
+    RADIANCE = "item_radiance"
+    ARMLET = "item_armlet"
+    ECHO_SABRE = "item_echo_sabre"
+    SILVER_EDGE = "item_silver_edge"
+    SHADOW_BLADE = "item_invis_sword"
+    NULLIFIER = "item_nullifier"
+    BLOODTHORN = "item_bloodthorn"
+    ORCHID = "item_orchid"
+    METEOR_HAMMER = "item_meteor_hammer"
+    DRAGON_LANCE = "item_dragon_lance"
+    FALCON_BLADE = "item_falcon_blade"
+    OBLIVION_STAFF = "item_oblivion_staff"
+    PERSEVERANCE = "item_perseverance"
+    HAND_OF_MIDAS = "item_hand_of_midas"
+
+    # === ARTIFACTS ===
+    BLINK_DAGGER = "item_blink"
+    OVERWHELMING_BLINK = "item_overwhelming_blink"
+    SWIFT_BLINK = "item_swift_blink"
+    ARCANE_BLINK = "item_arcane_blink"
+    SATANIC = "item_satanic"
+    EYE_OF_SKADI = "item_skadi"
+    DISPERSER = "item_disperser"
+    BLOODSTONE = "item_bloodstone"
+    KHANDA = "item_khanda"
+    REVENANTS_BROOCH = "item_revenants_brooch"
+    DEVASTATOR = "item_devastator"
+    SAMURAI_TABI = "item_samurai_tabi"
+
+    # === ACCESSORIES ===
+    TP_SCROLL = "item_teleportscroll"
+    MORBID_MASK = "item_lifesteal"
+    HELM_OF_THE_DOMINATOR = "item_helm_of_the_dominator"
+    HELM_OF_THE_OVERLORD = "item_helm_of_the_overlord"
+    SOUL_BOOSTER = "item_soul_booster"
+    VOODOO_MASK = "item_voodoo_mask"
+    FLUFFY_HAT = "item_fluffy_hat"
+
+    @property
+    def item_name(self) -> str:
+        """Internal item name (e.g., 'item_blink')."""
+        return self.value
+
+    @property
+    def display_name(self) -> str:
+        """Human-readable item name."""
+        data = _ITEMS_DATA.get(self.value)
+        return data[1] if data else self.name.replace("_", " ").title()
+
+    @property
+    def category(self) -> Optional[str]:
+        """Item category (consumable, weapon, armor, etc.)."""
+        data = _ITEMS_DATA.get(self.value)
+        return data[0] if data else None
+
+    @classmethod
+    def from_item_name(cls, item_name: str) -> Optional["Item"]:
+        """Get Item from internal item name (handles aliases)."""
+        # Resolve alias to canonical name
+        canonical = _ITEM_ALIASES.get(item_name, item_name)
+        for item in cls:
+            if item.value == canonical:
+                return item
+        return None
+
+    @classmethod
+    def is_purchasable_item(cls, item_name: str) -> bool:
+        """Check if an item name is a purchasable item (handles aliases)."""
+        canonical = _ITEM_ALIASES.get(item_name, item_name)
+        return canonical in _ITEMS_DATA or item_name in _ITEMS_DATA
+
+    @classmethod
+    def items_by_category(cls, category: str) -> List["Item"]:
+        """Get all items of a specific category."""
+        return [
+            item for item in cls
+            if _ITEMS_DATA.get(item.value, (None,))[0] == category
+        ]
+
+    @classmethod
+    def all_item_names(cls) -> List[str]:
+        """Get all purchasable item internal names."""
+        return list(_ITEMS_DATA.keys())
 
 
 class NeutralItemTier(int, Enum):
@@ -772,6 +1470,7 @@ _NEUTRAL_ITEMS_DATA = {
     "item_essence_ring": (1, "Essence Ring"),
     "item_mana_draught": (1, "Mana Draught"),
     "item_poor_mans_shield": (1, "Poor Man's Shield"),
+    "item_poormansshield": (1, "Poor Man's Shield"),  # Alt name in replays
     "item_searing_signet": (1, "Searing Signet"),
     "item_tumblers_toy": (1, "Tumbler's Toy"),
     # Tier 2 - Retired/Rotated
@@ -880,6 +1579,12 @@ _NEUTRAL_ITEMS_DATA = {
 
     # === SPECIAL / CRAFTING SYSTEM ===
     "item_madstone_bundle": (None, "Madstone Bundle"),  # Crafting currency
+}
+
+# Neutral item alias mapping: alternate internal names -> canonical names
+_NEUTRAL_ITEM_ALIASES: Dict[str, str] = {
+    "item_poormansshield": "item_poor_mans_shield",
+    "item_ripperslash": "item_rippers_lash",
 }
 
 
@@ -1063,16 +1768,19 @@ class NeutralItem(str, Enum):
 
     @classmethod
     def from_item_name(cls, item_name: str) -> Optional["NeutralItem"]:
-        """Get NeutralItem from internal item name."""
+        """Get NeutralItem from internal item name (handles aliases)."""
+        # Resolve alias to canonical name
+        canonical = _NEUTRAL_ITEM_ALIASES.get(item_name, item_name)
         for item in cls:
-            if item.value == item_name:
+            if item.value == canonical:
                 return item
         return None
 
     @classmethod
     def is_neutral_item(cls, item_name: str) -> bool:
-        """Check if an item name is a neutral item."""
-        return item_name in _NEUTRAL_ITEMS_DATA
+        """Check if an item name is a neutral item (handles aliases)."""
+        canonical = _NEUTRAL_ITEM_ALIASES.get(item_name, item_name)
+        return canonical in _NEUTRAL_ITEMS_DATA or item_name in _NEUTRAL_ITEMS_DATA
 
     @classmethod
     def items_by_tier(cls, tier: int) -> List["NeutralItem"]:
@@ -2199,6 +2907,11 @@ class ItemSnapshot(BaseModel):
         return self.cooldown > 0
 
     @property
+    def item_enum(self) -> Optional["Item"]:
+        """Get Item enum if this is a purchasable item, None otherwise."""
+        return Item.from_item_name(self.name)
+
+    @property
     def neutral_item_enum(self) -> Optional["NeutralItem"]:
         """Get NeutralItem enum if this is a neutral item, None otherwise."""
         return NeutralItem.from_item_name(self.name)
@@ -2209,15 +2922,24 @@ class ItemSnapshot(BaseModel):
         return self.neutral_item_enum is not None
 
     @property
+    def is_purchasable_item(self) -> bool:
+        """True if this item is a purchasable (shop) item."""
+        return self.item_enum is not None
+
+    @property
     def display_name(self) -> str:
         """Human-readable item name.
 
         For neutral items, returns the display name from NeutralItem enum.
-        For regular items, converts short_name to title case.
+        For purchasable items, returns the display name from Item enum.
+        For unknown items, converts short_name to title case.
         """
         neutral = self.neutral_item_enum
         if neutral:
             return neutral.display_name
+        item = self.item_enum
+        if item:
+            return item.display_name
         return self.short_name.replace("_", " ").title()
 
 

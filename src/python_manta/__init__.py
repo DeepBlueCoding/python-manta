@@ -46,6 +46,8 @@ from .manta_python import (
     DamageType,
     Team,
     Hero,
+    Item,
+    ItemCategory,
     NeutralCampType,
     NeutralItemTier,
     NeutralItem,
@@ -103,7 +105,7 @@ from .manta_python import (
     ParserInfo,
 )
 
-__version__ = "1.4.7.3"
+__version__ = "1.4.7.4.dev4"
 __author__ = "Equilibrium Coach Team"
 __description__ = "Python interface for Manta Dota 2 replay parser"
 
@@ -141,6 +143,8 @@ __all__ = [
     "DamageType",
     "Team",
     "Hero",
+    "Item",
+    "ItemCategory",
     "NeutralCampType",
     "NeutralItemTier",
     "NeutralItem",

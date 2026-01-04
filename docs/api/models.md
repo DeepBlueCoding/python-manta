@@ -452,6 +452,86 @@ print(f"Radiant jungle: {radiant_jungle}, Dire jungle: {dire_jungle}")
 
 ---
 
+### Item
+
+Comprehensive enum for all ~200 purchasable Dota 2 items (shop items). Provides type-safe item identification with display names and categories.
+
+```python
+class Item(str, Enum):
+    # Consumables
+    TANGO = "item_tango"
+    CLARITY = "item_clarity"
+    FAMANGO = "item_famango"  # Enchanted Mango alias
+
+    # Weapons
+    BATTLE_FURY = "item_bfury"
+    DAEDALUS = "item_greater_crit"
+    BUTTERFLY = "item_butterfly"
+
+    # Artifacts
+    BLINK_DAGGER = "item_blink"
+    BLACK_KING_BAR = "item_black_king_bar"
+    # ... 200+ items
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `item_name` | str | Internal item name (e.g., "item_blink") |
+| `display_name` | str | Human-readable name (e.g., "Blink Dagger") |
+| `category` | str \| None | Item category (consumable, weapon, armor, etc.) |
+
+**Class Methods:**
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `from_item_name(name)` | `Item \| None` | Get Item from internal name |
+| `is_purchasable_item(name)` | `bool` | Check if item name is a purchasable item |
+| `items_by_category(cat)` | `List[Item]` | Get all items of a specific category |
+| `all_item_names()` | `List[str]` | Get all purchasable item internal names |
+
+**Example:**
+```python
+from python_manta import Item
+
+# Get item from internal name
+blink = Item.from_item_name("item_blink")
+print(f"{blink.display_name}: {blink.category}")
+# Output: Blink Dagger: artifact
+
+# Get all weapons
+weapons = Item.items_by_category("weapon")
+print(f"Found {len(weapons)} weapon items")
+
+# Check if item is purchasable
+if Item.is_purchasable_item("item_famango"):
+    mango = Item.from_item_name("item_famango")
+    print(f"Display name: {mango.display_name}")  # "Enchanted Mango"
+```
+
+---
+
+### ItemCategory
+
+Enum for item category classification.
+
+```python
+class ItemCategory(str, Enum):
+    CONSUMABLE = "consumable"
+    ATTRIBUTE = "attribute"
+    EQUIPMENT = "equipment"
+    SECRET_SHOP = "secret_shop"
+    SUPPORT = "support"
+    MAGICAL = "magical"
+    ARMOR = "armor"
+    WEAPON = "weapon"
+    ARTIFACT = "artifact"
+    ACCESSORY = "accessory"
+```
+
+---
+
 ### NeutralItemTier
 
 Enum for neutral item tier classification. Tiers unlock at specific game times.
@@ -1214,13 +1294,17 @@ class ItemSnapshot(BaseModel):
 
     # Properties
     short_name: str               # Name without "item_" prefix (e.g., "blink")
-    display_name: str             # Human-readable name (e.g., "Battlefury", "Poor Man's Shield")
+    display_name: str             # Human-readable name (e.g., "Battle Fury", "Poor Man's Shield")
     is_main_inventory: bool       # True if slot 0-5
     is_backpack: bool             # True if slot 6-8
     is_tp_slot: bool              # True if slot 9
     is_stash: bool                # True if slot 10-15
     is_neutral_slot: bool         # True if slot 16
     is_on_cooldown: bool          # True if cooldown > 0
+    # Purchasable item enum
+    item_enum: Item | None        # Item enum if purchasable item
+    is_purchasable_item: bool     # True if item is a purchasable (shop) item
+    # Neutral item enum
     is_neutral_item: bool         # True if item is a neutral item (any slot)
     neutral_item_enum: NeutralItem | None  # NeutralItem enum if applicable
 ```
