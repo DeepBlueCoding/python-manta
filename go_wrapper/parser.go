@@ -1067,12 +1067,14 @@ func setupEntityCollector(parser *manta.Parser, state *entityCollectorState) {
 			return nil // Not a PlayerResource, skip capture check
 		}
 
-		// Only capture on updates to PlayerResource entity (like RunEntityParse)
-		// This ensures we have valid player data when capturing
+		// Only capture on entity updates
 		if !op.Flag(manta.EntityOpUpdated) {
 			return nil
 		}
-		if !strings.Contains(className, "CDOTA_PlayerResource") {
+		// Trigger snapshots on PlayerResource or Hero entity updates
+		isPlayerResource := strings.Contains(className, "CDOTA_PlayerResource")
+		isHeroEntity := strings.HasPrefix(className, "CDOTA_Unit_Hero_")
+		if !isPlayerResource && !isHeroEntity {
 			return nil
 		}
 
@@ -1097,9 +1099,9 @@ func setupEntityCollector(parser *manta.Parser, state *entityCollectorState) {
 			// Interval-based capture
 			interval := uint32(config.IntervalTicks)
 			if interval == 0 {
-				interval = 1800 // Default ~1 minute
-			}
-			if currentTick >= state.lastCaptureTick+interval {
+				// Capture every PlayerResource update
+				shouldCapture = true
+			} else if currentTick >= state.lastCaptureTick+interval {
 				shouldCapture = true
 			}
 		}
