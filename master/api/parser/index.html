@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
     
     
       
@@ -1278,6 +1278,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/wards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/modifiers/" class="md-nav__link">
         
   
@@ -1593,16 +1621,32 @@
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="bp">self</span><span class="p">,</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">game_info</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">messages</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParseResult</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">combat_log</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">entities</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">game_events</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">modifiers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">string_tables</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">messages</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">parser_info</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="n">attacks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="n">entity_deaths</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">wards</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParseResult</span>
 </code></pre></div>
 <p>Parses the demo file with the specified collectors enabled.</p>
 <p><strong>Parameters:</strong>
 - <code>header</code>: Enable header collector (match metadata)
 - <code>game_info</code>: Enable game info collector (draft, players, teams)
-- <code>messages</code>: Enable messages collector. Can be:
-  - <code>True</code> - collect all messages
-  - <code>{"filter": "...", "max_messages": N}</code> - filter and limit messages</p>
+- <code>combat_log</code>: Combat log config (<code>{"types": [0, 4], "max_entries": 100, "heroes_only": True}</code>)
+- <code>entities</code>: Entity snapshots config (<code>{"interval_ticks": 1800, "max_snapshots": 50}</code>)
+- <code>game_events</code>: Game events config (<code>{"event_filter": "kill", "max_events": 100}</code>)
+- <code>modifiers</code>: Modifiers config (<code>{"max_modifiers": 1000, "auras_only": True}</code>)
+- <code>string_tables</code>: String tables config (<code>{"table_names": ["userinfo"]}</code>)
+- <code>messages</code>: Messages config (<code>{"filter": "ChatMessage", "max_messages": 100}</code>)
+- <code>parser_info</code>: Enable parser info collector
+- <code>attacks</code>: Attacks config (<code>{"max_events": 1000}</code>)
+- <code>entity_deaths</code>: Entity deaths config (<code>{"heroes_only": True}</code>)
+- <code>wards</code>: Wards config (<code>{"max_events": 0}</code>) — tracks observer/sentry ward lifecycle</p>
 <p><strong>Returns:</strong> <a href="#parseresult"><code>ParseResult</code></a></p>
 <p><strong>Example:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Parse header only</span>
@@ -1630,13 +1674,31 @@
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">header</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">HeaderInfo</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">game_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GameInfo</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">messages</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MessagesResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">combat_log</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CombatLogResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">entities</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EntityParseResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">game_events</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GameEventsResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">modifiers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModifiersResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">string_tables</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StringTablesResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="n">messages</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MessagesResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="n">parser_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ParserInfo</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="n">attacks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AttacksResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="n">entity_deaths</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EntityDeathsResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">wards</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">WardsResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
 <p><strong>Fields:</strong>
 - <code>success</code>: Whether parsing completed successfully
 - <code>header</code>: Header data if <code>header=True</code> was specified
 - <code>game_info</code>: Game info if <code>game_info=True</code> was specified
-- <code>messages</code>: Messages if <code>messages=...</code> was specified</p>
+- <code>combat_log</code>: Combat log data if <code>combat_log=...</code> was specified
+- <code>entities</code>: Entity snapshots if <code>entities=...</code> was specified
+- <code>game_events</code>: Game events if <code>game_events=...</code> was specified
+- <code>modifiers</code>: Modifier data if <code>modifiers=...</code> was specified
+- <code>string_tables</code>: String table data if <code>string_tables=...</code> was specified
+- <code>messages</code>: Messages if <code>messages=...</code> was specified
+- <code>parser_info</code>: Parser state if <code>parser_info=True</code> was specified
+- <code>attacks</code>: Attack events if <code>attacks=...</code> was specified
+- <code>entity_deaths</code>: Entity death events if <code>entity_deaths=...</code> was specified
+- <code>wards</code>: Ward lifecycle events if <code>wards=...</code> was specified</p>
 <hr />
 <h3 id="headerinfo">HeaderInfo<a class="headerlink" href="#headerinfo" title="Permanent link">&para;</a></h3>
 <p>Match metadata from the demo file header.</p>

@@ -12,13 +12,13 @@
         <meta name="author" content="DeepBlueCoding">
       
       
-        <link rel="canonical" href="https://deepbluecoding.github.io/python-manta/master/reference/combat-log/">
+        <link rel="canonical" href="https://deepbluecoding.github.io/python-manta/master/reference/wards/">
       
       
-        <link rel="prev" href="../game-events/">
+        <link rel="prev" href="../attacks/">
       
       
-        <link rel="next" href="../attacks/">
+        <link rel="next" href="../modifiers/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Combat Log - Python Manta</title>
+        <title>Wards - Python Manta</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#combat-log-reference" class="md-skip">
+        <a href="#wards-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Combat Log
+              Wards
             
           </span>
         </div>
@@ -1017,37 +1017,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Combat Log
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../combat-log/" class="md-nav__link">
         
   
   
@@ -1063,286 +1036,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#combat-log-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Combat Log Types
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#entry-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entry Fields
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Entry Fields">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#identification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Identification
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#participants" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Participants
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#unit-flags" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Unit Flags
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#visibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Visibility
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#values" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Values
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ability-info" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ability Info
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#duration-effects" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Duration Effects
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#type-specific-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Type-Specific Usage
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Type-Specific Usage">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#damage-type-0" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        DAMAGE (Type 0)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#heal-type-1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HEAL (Type 1)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modifier_add-type-2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MODIFIER_ADD (Type 2)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#death-type-4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        DEATH (Type 4)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#gold-type-8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GOLD (Type 8)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#xp-type-10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        XP (Type 10)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#filtering" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Filtering
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Filtering">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#by-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        By Type
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#by-hero" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        By Hero
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#combined" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Combined
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#unit-name-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Unit Name Format
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#timing-note" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Timing Note
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1380,10 +1073,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../wards/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wards
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1399,6 +1119,187 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wardevent-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WardEvent Fields
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="WardEvent Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#placement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Placement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#death-expiry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Death / Expiry
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#limiting-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limiting Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Case Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Case Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dewarding-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dewarding Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vision-control-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vision Control Timeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#support-ward-stats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Support Ward Stats
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combining-with-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combining with Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#statistics-real-match-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Statistics (Real Match Data)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1522,10 +1423,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#combat-log-types" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Combat Log Types
+        Overview
       
     </span>
   </a>
@@ -1533,22 +1434,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#entry-fields" class="md-nav__link">
+  <a href="#wardevent-fields" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Entry Fields
+        WardEvent Fields
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Entry Fields">
+    <nav class="md-nav" aria-label="WardEvent Fields">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#identification" class="md-nav__link">
+  <a href="#placement" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Identification
+        Placement
       
     </span>
   </a>
@@ -1556,65 +1457,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#participants" class="md-nav__link">
+  <a href="#death-expiry" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Participants
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#unit-flags" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Unit Flags
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#visibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Visibility
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#values" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Values
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ability-info" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ability Info
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#duration-effects" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Duration Effects
+        Death / Expiry
       
     </span>
   </a>
@@ -1627,77 +1473,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#type-specific-usage" class="md-nav__link">
+  <a href="#basic-usage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Type-Specific Usage
+        Basic Usage
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Type-Specific Usage">
+    <nav class="md-nav" aria-label="Basic Usage">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#damage-type-0" class="md-nav__link">
+  <a href="#limiting-events" class="md-nav__link">
     <span class="md-ellipsis">
       
-        DAMAGE (Type 0)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#heal-type-1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HEAL (Type 1)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modifier_add-type-2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MODIFIER_ADD (Type 2)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#death-type-4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        DEATH (Type 4)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#gold-type-8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GOLD (Type 8)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#xp-type-10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        XP (Type 10)
+        Limiting Events
       
     </span>
   </a>
@@ -1710,22 +1501,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering" class="md-nav__link">
+  <a href="#use-case-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Filtering
+        Use Case Examples
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Filtering">
+    <nav class="md-nav" aria-label="Use Case Examples">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#by-type" class="md-nav__link">
+  <a href="#dewarding-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        By Type
+        Dewarding Analysis
       
     </span>
   </a>
@@ -1733,10 +1524,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#by-hero" class="md-nav__link">
+  <a href="#vision-control-timeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        By Hero
+        Vision Control Timeline
       
     </span>
   </a>
@@ -1744,10 +1535,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#combined" class="md-nav__link">
+  <a href="#support-ward-stats" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Combined
+        Support Ward Stats
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combining-with-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combining with Snapshots
       
     </span>
   </a>
@@ -1760,10 +1562,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#unit-name-format" class="md-nav__link">
+  <a href="#statistics-real-match-data" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unit Name Format
+        Statistics (Real Match Data)
       
     </span>
   </a>
@@ -1771,10 +1573,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#timing-note" class="md-nav__link">
+  <a href="#notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Timing Note
+        Notes
       
     </span>
   </a>
@@ -1801,88 +1603,28 @@
   
 
 
-<h1 id="combat-log-reference">Combat Log Reference<a class="headerlink" href="#combat-log-reference" title="Permanent link">&para;</a></h1>
+<h1 id="wards-reference">Wards Reference<a class="headerlink" href="#wards-reference" title="Permanent link">&para;</a></h1>
 <details class="info">
 <summary>AI Summary</summary>
-<p>Complete reference for 12 combat log entry types parsed from Dota 2 replays. Types include: DAMAGE (0), HEAL (1), MODIFIER_ADD (2), MODIFIER_REMOVE (3), DEATH (4), ABILITY (5), ITEM (6), LOCATION (7), GOLD (8), GAME_STATE (9), XP (10), PURCHASE (11). Each entry contains attacker/target info, damage values, game_time (seconds from horn), and team visibility flags.</p>
+<p>Complete reference for ward lifecycle tracking. Captures observer and sentry ward placement, expiration, and dewarding from entity creation/deletion correlated with combat log death events. Typically 80-120 ward events per match with full placement position, team, placer hero, and deward details (killer, gold bounty).</p>
 </details>
 <hr />
-<h2 id="combat-log-types">Combat Log Types<a class="headerlink" href="#combat-log-types" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Type ID</th>
-<th>Name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0</td>
-<td>DAMAGE</td>
-<td>Damage dealt to a unit</td>
-</tr>
-<tr>
-<td>1</td>
-<td>HEAL</td>
-<td>Health restored to a unit</td>
-</tr>
-<tr>
-<td>2</td>
-<td>MODIFIER_ADD</td>
-<td>Buff/debuff applied</td>
-</tr>
-<tr>
-<td>3</td>
-<td>MODIFIER_REMOVE</td>
-<td>Buff/debuff removed</td>
-</tr>
-<tr>
-<td>4</td>
-<td>DEATH</td>
-<td>Unit death</td>
-</tr>
-<tr>
-<td>5</td>
-<td>ABILITY</td>
-<td>Ability used</td>
-</tr>
-<tr>
-<td>6</td>
-<td>ITEM</td>
-<td>Item used</td>
-</tr>
-<tr>
-<td>7</td>
-<td>LOCATION</td>
-<td>Location event</td>
-</tr>
-<tr>
-<td>8</td>
-<td>GOLD</td>
-<td>Gold gained/lost</td>
-</tr>
-<tr>
-<td>9</td>
-<td>GAME_STATE</td>
-<td>Game state change</td>
-</tr>
-<tr>
-<td>10</td>
-<td>XP</td>
-<td>Experience gained</td>
-</tr>
-<tr>
-<td>11</td>
-<td>PURCHASE</td>
-<td>Item purchased</td>
-</tr>
-</tbody>
-</table>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The wards collector tracks the full lifecycle of observer and sentry wards by correlating two data sources:</p>
+<ul>
+<li><strong>Entity system</strong>: Ward entities (<code>CDOTA_NPC_Observer_Ward</code>, <code>CDOTA_NPC_Observer_Ward_TrueSight</code>) are created on placement and deleted on expiration/death. Provides position, entity ID, and owner hero.</li>
+<li><strong>Combat log</strong>: Ward deaths appear as <code>DOTA_COMBATLOG_DEATH</code> targeting <code>npc_dota_observer_wards</code> or <code>npc_dota_sentry_wards</code>. Provides killer name, team, and gold bounty.</li>
+</ul>
+<p><strong>Key Use Cases:</strong></p>
+<ul>
+<li>Vision control analysis (ward placement patterns per team)</li>
+<li>Dewarding detection (who killed which ward, gold earned)</li>
+<li>Ward duration tracking (placed at X, expired/killed at Y)</li>
+<li>Support performance metrics (wards placed per hero)</li>
+</ul>
 <hr />
-<h2 id="entry-fields">Entry Fields<a class="headerlink" href="#entry-fields" title="Permanent link">&para;</a></h2>
-<p>Every <code>CombatLogEntry</code> contains these fields:</p>
-<h3 id="identification">Identification<a class="headerlink" href="#identification" title="Permanent link">&para;</a></h3>
+<h2 id="wardevent-fields">WardEvent Fields<a class="headerlink" href="#wardevent-fields" title="Permanent link">&para;</a></h2>
+<h3 id="placement">Placement<a class="headerlink" href="#placement" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1895,323 +1637,226 @@
 <tr>
 <td><code>tick</code></td>
 <td><code>int</code></td>
-<td>Game tick (~30/second)</td>
-</tr>
-<tr>
-<td><code>net_tick</code></td>
-<td><code>int</code></td>
-<td>Network tick</td>
-</tr>
-<tr>
-<td><code>type</code></td>
-<td><code>int</code></td>
-<td>Combat log type ID (0-11)</td>
-</tr>
-<tr>
-<td><code>type_name</code></td>
-<td><code>str</code></td>
-<td>Human-readable type name</td>
+<td>Game tick when ward was placed</td>
 </tr>
 <tr>
 <td><code>game_time</code></td>
 <td><code>float</code></td>
-<td>Game time in seconds (negative before horn)</td>
+<td>Game time in seconds from horn</td>
 </tr>
 <tr>
 <td><code>game_time_str</code></td>
 <td><code>str</code></td>
-<td>Formatted game time (e.g., "-0:40", "5:32")</td>
+<td>Formatted time (e.g., "12:34")</td>
 </tr>
-</tbody>
-</table>
-<h3 id="participants">Participants<a class="headerlink" href="#participants" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
+<td><code>entity_id</code></td>
+<td><code>int</code></td>
+<td>Entity index (for correlation with snapshots)</td>
 </tr>
-</thead>
-<tbody>
 <tr>
-<td><code>attacker_name</code></td>
+<td><code>ward_type</code></td>
 <td><code>str</code></td>
-<td>Attacker unit name</td>
+<td><code>"observer"</code> or <code>"sentry"</code></td>
 </tr>
 <tr>
-<td><code>target_name</code></td>
-<td><code>str</code></td>
-<td>Target unit name</td>
-</tr>
-<tr>
-<td><code>target_source_name</code></td>
-<td><code>str</code></td>
-<td>Target source name</td>
-</tr>
-<tr>
-<td><code>damage_source_name</code></td>
-<td><code>str</code></td>
-<td>Damage source name</td>
-</tr>
-<tr>
-<td><code>inflictor_name</code></td>
-<td><code>str</code></td>
-<td>Ability/item causing the effect</td>
-</tr>
-</tbody>
-</table>
-<h3 id="unit-flags">Unit Flags<a class="headerlink" href="#unit-flags" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>is_attacker_hero</code></td>
-<td><code>bool</code></td>
-<td>Attacker is a hero</td>
-</tr>
-<tr>
-<td><code>is_attacker_illusion</code></td>
-<td><code>bool</code></td>
-<td>Attacker is an illusion</td>
-</tr>
-<tr>
-<td><code>is_target_hero</code></td>
-<td><code>bool</code></td>
-<td>Target is a hero</td>
-</tr>
-<tr>
-<td><code>is_target_illusion</code></td>
-<td><code>bool</code></td>
-<td>Target is an illusion</td>
-</tr>
-<tr>
-<td><code>attacker_team</code></td>
+<td><code>team</code></td>
 <td><code>int</code></td>
-<td>Attacker team ID</td>
+<td>2=Radiant, 3=Dire</td>
 </tr>
 <tr>
-<td><code>target_team</code></td>
-<td><code>int</code></td>
-<td>Target team ID</td>
-</tr>
-</tbody>
-</table>
-<h3 id="visibility">Visibility<a class="headerlink" href="#visibility" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>is_visible_radiant</code></td>
-<td><code>bool</code></td>
-<td>Visible to Radiant team</td>
-</tr>
-<tr>
-<td><code>is_visible_dire</code></td>
-<td><code>bool</code></td>
-<td>Visible to Dire team</td>
-</tr>
-</tbody>
-</table>
-<h3 id="values">Values<a class="headerlink" href="#values" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>value</code></td>
-<td><code>int</code></td>
-<td>Primary value (damage, heal, gold, XP)</td>
-</tr>
-<tr>
-<td><code>health</code></td>
-<td><code>int</code></td>
-<td>Target health after event</td>
-</tr>
-<tr>
-<td><code>gold</code></td>
-<td><code>int</code></td>
-<td>Gold value</td>
-</tr>
-<tr>
-<td><code>xp</code></td>
-<td><code>int</code></td>
-<td>XP value</td>
-</tr>
-<tr>
-<td><code>last_hits</code></td>
-<td><code>int</code></td>
-<td>Last hits at time of event</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ability-info">Ability Info<a class="headerlink" href="#ability-info" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>ability_level</code></td>
-<td><code>int</code></td>
-<td>Level of ability used</td>
-</tr>
-<tr>
-<td><code>is_ability_toggle_on</code></td>
-<td><code>bool</code></td>
-<td>Ability toggled on</td>
-</tr>
-<tr>
-<td><code>is_ability_toggle_off</code></td>
-<td><code>bool</code></td>
-<td>Ability toggled off</td>
-</tr>
-</tbody>
-</table>
-<h3 id="duration-effects">Duration Effects<a class="headerlink" href="#duration-effects" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>stun_duration</code></td>
+<td><code>x</code></td>
 <td><code>float</code></td>
-<td>Stun duration in seconds</td>
+<td>Placement X position</td>
 </tr>
 <tr>
-<td><code>slow_duration</code></td>
+<td><code>y</code></td>
 <td><code>float</code></td>
-<td>Slow duration in seconds</td>
+<td>Placement Y position</td>
+</tr>
+<tr>
+<td><code>placed_by</code></td>
+<td><code>str</code></td>
+<td>Hero who placed it (e.g., <code>npc_dota_hero_chen</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="death-expiry">Death / Expiry<a class="headerlink" href="#death-expiry" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>death_tick</code></td>
+<td><code>int</code></td>
+<td>Tick when ward was removed (0 if still alive)</td>
+</tr>
+<tr>
+<td><code>death_game_time</code></td>
+<td><code>float</code></td>
+<td>Game time when removed</td>
+</tr>
+<tr>
+<td><code>death_game_time_str</code></td>
+<td><code>str</code></td>
+<td>Formatted death time</td>
+</tr>
+<tr>
+<td><code>was_killed</code></td>
+<td><code>bool</code></td>
+<td><code>True</code> = dewarded by hero, <code>False</code> = expired naturally</td>
+</tr>
+<tr>
+<td><code>killed_by</code></td>
+<td><code>str</code></td>
+<td>Hero who dewarded (empty if expired)</td>
+</tr>
+<tr>
+<td><code>killer_team</code></td>
+<td><code>int</code></td>
+<td>Team of killer (0 if expired)</td>
+</tr>
+<tr>
+<td><code>gold_bounty</code></td>
+<td><code>int</code></td>
+<td>Gold earned from deward (typically 50)</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="type-specific-usage">Type-Specific Usage<a class="headerlink" href="#type-specific-usage" title="Permanent link">&para;</a></h2>
-<h3 id="damage-type-0">DAMAGE (Type 0)<a class="headerlink" href="#damage-type-0" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">python_manta</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parser</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> damage&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  via </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Collect all ward events</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">wards</span><span class="o">=</span><span class="p">{})</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total wards placed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">wards</span><span class="o">.</span><span class="n">total_events</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Separate by type</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">observers</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">wards</span><span class="o">.</span><span class="n">events</span> <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">ward_type</span> <span class="o">==</span> <span class="s2">&quot;observer&quot;</span><span class="p">]</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">sentries</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">wards</span><span class="o">.</span><span class="n">events</span> <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">ward_type</span> <span class="o">==</span> <span class="s2">&quot;sentry&quot;</span><span class="p">]</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Observers: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">observers</span><span class="p">)</span><span class="si">}</span><span class="s2">, Sentries: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sentries</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="heal-type-1">HEAL (Type 1)<a class="headerlink" href="#heal-type-1" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> healed for </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<h3 id="limiting-events">Limiting Events<a class="headerlink" href="#limiting-events" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># First 50 ward events only</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">wards</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_events&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">})</span>
 </code></pre></div>
-<h3 id="modifier_add-type-2">MODIFIER_ADD (Type 2)<a class="headerlink" href="#modifier_add-type-2" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<hr />
+<h2 id="use-case-examples">Use Case Examples<a class="headerlink" href="#use-case-examples" title="Permanent link">&para;</a></h2>
+<h3 id="dewarding-analysis">Dewarding Analysis<a class="headerlink" href="#dewarding-analysis" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">wards</span><span class="o">=</span><span class="p">{})</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="p">:</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">inflictor_name</span><span class="si">}</span><span class="s2"> applied to </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">dewards</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">wards</span><span class="o">.</span><span class="n">events</span> <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">was_killed</span><span class="p">]</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total dewards: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dewards</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">for</span> <span class="n">ward</span> <span class="ow">in</span> <span class="n">dewards</span><span class="p">:</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">killer</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">killed_by</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;npc_dota_hero_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">wtype</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">ward_type</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">ward</span><span class="o">.</span><span class="n">death_game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">killer</span><span class="si">}</span><span class="s2"> dewarded </span><span class="si">{</span><span class="n">wtype</span><span class="si">}</span><span class="s2"> (team </span><span class="si">{</span><span class="n">ward</span><span class="o">.</span><span class="n">team</span><span class="si">}</span><span class="s2">) +</span><span class="si">{</span><span class="n">ward</span><span class="o">.</span><span class="n">gold_bounty</span><span class="si">}</span><span class="s2">g&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="death-type-4">DEATH (Type 4)<a class="headerlink" href="#death-type-4" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<h3 id="vision-control-timeline">Vision Control Timeline<a class="headerlink" href="#vision-control-timeline" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">wards</span><span class="o">=</span><span class="p">{})</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> died&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="p">:</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  killed by </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">attacker_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Radiant vs Dire ward counts over time</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">for</span> <span class="n">ward</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">wards</span><span class="o">.</span><span class="n">events</span><span class="p">:</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">team</span> <span class="o">=</span> <span class="s2">&quot;Radiant&quot;</span> <span class="k">if</span> <span class="n">ward</span><span class="o">.</span><span class="n">team</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="s2">&quot;Dire&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">placer</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">placed_by</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;npc_dota_hero_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">ward</span><span class="o">.</span><span class="n">placed_by</span> <span class="k">else</span> <span class="s2">&quot;unknown&quot;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;KILLED&quot;</span> <span class="k">if</span> <span class="n">ward</span><span class="o">.</span><span class="n">was_killed</span> <span class="k">else</span> <span class="s2">&quot;expired&quot;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="k">if</span> <span class="n">ward</span><span class="o">.</span><span class="n">death_tick</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;alive&quot;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">ward</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">team</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ward</span><span class="o">.</span><span class="n">ward_type</span><span class="si">}</span><span class="s2"> by </span><span class="si">{</span><span class="n">placer</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="gold-type-8">GOLD (Type 8)<a class="headerlink" href="#gold-type-8" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<h3 id="support-ward-stats">Support Ward Stats<a class="headerlink" href="#support-ward-stats" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">gold</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> gained </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">gold</span><span class="si">}</span><span class="s2"> gold&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">wards</span><span class="o">=</span><span class="p">{})</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Count wards placed per hero</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">placer_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">w</span><span class="o">.</span><span class="n">placed_by</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;npc_dota_hero_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">wards</span><span class="o">.</span><span class="n">events</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">placed_by</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="p">)</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Wards placed by hero:&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="k">for</span> <span class="n">hero</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">placer_counts</span><span class="o">.</span><span class="n">most_common</span><span class="p">():</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">obs</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">wards</span><span class="o">.</span><span class="n">events</span> <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">placed_by</span> <span class="ow">and</span> <span class="n">hero</span> <span class="ow">in</span> <span class="n">w</span><span class="o">.</span><span class="n">placed_by</span> <span class="ow">and</span> <span class="n">w</span><span class="o">.</span><span class="n">ward_type</span> <span class="o">==</span> <span class="s2">&quot;observer&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="n">sen</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">wards</span><span class="o">.</span><span class="n">events</span> <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">placed_by</span> <span class="ow">and</span> <span class="n">hero</span> <span class="ow">in</span> <span class="n">w</span><span class="o">.</span><span class="n">placed_by</span> <span class="ow">and</span> <span class="n">w</span><span class="o">.</span><span class="n">ward_type</span> <span class="o">==</span> <span class="s2">&quot;sentry&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">hero</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> total (</span><span class="si">{</span><span class="n">obs</span><span class="si">}</span><span class="s2"> obs, </span><span class="si">{</span><span class="n">sen</span><span class="si">}</span><span class="s2"> sen)&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="xp-type-10">XP (Type 10)<a class="headerlink" href="#xp-type-10" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<h3 id="combining-with-snapshots">Combining with Snapshots<a class="headerlink" href="#combining-with-snapshots" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">wards</span><span class="o">=</span><span class="p">{})</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">xp</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2"> gained </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">xp</span><span class="si">}</span><span class="s2"> XP&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># Find wards placed near Roshan pit</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">ROSHAN_X</span><span class="p">,</span> <span class="n">ROSHAN_Y</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2480</span><span class="p">,</span> <span class="mi">1840</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">RADIUS</span> <span class="o">=</span> <span class="mi">1500</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">rosh_wards</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">w</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">wards</span><span class="o">.</span><span class="n">events</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="k">if</span> <span class="p">((</span><span class="n">w</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">ROSHAN_X</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">ROSHAN_Y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">&lt;</span> <span class="n">RADIUS</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="p">]</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wards near Roshan: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rosh_wards</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">rosh_wards</span><span class="p">:</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span class="n">team</span> <span class="o">=</span> <span class="s2">&quot;Radiant&quot;</span> <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">team</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="s2">&quot;Dire&quot;</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">game_time_str</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">team</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">ward_type</span><span class="si">}</span><span class="s2"> at (</span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">y</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 </code></pre></div>
 <hr />
-<h2 id="filtering">Filtering<a class="headerlink" href="#filtering" title="Permanent link">&para;</a></h2>
-<h3 id="by-type">By Type<a class="headerlink" href="#by-type" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Only damage and death</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="by-hero">By Hero<a class="headerlink" href="#by-hero" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Only hero-to-hero combat</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="combined">Combined<a class="headerlink" href="#combined" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Hero damage only</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_combat_log</span><span class="p">(</span><span class="s2">&quot;match.dem&quot;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">heroes_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_entries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-</code></pre></div>
-<hr />
-<h2 id="unit-name-format">Unit Name Format<a class="headerlink" href="#unit-name-format" title="Permanent link">&para;</a></h2>
-<p>Unit names follow Dota 2's internal naming:</p>
+<h2 id="statistics-real-match-data">Statistics (Real Match Data)<a class="headerlink" href="#statistics-real-match-data" title="Permanent link">&para;</a></h2>
+<p>From match 8447659831 (Team Spirit vs Tundra, ~46 min):</p>
 <table>
 <thead>
 <tr>
-<th>Pattern</th>
-<th>Example</th>
-<th>Description</th>
+<th>Metric</th>
+<th>Value</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>npc_dota_hero_*</code></td>
-<td><code>npc_dota_hero_axe</code></td>
-<td>Hero</td>
+<td><strong>Total wards</strong></td>
+<td>105</td>
 </tr>
 <tr>
-<td><code>npc_dota_creep_*</code></td>
-<td><code>npc_dota_creep_badguys_melee</code></td>
-<td>Lane creep</td>
+<td>Observer wards</td>
+<td>38 (36%)</td>
 </tr>
 <tr>
-<td><code>npc_dota_neutral_*</code></td>
-<td><code>npc_dota_neutral_centaur_khan</code></td>
-<td>Neutral creep</td>
+<td>Sentry wards</td>
+<td>67 (64%)</td>
 </tr>
 <tr>
-<td><code>npc_dota_*tower*</code></td>
-<td><code>npc_dota_badguys_tower1_mid</code></td>
-<td>Tower</td>
+<td><strong>Dewards</strong></td>
+<td>33 (31%)</td>
 </tr>
 <tr>
-<td><code>npc_dota_roshan</code></td>
-<td><code>npc_dota_roshan</code></td>
-<td>Roshan</td>
+<td>Radiant wards</td>
+<td>48</td>
+</tr>
+<tr>
+<td>Dire wards</td>
+<td>48</td>
+</tr>
+<tr>
+<td>Gold bounty per deward</td>
+<td>50</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="timing-note">Timing Note<a class="headerlink" href="#timing-note" title="Permanent link">&para;</a></h2>
-<p>Combat log entries typically appear after 12-17 minutes of game time. For early-game events, use <code>parse_game_events()</code> instead.</p>
+<h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Team detection</strong>: Ward team comes from combat log correlation, not entity properties. Wards still alive at match end may have <code>team=0</code>.</li>
+<li><strong>placed_by</strong>: Resolved from the ward entity's <code>m_hOwnerEntity</code> handle. May be empty if the owner entity was not available at creation time.</li>
+<li><strong>Tick offset</strong>: Entity deletion occurs ~200-400 ticks after the combat log death event. The collector handles this correlation automatically.</li>
+</ul>
 
 
 
