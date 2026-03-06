@@ -14,6 +14,7 @@
 | [Game Events](game-events.md) | All 364 game event types and fields |
 | [Combat Log](combat-log.md) | 12 combat log entry types |
 | [Attacks](attacks.md) | Attack projectiles from TE_Projectile (towers, creeps, heroes) |
+| [Wards](wards.md) | Observer/sentry ward lifecycle (placement, expiration, dewarding) |
 | [Modifiers](modifiers.md) | Buff/debuff modifier fields |
 | [Entities](entities.md) | Entity classes and properties |
 | [String Tables](string-tables.md) | String table structure and common tables |

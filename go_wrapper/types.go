@@ -35,6 +35,9 @@ type ParseConfig struct {
 
 	// Entity deaths collector (tracks entity removals)
 	EntityDeaths *EntityDeathsConfig `json:"entity_deaths,omitempty"`
+
+	// Wards collector (tracks ward placement, expiration, and dewarding)
+	Wards *WardsConfig `json:"wards,omitempty"`
 }
 
 // HeaderCollectorConfig - header is simple, just enable/disable
@@ -75,6 +78,7 @@ type ParseResult struct {
 	ParserInfo   *ParserInfo         `json:"parser_info,omitempty"`
 	Attacks      *AttacksResult      `json:"attacks,omitempty"`
 	EntityDeaths *EntityDeathsResult `json:"entity_deaths,omitempty"`
+	Wards        *WardsResult        `json:"wards,omitempty"`
 }
 
 // UniversalResult matches the existing universal parse result structure
@@ -252,4 +256,36 @@ type EntityDeath struct {
 type EntityDeathsResult struct {
 	Events      []EntityDeath `json:"events"`
 	TotalEvents int           `json:"total_events"`
+}
+
+// WardsConfig controls ward event tracking
+type WardsConfig struct {
+	MaxEvents int `json:"max_events"` // 0 = unlimited
+}
+
+// WardEvent represents a ward placement with its full lifecycle
+type WardEvent struct {
+	Tick        int     `json:"tick"`
+	GameTime    float32 `json:"game_time"`
+	GameTimeStr string  `json:"game_time_str"`
+	EntityID    int     `json:"entity_id"`
+	WardType    string  `json:"ward_type"` // "observer" or "sentry"
+	Team        int     `json:"team"`      // 2=Radiant, 3=Dire
+	X           float32 `json:"x"`
+	Y           float32 `json:"y"`
+	PlacedBy    string  `json:"placed_by"`
+
+	DeathTick        int     `json:"death_tick"`
+	DeathGameTime    float32 `json:"death_game_time"`
+	DeathGameTimeStr string  `json:"death_game_time_str"`
+	WasKilled        bool    `json:"was_killed"`
+	KilledBy         string  `json:"killed_by"`
+	KillerTeam       int     `json:"killer_team"`
+	GoldBounty       int     `json:"gold_bounty"`
+}
+
+// WardsResult contains all ward events
+type WardsResult struct {
+	Events      []WardEvent `json:"events"`
+	TotalEvents int         `json:"total_events"`
 }

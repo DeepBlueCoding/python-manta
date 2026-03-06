@@ -335,6 +335,14 @@ def attacks_limited(parser):
     return parser.parse(attacks={"max_events": 100})
 
 
+@pytest.fixture(scope="module")
+def wards_result(parser):
+    """Cached wards parsing result (all ward events)."""
+    result = parser.parse(wards={})
+    assert result.success, f"Failed to parse wards: {result.error}"
+    return result.wards
+
+
 # ============================================================================
 # Hero Level fixtures (from entity state injection)
 # ============================================================================

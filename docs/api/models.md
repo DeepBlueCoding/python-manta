@@ -2,7 +2,7 @@
 # Data Models
 
 ??? info "AI Summary"
-    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `HeroSnapshot`/`EntityStateSnapshot` (hero state with armor, damage, attributes at specific ticks), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` (rune tracking), `EntityType` (hero, creep, summon, building), `CombatLogType` (45 combat log event types), `DamageType` (physical/magical/pure/hp_removal), `Team` (Radiant/Dire/Neutral), `NeutralCampType` (small/medium/hard/ancient camps for multi-camp farming detection), `NeutralItemTier` (tier unlock times), `NeutralItem` (100+ neutral items), `ChatWheelMessage` (voice line IDs), and `GameActivity` (animation/taunt detection). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
+    All parsed data is returned as Pydantic models for type safety and easy serialization. Models include: `HeaderInfo` (match metadata), `GameInfo`/`DraftEvent`/`PlayerInfo` (game data with draft, teams, players), `UniversalParseResult`/`MessageEvent` (messages), `GameEventsResult`/`GameEventData` (events), `CombatLogResult`/`CombatLogEntry` (combat), `ModifiersResult`/`ModifierEntry` (buffs), `EntitiesResult`/`EntityData` (entities), `HeroSnapshot`/`EntityStateSnapshot` (hero state with armor, damage, attributes at specific ticks), `AttacksResult`/`AttackEvent` (auto-attacks), `EntityDeathsResult`/`EntityDeath` (entity removals), `WardsResult`/`WardEvent` (ward placement, expiration, dewarding), `StringTablesResult` (tables), `ParserInfo` (state). Enums include `RuneType` (rune tracking), `EntityType` (hero, creep, summon, building), `CombatLogType` (45 combat log event types), `DamageType` (physical/magical/pure/hp_removal), `Team` (Radiant/Dire/Neutral), `NeutralCampType` (small/medium/hard/ancient camps for multi-camp farming detection), `NeutralItemTier` (tier unlock times), `NeutralItem` (100+ neutral items), `ChatWheelMessage` (voice line IDs), and `GameActivity` (animation/taunt detection). All models have `.model_dump()` for dict conversion and `.model_dump_json()` for JSON.
 
 ---
 
@@ -1137,6 +1137,68 @@ for a in hero_fights[:5]:
 # Ranged projectile analysis
 fast_projectiles = [a for a in ranged if a.projectile_speed > 1000]
 print(f"Fast projectiles (>1000 speed): {len(fast_projectiles)}")
+```
+
+---
+
+## Ward Models
+
+Ward models capture the full lifecycle of observer and sentry wards: placement, expiration, and dewarding. See the [Wards Reference](../reference/wards.md) for detailed usage.
+
+### WardsResult
+
+Result container for ward lifecycle tracking.
+
+```python
+class WardsResult(BaseModel):
+    events: List[WardEvent] = []    # Ward events
+    total_events: int = 0           # Total wards tracked
+```
+
+### WardEvent
+
+Single ward lifecycle event (placement through death/expiry).
+
+```python
+class WardEvent(BaseModel):
+    # Placement
+    tick: int = 0                    # Tick when placed
+    game_time: float = 0.0           # Game time in seconds
+    game_time_str: str = ""          # Formatted time
+    entity_id: int = 0               # Entity index
+    ward_type: str = ""              # "observer" or "sentry"
+    team: int = 0                    # 2=Radiant, 3=Dire
+    x: float = 0.0                   # Placement X
+    y: float = 0.0                   # Placement Y
+    placed_by: str = ""              # Hero who placed (npc_dota_hero_*)
+
+    # Death/Expiry
+    death_tick: int = 0              # Tick when removed (0 if alive)
+    death_game_time: float = 0.0     # Game time when removed
+    death_game_time_str: str = ""    # Formatted death time
+    was_killed: bool = False         # True = dewarded, False = expired
+    killed_by: str = ""              # Hero who dewarded
+    killer_team: int = 0             # Killer's team
+    gold_bounty: int = 0            # Gold from deward (typically 50)
+```
+
+**Example:**
+```python
+from python_manta import Parser
+
+parser = Parser("match.dem")
+result = parser.parse(wards={})
+
+# Deward analysis
+dewards = [w for w in result.wards.events if w.was_killed]
+for w in dewards:
+    killer = w.killed_by.replace("npc_dota_hero_", "")
+    print(f"[{w.death_game_time_str}] {killer} dewarded {w.ward_type} +{w.gold_bounty}g")
+
+# Vision control by team
+radiant_obs = [w for w in result.wards.events if w.team == 2 and w.ward_type == "observer"]
+dire_obs = [w for w in result.wards.events if w.team == 3 and w.ward_type == "observer"]
+print(f"Observer wards: Radiant {len(radiant_obs)}, Dire {len(dire_obs)}")
 ```
 
 ---

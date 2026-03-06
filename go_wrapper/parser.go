@@ -86,6 +86,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 	var parserInfoResult *ParserInfo
 	var attacksResult *AttacksResult
 	var entityDeathsResult *EntityDeathsResult
+	var wardsResult *WardsResult
 
 	// Hero level tracking for combat log enrichment
 	// Maps hero name (e.g., "npc_dota_hero_axe") to current level
@@ -748,6 +749,155 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		})
 	}
 
+	// Wards collector (tracks ward placement, expiration, and dewarding)
+	// Maps entity index → index in wardsResult.Events for active wards
+	activeWards := make(map[int]int)
+
+	// Pending ward combat log deaths to correlate with entity deletions
+	type wardCombatLogDeath struct {
+		tick       uint32
+		wardType   string // "observer" or "sentry"
+		wardTeam   int    // team of the ward (from target_team)
+		wasKilled  bool   // true if a hero killed it (deward)
+		killedBy   string
+		killerTeam int
+		goldBounty int
+		matched    bool
+	}
+	var wardDeaths []wardCombatLogDeath
+
+	if config.Wards != nil {
+		wardsConfig := config.Wards
+		wardsResult = &WardsResult{
+			Events: make([]WardEvent, 0),
+		}
+		wardDeaths = make([]wardCombatLogDeath, 0)
+
+		// Track ward entity creation and deletion
+		parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
+			if e == nil {
+				return nil
+			}
+
+			className := e.GetClassName()
+			isObsWard := className == "CDOTA_NPC_Observer_Ward"
+			isSentryWard := className == "CDOTA_NPC_Observer_Ward_TrueSight"
+			if !isObsWard && !isSentryWard {
+				return nil
+			}
+
+			entityIdx := int(e.GetIndex())
+
+			if op.Flag(manta.EntityOpCreated) {
+				if wardsConfig.MaxEvents > 0 && len(wardsResult.Events) >= wardsConfig.MaxEvents {
+					return nil
+				}
+
+				wardType := "observer"
+				if isSentryWard {
+					wardType = "sentry"
+				}
+
+				var team int
+				if t, ok := e.GetInt32("m_iTeamNum"); ok {
+					team = int(t)
+				}
+
+				var x, y float32
+				if cellX, ok := e.GetUint64("CBodyComponent.m_cellX"); ok {
+					if cellY, ok2 := e.GetUint64("CBodyComponent.m_cellY"); ok2 {
+						if vecX, ok3 := e.GetFloat32("CBodyComponent.m_vecX"); ok3 {
+							if vecY, ok4 := e.GetFloat32("CBodyComponent.m_vecY"); ok4 {
+								x = float32(cellX)*128.0 + vecX - 8192.0
+								y = float32(cellY)*128.0 + vecY - 8192.0
+							}
+						}
+					}
+				}
+
+				// Try to get owner hero name from m_hOwnerEntity handle
+				var placedBy string
+				if ownerHandle, ok := e.GetUint64("m_hOwnerEntity"); ok && ownerHandle != 0 {
+					ownerIdx := int(ownerHandle & 0x3FFF)
+					if ownerEntity := parser.FindEntity(int32(ownerIdx)); ownerEntity != nil {
+						ownerClass := ownerEntity.GetClassName()
+						if strings.Contains(ownerClass, "CDOTA_Unit_Hero_") {
+							if n, ok2 := ownerEntity.GetString("m_iszUnitName"); ok2 && n != "" {
+								placedBy = n
+							} else {
+								placedBy = entityClassToHeroName(ownerClass)
+							}
+						}
+					}
+				}
+
+				wardIdx := len(wardsResult.Events)
+				wardsResult.Events = append(wardsResult.Events, WardEvent{
+					Tick:     int(parser.Tick),
+					EntityID: entityIdx,
+					WardType: wardType,
+					Team:     team,
+					X:        x,
+					Y:        y,
+					PlacedBy: placedBy,
+				})
+				activeWards[entityIdx] = wardIdx
+			}
+
+			if op.Flag(manta.EntityOpDeleted) {
+				if wardIdx, ok := activeWards[entityIdx]; ok {
+					wardsResult.Events[wardIdx].DeathTick = int(parser.Tick)
+					delete(activeWards, entityIdx)
+				}
+			}
+
+			return nil
+		})
+
+		// Collect ward deaths from combat log for post-processing correlation
+		parser.Callbacks.OnCMsgDOTACombatLogEntry(func(m *dota.CMsgDOTACombatLogEntry) error {
+			if m.GetType() != dota.DOTA_COMBATLOG_TYPES_DOTA_COMBATLOG_DEATH {
+				return nil
+			}
+
+			targetName := ""
+			if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetTargetName())); ok {
+				targetName = name
+			}
+
+			isObsDeath := targetName == "npc_dota_observer_wards"
+			isSentryDeath := targetName == "npc_dota_sentry_wards"
+			if !isObsDeath && !isSentryDeath {
+				return nil
+			}
+
+			attackerName := ""
+			if name, ok := parser.LookupStringByIndex("CombatLogNames", int32(m.GetAttackerName())); ok {
+				attackerName = name
+			}
+
+			// A deward is when a hero kills the ward (attacker is not the ward itself)
+			isDeward := strings.Contains(attackerName, "npc_dota_hero_")
+
+			wardType := "observer"
+			if isSentryDeath {
+				wardType = "sentry"
+			}
+
+			wardDeaths = append(wardDeaths, wardCombatLogDeath{
+				tick:       parser.Tick,
+				wardType:   wardType,
+				wardTeam:   int(m.GetTargetTeam()),
+				wasKilled:  isDeward,
+				killedBy:   attackerName,
+				killerTeam: int(m.GetAttackerTeam()),
+				goldBounty: int(m.GetValue()),
+			})
+
+			return nil
+		})
+	}
+
 	// Run the parser ONCE
 	if err := parser.Start(); err != nil {
 		return nil, fmt.Errorf("error parsing file: %w", err)
@@ -833,6 +983,72 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 		}
 		entityDeathsResult.TotalEvents = len(entityDeathsResult.Events)
 		result.EntityDeaths = entityDeathsResult
+	}
+
+	// Wards: correlate entity events with combat log deaths
+	if wardsResult != nil {
+		// Entity deletion happens ~200-400 ticks after combat log death event.
+		// Match each combat log death to the closest unmatched ward entity of same type.
+		const maxTickTolerance uint32 = 600
+		matchedWards := make(map[int]bool)
+
+		for di := range wardDeaths {
+			d := &wardDeaths[di]
+			var bestIdx int = -1
+			var bestTickDiff uint32 = maxTickTolerance
+
+			for wi := range wardsResult.Events {
+				if matchedWards[wi] {
+					continue
+				}
+				w := &wardsResult.Events[wi]
+				if w.WardType != d.wardType || w.DeathTick == 0 {
+					continue
+				}
+				// Entity deletion should be AFTER or near combat log death
+				entityTick := uint32(w.DeathTick)
+				clTick := d.tick
+				var tickDiff uint32
+				if entityTick >= clTick {
+					tickDiff = entityTick - clTick
+				} else {
+					tickDiff = clTick - entityTick
+				}
+				if tickDiff < bestTickDiff {
+					if d.wardTeam != 0 && w.Team != 0 && w.Team != d.wardTeam {
+						continue
+					}
+					bestTickDiff = tickDiff
+					bestIdx = wi
+				}
+			}
+
+			if bestIdx >= 0 {
+				w := &wardsResult.Events[bestIdx]
+				if d.wardTeam != 0 {
+					w.Team = d.wardTeam
+				}
+				if d.wasKilled {
+					w.WasKilled = true
+					w.KilledBy = d.killedBy
+					w.KillerTeam = d.killerTeam
+					w.GoldBounty = d.goldBounty
+				}
+				matchedWards[bestIdx] = true
+			}
+		}
+
+		// Post-process: add game time
+		for i := range wardsResult.Events {
+			wardsResult.Events[i].GameTime = TickToGameTime(uint32(wardsResult.Events[i].Tick), gameStartTick)
+			wardsResult.Events[i].GameTimeStr = FormatGameTime(wardsResult.Events[i].GameTime)
+			if wardsResult.Events[i].DeathTick > 0 {
+				wardsResult.Events[i].DeathGameTime = TickToGameTime(uint32(wardsResult.Events[i].DeathTick), gameStartTick)
+				wardsResult.Events[i].DeathGameTimeStr = FormatGameTime(wardsResult.Events[i].DeathGameTime)
+			}
+		}
+		wardsResult.TotalEvents = len(wardsResult.Events)
+		result.Wards = wardsResult
 	}
 
 	return result, nil

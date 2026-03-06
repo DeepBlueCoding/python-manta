@@ -307,57 +307,73 @@ juggernaut: (54 items)
 
 ## Ward Placement Analyzer
 
-Analyze ward placement patterns from pings and events.
+Analyze ward placement patterns, dewarding, and vision control using the `wards` collector.
 
 ```python
-from python_manta import MantaParser
-from collections import defaultdict
+from python_manta import Parser
+from collections import Counter
 
 def analyze_wards(demo_path: str):
-    parser = MantaParser()
+    parser = Parser(demo_path)
 
-    # Get ward-related entities at end of game
-    wards = parser.query_entities(
-        demo_path,
-        class_filter="Ward",
-        property_filter=["m_vecOrigin", "m_iTeamNum", "m_iHealth"],
-        max_entities=100
-    )
+    result = parser.parse(wards={})
+    wards = result.wards
 
     print("Ward Analysis")
     print("=" * 50)
+    print(f"Total wards: {wards.total_events}")
 
-    radiant_wards = []
-    dire_wards = []
+    observers = [w for w in wards.events if w.ward_type == "observer"]
+    sentries = [w for w in wards.events if w.ward_type == "sentry"]
+    print(f"Observers: {len(observers)}, Sentries: {len(sentries)}")
 
-    for ward in wards.entities:
-        pos = ward.properties.get("m_vecOrigin", [0, 0, 0])
-        team = ward.properties.get("m_iTeamNum", 0)
-        alive = ward.properties.get("m_iHealth", 0) > 0
+    # Team breakdown
+    radiant = [w for w in wards.events if w.team == 2]
+    dire = [w for w in wards.events if w.team == 3]
+    print(f"Radiant: {len(radiant)}, Dire: {len(dire)}")
 
-        ward_info = {
-            "class": ward.class_name,
-            "position": (pos[0], pos[1]),
-            "alive": alive
-        }
+    # Deward analysis
+    dewards = [w for w in wards.events if w.was_killed]
+    print(f"\nDewards: {len(dewards)}")
+    for w in dewards[:10]:
+        killer = w.killed_by.replace("npc_dota_hero_", "")
+        team = "Radiant" if w.team == 2 else "Dire"
+        print(f"  [{w.death_game_time_str}] {killer} dewarded {team} {w.ward_type} +{w.gold_bounty}g")
 
-        if team == 2:
-            radiant_wards.append(ward_info)
-        elif team == 3:
-            dire_wards.append(ward_info)
-
-    print(f"\nRadiant wards (end of game): {len(radiant_wards)}")
-    for w in radiant_wards:
-        status = "ALIVE" if w["alive"] else "dead"
-        print(f"  {w['class']}: ({w['position'][0]:.0f}, {w['position'][1]:.0f}) [{status}]")
-
-    print(f"\nDire wards (end of game): {len(dire_wards)}")
-    for w in dire_wards:
-        status = "ALIVE" if w["alive"] else "dead"
-        print(f"  {w['class']}: ({w['position'][0]:.0f}, {w['position'][1]:.0f}) [{status}]")
+    # Ward placement by hero
+    placer_counts = Counter(
+        w.placed_by.replace("npc_dota_hero_", "")
+        for w in wards.events if w.placed_by
+    )
+    print(f"\nWards placed by hero:")
+    for hero, count in placer_counts.most_common():
+        print(f"  {hero}: {count}")
 
 # Usage
 analyze_wards("match.dem")
+```
+
+**Expected Output (TI match - Team Spirit vs Tundra):**
+```
+Ward Analysis
+==================================================
+Total wards: 105
+Observers: 38, Sentries: 67
+Radiant: 48, Dire: 48
+
+Dewards: 33
+  [22:39] hoodwink dewarded Dire sentry +50g
+  [17:56] chen dewarded Dire sentry +50g
+  [27:38] monkey_king dewarded Dire observer +50g
+  [24:43] shadow_shaman dewarded Radiant observer +50g
+  ...
+
+Wards placed by hero:
+  chen: 35
+  shadow_shaman: 28
+  hoodwink: 15
+  pugna: 8
+  storm_spirit: 2
 ```
 
 ---

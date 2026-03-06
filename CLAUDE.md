@@ -309,6 +309,7 @@ result = parser.parse_range(start_tick=25000, end_tick=35000, combat_log=True)
 | Buff tracking | `modifiers={}` | Active buffs/debuffs |
 | Game events | `game_events={}` | 364 named event types |
 | Player info | `string_tables={"table_names": ["userinfo"]}` | Steam IDs, names |
+| Ward lifecycle | `wards={}` | Placement, expiration, dewarding |
 
 **Advanced Operations:**
 

@@ -97,6 +97,10 @@ from .manta_python import (
     EntityDeath,
     EntityDeathsConfig,
     EntityDeathsResult,
+    # Wards (observer/sentry lifecycle)
+    WardEvent,
+    WardsConfig,
+    WardsResult,
     # Respawn events (derived from combat log)
     HeroRespawnEvent,
     calculate_respawn_time,
@@ -105,7 +109,7 @@ from .manta_python import (
     ParserInfo,
 )
 
-__version__ = "1.4.7.4.dev4"
+__version__ = "1.4.7.5.dev2"
 __author__ = "Equilibrium Coach Team"
 __description__ = "Python interface for Manta Dota 2 replay parser"
 
@@ -194,6 +198,10 @@ __all__ = [
     "EntityDeath",
     "EntityDeathsConfig",
     "EntityDeathsResult",
+    # Wards (observer/sentry lifecycle)
+    "WardEvent",
+    "WardsConfig",
+    "WardsResult",
     # Respawn events (derived from combat log)
     "HeroRespawnEvent",
     "calculate_respawn_time",

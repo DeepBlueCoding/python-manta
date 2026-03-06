@@ -2541,6 +2541,40 @@ class EntityDeathsResult(BaseModel):
 
 
 # ============================================================================
+# WARDS (observer/sentry ward lifecycle tracking)
+# ============================================================================
+
+
+class WardEvent(BaseModel):
+    """Represents a ward placement with its full lifecycle.
+
+    Tracks placement, expiration, and dewarding for observer and sentry wards.
+    """
+    tick: int = 0
+    game_time: float = 0.0
+    game_time_str: str = ""
+    entity_id: int = 0
+    ward_type: str = ""        # "observer" or "sentry"
+    team: int = 0              # 2=Radiant, 3=Dire
+    x: float = 0.0
+    y: float = 0.0
+    placed_by: str = ""
+    death_tick: int = 0
+    death_game_time: float = 0.0
+    death_game_time_str: str = ""
+    was_killed: bool = False
+    killed_by: str = ""
+    killer_team: int = 0
+    gold_bounty: int = 0
+
+
+class WardsResult(BaseModel):
+    """Result from ward lifecycle tracking."""
+    events: List[WardEvent] = []
+    total_events: int = 0
+
+
+# ============================================================================
 # HERO RESPAWN EVENT MODEL AND UTILITY
 # ============================================================================
 
@@ -2721,6 +2755,11 @@ class EntityDeathsConfig(BaseModel):
     include_creeps: bool = False  # Include creeps (default False for performance)
 
 
+class WardsConfig(BaseModel):
+    """Config for ward lifecycle tracking."""
+    max_events: int = 0  # Max events (0 = unlimited)
+
+
 class ParseConfig(BaseModel):
     """Configuration for single-pass parsing with multiple collectors."""
     header: Optional[HeaderCollectorConfig] = None
@@ -2734,6 +2773,7 @@ class ParseConfig(BaseModel):
     parser_info: Optional[ParserInfoCollectorConfig] = None
     attacks: Optional[AttacksConfig] = None
     entity_deaths: Optional[EntityDeathsConfig] = None
+    wards: Optional[WardsConfig] = None
 
 
 class MessagesResult(BaseModel):
@@ -2762,6 +2802,7 @@ class ParseResult(BaseModel):
     parser_info: Optional[ParserInfo] = None
     attacks: Optional[AttacksResult] = None
     entity_deaths: Optional[EntityDeathsResult] = None
+    wards: Optional[WardsResult] = None
 
 
 class StreamConfig(BaseModel):
@@ -3235,6 +3276,7 @@ class Parser:
         parser_info: bool = False,
         attacks: Optional[Dict[str, Any]] = None,
         entity_deaths: Optional[Dict[str, Any]] = None,
+        wards: Optional[Dict[str, Any]] = None,
     ) -> ParseResult:
         """Parse the demo file with specified collectors.
 
@@ -3296,6 +3338,9 @@ class Parser:
 
         if entity_deaths is not None:
             config.entity_deaths = EntityDeathsConfig(**entity_deaths)
+
+        if wards is not None:
+            config.wards = WardsConfig(**wards)
 
         path_bytes = actual_path.encode('utf-8')
         config_json = config.model_dump_json(exclude_none=True).encode('utf-8')

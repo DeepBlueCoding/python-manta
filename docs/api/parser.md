@@ -40,7 +40,16 @@ def parse(
     self,
     header: bool = False,
     game_info: bool = False,
-    messages: Optional[Union[bool, Dict[str, Any]]] = None
+    combat_log: Optional[Dict[str, Any]] = None,
+    entities: Optional[Dict[str, Any]] = None,
+    game_events: Optional[Dict[str, Any]] = None,
+    modifiers: Optional[Dict[str, Any]] = None,
+    string_tables: Optional[Dict[str, Any]] = None,
+    messages: Optional[Dict[str, Any]] = None,
+    parser_info: bool = False,
+    attacks: Optional[Dict[str, Any]] = None,
+    entity_deaths: Optional[Dict[str, Any]] = None,
+    wards: Optional[Dict[str, Any]] = None,
 ) -> ParseResult
 ```
 
@@ -49,9 +58,16 @@ Parses the demo file with the specified collectors enabled.
 **Parameters:**
 - `header`: Enable header collector (match metadata)
 - `game_info`: Enable game info collector (draft, players, teams)
-- `messages`: Enable messages collector. Can be:
-  - `True` - collect all messages
-  - `{"filter": "...", "max_messages": N}` - filter and limit messages
+- `combat_log`: Combat log config (`{"types": [0, 4], "max_entries": 100, "heroes_only": True}`)
+- `entities`: Entity snapshots config (`{"interval_ticks": 1800, "max_snapshots": 50}`)
+- `game_events`: Game events config (`{"event_filter": "kill", "max_events": 100}`)
+- `modifiers`: Modifiers config (`{"max_modifiers": 1000, "auras_only": True}`)
+- `string_tables`: String tables config (`{"table_names": ["userinfo"]}`)
+- `messages`: Messages config (`{"filter": "ChatMessage", "max_messages": 100}`)
+- `parser_info`: Enable parser info collector
+- `attacks`: Attacks config (`{"max_events": 1000}`)
+- `entity_deaths`: Entity deaths config (`{"heroes_only": True}`)
+- `wards`: Wards config (`{"max_events": 0}`) — tracks observer/sentry ward lifecycle
 
 **Returns:** [`ParseResult`](#parseresult)
 
@@ -88,14 +104,32 @@ class ParseResult(BaseModel):
     success: bool
     header: Optional[HeaderInfo] = None
     game_info: Optional[GameInfo] = None
+    combat_log: Optional[CombatLogResult] = None
+    entities: Optional[EntityParseResult] = None
+    game_events: Optional[GameEventsResult] = None
+    modifiers: Optional[ModifiersResult] = None
+    string_tables: Optional[StringTablesResult] = None
     messages: Optional[MessagesResult] = None
+    parser_info: Optional[ParserInfo] = None
+    attacks: Optional[AttacksResult] = None
+    entity_deaths: Optional[EntityDeathsResult] = None
+    wards: Optional[WardsResult] = None
 ```
 
 **Fields:**
 - `success`: Whether parsing completed successfully
 - `header`: Header data if `header=True` was specified
 - `game_info`: Game info if `game_info=True` was specified
+- `combat_log`: Combat log data if `combat_log=...` was specified
+- `entities`: Entity snapshots if `entities=...` was specified
+- `game_events`: Game events if `game_events=...` was specified
+- `modifiers`: Modifier data if `modifiers=...` was specified
+- `string_tables`: String table data if `string_tables=...` was specified
 - `messages`: Messages if `messages=...` was specified
+- `parser_info`: Parser state if `parser_info=True` was specified
+- `attacks`: Attack events if `attacks=...` was specified
+- `entity_deaths`: Entity death events if `entity_deaths=...` was specified
+- `wards`: Ward lifecycle events if `wards=...` was specified
 
 ---
 
