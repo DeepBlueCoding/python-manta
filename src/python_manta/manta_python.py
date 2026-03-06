@@ -2173,6 +2173,13 @@ class EntitySnapshot(BaseModel):
     teams: List[TeamState] = []
     raw_entities: Optional[Dict[str, Any]] = None
 
+    # Day/night cycle (from CDOTAGamerulesProxy)
+    is_night: bool = False
+    is_nightstalker_night: bool = False
+    is_temporary_night: bool = False
+    is_temporary_day: bool = False
+    net_time_of_day: int = 0
+
     @property
     def game_time_str(self) -> str:
         """Formatted game time like '-0:40' or '3:07'."""
@@ -3045,6 +3052,10 @@ class HeroSnapshot(BaseModel):
     # Inventory (slots 0-5: main, 6-8: backpack, 9: TP, 10-15: stash, 16: neutral)
     inventory: List[ItemSnapshot] = []
 
+    # Vision ranges (live values, modified by items/spells)
+    day_vision_range: int = 0
+    night_vision_range: int = 0
+
     # Clone/illusion flags
     is_illusion: bool = False
     is_clone: bool = False
@@ -3133,6 +3144,13 @@ class EntityStateSnapshot(BaseModel):
     heroes: List[HeroSnapshot] = []
     success: bool = True
     error: Optional[str] = None
+
+    # Day/night cycle (from CDOTAGamerulesProxy)
+    is_night: bool = False
+    is_nightstalker_night: bool = False
+    is_temporary_night: bool = False
+    is_temporary_day: bool = False
+    net_time_of_day: int = 0
 
 
 class RangeParseConfig(BaseModel):

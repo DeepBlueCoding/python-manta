@@ -176,6 +176,10 @@ type HeroSnapshot struct {
 	// Inventory (slots 0-5: main, 6-8: backpack, 9: TP, 10-15: stash, 16: neutral)
 	Inventory []ItemSnapshot `json:"inventory,omitempty"`
 
+	// Vision
+	DayTimeVisionRange   int `json:"day_vision_range"`
+	NightTimeVisionRange int `json:"night_vision_range"`
+
 	// Clone/illusion flags
 	IsClone    bool `json:"is_clone,omitempty"`
 	IsIllusion bool `json:"is_illusion,omitempty"`

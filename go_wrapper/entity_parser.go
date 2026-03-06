@@ -22,6 +22,13 @@ type EntitySnapshot struct {
 	Creeps      []CreepSnapshot        `json:"creeps,omitempty"` // Only populated when IncludeCreeps=true
 	Teams       []TeamState            `json:"teams"`
 	RawEntities map[string]interface{} `json:"raw_entities,omitempty"`
+
+	// Day/night cycle (from CDOTAGamerulesProxy)
+	IsNight             bool `json:"is_night"`
+	IsNightstalkerNight bool `json:"is_nightstalker_night"`
+	IsTemporaryNight    bool `json:"is_temporary_night"`
+	IsTemporaryDay      bool `json:"is_temporary_day"`
+	NetTimeOfDay        int  `json:"net_time_of_day"`
 }
 
 // PlayerState represents a player's stats at a given tick
@@ -485,6 +492,31 @@ func captureSnapshot(parser *manta.Parser, gameTime float32, config EntityParseC
 		snapshot.Creeps = captureCreepSnapshots(parser)
 	}
 
+	// Extract day/night cycle from CDOTAGamerulesProxy
+	gameRules := parser.FilterEntity(func(e *manta.Entity) bool {
+		if e == nil {
+			return false
+		}
+		return strings.Contains(e.GetClassName(), "CDOTAGamerulesProxy")
+	})
+	if len(gameRules) > 0 {
+		gr := gameRules[0]
+		if isNight, ok := gr.GetBool("m_pGameRules.m_bIsNightstalkerNight"); ok {
+			snapshot.IsNightstalkerNight = isNight
+		}
+		if isNight, ok := gr.GetBool("m_pGameRules.m_bIsTemporaryNight"); ok {
+			snapshot.IsTemporaryNight = isNight
+		}
+		if isDay, ok := gr.GetBool("m_pGameRules.m_bIsTemporaryDay"); ok {
+			snapshot.IsTemporaryDay = isDay
+		}
+		if netTOD, ok := gr.GetInt32("m_pGameRules.m_iNetTimeOfDay"); ok {
+			snapshot.NetTimeOfDay = int(netTOD)
+			// Derive is_night from NetTimeOfDay: 0-20000 = night, 20000-65535 = day
+			snapshot.IsNight = netTOD < 20000
+		}
+	}
+
 	return snapshot
 }
 
@@ -850,6 +882,14 @@ func extractFullHeroSnapshot(entity *manta.Entity, playerIdx int, heroID int, pa
 	}
 	if atkRange, ok := entity.GetInt32("m_iAttackRange"); ok {
 		hero.AttackRange = int(atkRange)
+	}
+
+	// Vision ranges (live values, modified by items/spells)
+	if dayVision, ok := entity.GetInt32("m_iDayTimeVisionRange"); ok {
+		hero.DayTimeVisionRange = int(dayVision)
+	}
+	if nightVision, ok := entity.GetInt32("m_iNightTimeVisionRange"); ok {
+		hero.NightTimeVisionRange = int(nightVision)
 	}
 
 	// Attributes (total values including bonuses)

@@ -1418,6 +1418,9 @@ class HeroSnapshot(BaseModel):
     ability_points: int = 0                # Unspent ability points
     # Inventory (slots 0-5: main, 6-8: backpack, 9: TP, 10-15: stash, 16: neutral)
     inventory: List[ItemSnapshot] = []     # All items in inventory
+    # Vision (live values, modified by items/spells/abilities)
+    day_vision_range: int = 0     # Day vision range (default 1800, NS has 800)
+    night_vision_range: int = 0   # Night vision range (default 800, Slark has 1800, NS has 1800)
 
     # Properties and methods
     has_ultimate: bool            # True if ultimate ability has been learned
@@ -1445,6 +1448,12 @@ class EntityStateSnapshot(BaseModel):
     heroes: List[HeroSnapshot] = [] # All hero states
     success: bool = True            # Parse success flag
     error: Optional[str] = None     # Error message if failed
+    # Day/night cycle
+    is_night: bool = False              # True during nighttime
+    is_nightstalker_night: bool = False # True during Night Stalker ultimate darkness
+    is_temporary_night: bool = False    # True during temporary night (e.g., NS ult)
+    is_temporary_day: bool = False      # True during temporary day
+    net_time_of_day: int = 0            # Raw time-of-day value (0-65535, <20000 = night)
 ```
 
 **Example - Basic Hero State:**

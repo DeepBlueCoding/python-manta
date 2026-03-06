@@ -41,6 +41,13 @@ type EntityStateSnapshot struct {
 	Heroes   []HeroSnapshot `json:"heroes"`
 	Success  bool           `json:"success"`
 	Error    string         `json:"error,omitempty"`
+
+	// Day/night cycle
+	IsNight             bool `json:"is_night"`
+	IsNightstalkerNight bool `json:"is_nightstalker_night"`
+	IsTemporaryNight    bool `json:"is_temporary_night"`
+	IsTemporaryDay      bool `json:"is_temporary_day"`
+	NetTimeOfDay        int  `json:"net_time_of_day"`
 }
 
 // SnapshotConfig configures snapshot capture
@@ -239,6 +246,7 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 	var playerResource *manta.Entity
 	var dataRadiant *manta.Entity
 	var dataDire *manta.Entity
+	var gameRulesProxy *manta.Entity
 
 	parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
 		if e == nil || reachedTarget {
@@ -248,11 +256,16 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 		className := e.GetClassName()
 		currentTick := int(parser.Tick)
 
-		// Track game start time
+		// Track game start time and gamerules proxy
 		if strings.Contains(className, "CDOTAGamerulesProxy") {
 			if gst, ok := e.GetFloat32("m_pGameRules.m_flGameStartTime"); ok && gst > 0 && gameStartTime == 0 {
 				gameStartTime = gst
 				gameStartTick = parser.Tick
+			}
+			if op.Flag(manta.EntityOpCreated) || op.Flag(manta.EntityOpUpdated) {
+				gameRulesProxy = e
+			} else if op.Flag(manta.EntityOpDeleted) {
+				gameRulesProxy = nil
 			}
 		}
 
@@ -373,6 +386,23 @@ func getEntitySnapshot(filePath string, config SnapshotConfig) *EntityStateSnaps
 					}
 
 					snapshot.Heroes = append(snapshot.Heroes, hero)
+				}
+			}
+
+			// Extract day/night cycle from CDOTAGamerulesProxy
+			if gameRulesProxy != nil {
+				if isNight, ok := gameRulesProxy.GetBool("m_pGameRules.m_bIsNightstalkerNight"); ok {
+					snapshot.IsNightstalkerNight = isNight
+				}
+				if isNight, ok := gameRulesProxy.GetBool("m_pGameRules.m_bIsTemporaryNight"); ok {
+					snapshot.IsTemporaryNight = isNight
+				}
+				if isDay, ok := gameRulesProxy.GetBool("m_pGameRules.m_bIsTemporaryDay"); ok {
+					snapshot.IsTemporaryDay = isDay
+				}
+				if netTOD, ok := gameRulesProxy.GetInt32("m_pGameRules.m_iNetTimeOfDay"); ok {
+					snapshot.NetTimeOfDay = int(netTOD)
+					snapshot.IsNight = netTOD < 20000
 				}
 			}
 
