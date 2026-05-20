@@ -37,6 +37,10 @@ src/python_manta/libmanta_wrapper.h
 # MkDocs site output
 site/
 
+# Generated LLM docs (created by scripts/generate_llms_txt.py)
+docs/llms.txt
+docs/llms-full.txt
+
 # Test fixtures
 tests/fixtures/replays/*.dem
 

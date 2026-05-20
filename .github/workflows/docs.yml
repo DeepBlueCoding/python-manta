@@ -8,6 +8,7 @@ on:
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
+      - 'scripts/generate_llms_txt.py'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
@@ -29,7 +30,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install mkdocs-material mike
+        run: pip install mkdocs-material mike pyyaml
+
+      - name: Generate LLM-friendly docs
+        run: python scripts/generate_llms_txt.py
 
       - name: Configure Git
         run: |
