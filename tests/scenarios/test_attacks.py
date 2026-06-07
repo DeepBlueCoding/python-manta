@@ -19,7 +19,7 @@ EXPECTED_RANGED_ATTACKS = 15895
 # First ranged attack with hero attacker (Troll Warlord in ranged form)
 FIRST_TROLL_RANGED = {
     "tick": 28220,
-    "game_time_str": "15:40",
+    "game_time_str": "-0:47",
     "source_index": 1322,
     "target_index": 1673,
     "attacker_name": "npc_dota_hero_troll_warlord",
@@ -31,7 +31,7 @@ FIRST_TROLL_RANGED = {
 # First Troll Warlord melee attack (with all combat log fields)
 FIRST_TROLL_MELEE = {
     "tick": 28228,
-    "game_time_str": "15:40",
+    "game_time_str": "-0:47",
     "source_index": 1322,
     "attacker_name": "npc_dota_hero_troll_warlord",
     "target_name": "npc_dota_neutral_polar_furbolg_champion",
@@ -51,7 +51,7 @@ FIRST_TROLL_MELEE = {
 # First hero vs hero melee attack (Faceless Void vs Hoodwink)
 FIRST_HERO_VS_HERO_MELEE = {
     "tick": 29552,
-    "game_time_str": "16:25",
+    "game_time_str": "-0:03",
     "attacker_name": "npc_dota_hero_faceless_void",
     "target_name": "npc_dota_hero_hoodwink",
     "damage": 51,
@@ -66,7 +66,7 @@ FIRST_HERO_VS_HERO_MELEE = {
 # First Troll Warlord last hit (target_health=0)
 FIRST_TROLL_LAST_HIT = {
     "tick": 30950,
-    "game_time_str": "17:11",
+    "game_time_str": "0:43",
     "attacker_name": "npc_dota_hero_troll_warlord",
     "target_name": "npc_dota_creep_badguys_melee",
     "damage": 60,
@@ -78,7 +78,7 @@ FIRST_TROLL_LAST_HIT = {
 # First hero building attack (Troll hitting tower)
 FIRST_HERO_BUILDING_ATTACK = {
     "tick": 43040,
-    "game_time_str": "23:54",
+    "game_time_str": "7:26",
     "attacker_name": "npc_dota_hero_troll_warlord",
     "target_name": "npc_dota_badguys_tower1_bot",
     "damage": 23,
@@ -92,7 +92,7 @@ FIRST_HERO_BUILDING_ATTACK = {
 # First illusion melee attack
 FIRST_ILLUSION_ATTACK = {
     "tick": 61469,
-    "game_time_str": "34:08",
+    "game_time_str": "17:40",
     "attacker_name": "npc_dota_hero_storm_spirit",
     "target_name": "npc_dota_hero_bristleback",
     "is_attacker_illusion": True,
@@ -102,7 +102,7 @@ FIRST_ILLUSION_ATTACK = {
 # First deny (same team last hit)
 FIRST_DENY = {
     "tick": 30458,
-    "game_time_str": "16:55",
+    "game_time_str": "0:27",
     "attacker_name": "npc_dota_hero_storm_spirit",
     "target_name": "npc_dota_creep_badguys_melee",
     "damage": 49,
@@ -114,7 +114,7 @@ FIRST_DENY = {
 # First Pugna ranged attack (attacking Troll Warlord)
 FIRST_PUGNA_RANGED = {
     "tick": 29610,
-    "game_time_str": "16:27",
+    "game_time_str": "-0:01",
     "source_index": 469,
     "target_index": 1322,
     "attacker_name": "npc_dota_hero_pugna",

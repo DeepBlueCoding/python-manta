@@ -107,3 +107,32 @@ class TestWardGameTime:
         for ward in wards_result.events:
             assert ward.game_time_str != ""
             assert ":" in ward.game_time_str
+
+
+class TestGameStartClockWithoutCombatLog:
+    """Regression: ward game_time must use the horn offset even when the
+    combat_log collector is disabled.
+
+    gameStartTick used to be set ONLY inside the combat log callback, so a
+    wards-only parse (exactly what the wards_result fixture does) silently
+    degraded TickToGameTime to tick/30: the first ward of this match showed
+    game_time ~929s ("15:29") instead of -58.6s ("-0:58"). The fix adds an
+    always-on gamerules (m_pGameRules.m_flGameStartTime) fallback detector.
+    """
+
+    def test_first_ward_is_pre_horn(self, wards_result):
+        first = min(wards_result.events, key=lambda e: e.tick)
+        assert first.tick == 27886
+        assert first.game_time == pytest.approx(-58.6, abs=0.1)
+        assert first.game_time_str == "-0:58"
+
+    def test_pre_horn_ward_count(self, wards_result):
+        pre_horn = [e for e in wards_result.events if e.game_time < 0]
+        assert len(pre_horn) == 5
+
+    def test_clock_matches_combat_log_detector(self, parser):
+        """The gamerules fallback and the GAME_STATE=5 detector must agree."""
+        result = parser.parse(wards={}, combat_log={"types": [4], "max_entries": 5})
+        assert result.success
+        first = min(result.wards.events, key=lambda e: e.tick)
+        assert first.game_time == pytest.approx(-58.6, abs=0.1)

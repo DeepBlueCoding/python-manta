@@ -321,26 +321,33 @@ class TestAttacksCollector:
         assert hero_attacks == 7387
         assert non_hero_attacks == 25508
 
-    def test_attacks_game_time_is_positive(self, attacks_limited):
-        """Test that game_time values are positive (attacks after horn)."""
+    def test_attacks_game_time_is_horn_relative(self, attacks_limited):
+        """game_time is horn-relative: pre-horn attacks are NEGATIVE.
+
+        The old assertion (game_time > 0 for every attack) encoded the broken
+        clock: without the gamerules game-start detector, game_time degraded
+        to tick/30 and everything looked positive. Real matches have pre-horn
+        attacks (jungle aggro, lane poke), bounded by the ~90 s pre-game.
+        """
         result = attacks_limited
         assert result.attacks is not None
 
         for event in result.attacks.events:
-            assert event.game_time > 0
+            assert event.game_time > -90
             assert ":" in event.game_time_str
 
     def test_attacks_first_event_timing(self, attacks_result):
         """Test first attack event timing matches real data.
 
-        First attack in match: tick=28038, game_time=15:34
+        First attack in match: tick=28038, game_time=-0:53 (pre-horn poke;
+        the horn is at game_time 0, draft/pre-game ticks come before it).
         """
         assert attacks_result is not None
         assert len(attacks_result.events) > 0
 
         first = attacks_result.events[0]
         assert first.tick == 28038
-        assert first.game_time_str == "15:34"
+        assert first.game_time_str == "-0:53"
 
     def test_attacks_projectile_speeds_are_valid(self, attacks_limited):
         """Test that ranged attack projectile speeds are within expected range."""

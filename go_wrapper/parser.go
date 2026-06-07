@@ -92,6 +92,27 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 	// Maps hero name (e.g., "npc_dota_hero_axe") to current level
 	heroLevels := make(map[string]int32)
 
+	// Always-on game-start (horn) detection via the gamerules entity.
+	// Collectors that convert ticks to game_time (wards, attacks,
+	// entity_deaths) must work even when the combat_log collector is
+	// disabled: previously gameStartTick was only set inside the combat
+	// log callback, and without it every TickToGameTime call silently
+	// degraded to tick/30 (no horn offset). The combat log GAME_STATE
+	// detector below keeps precedence (it may overwrite this fallback),
+	// so behavior with combat_log enabled is unchanged.
+	parser.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
+		if e == nil || gameStartTick != 0 {
+			return nil
+		}
+		if strings.Contains(e.GetClassName(), "CDOTAGamerulesProxy") {
+			if gst, ok := e.GetFloat32("m_pGameRules.m_flGameStartTime"); ok && gst > 0 {
+				gameStartTime = gst
+				gameStartTick = parser.Tick
+			}
+		}
+		return nil
+	})
+
 	// Setup collectors based on config
 
 	// Header collector
