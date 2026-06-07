@@ -19,13 +19,9 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-# Check if Manta repository exists
-MANTA_PATH="../manta"
-if [ ! -d "$MANTA_PATH" ]; then
-    echo "❌ Manta repository not found at $MANTA_PATH"
-    echo "   Please ensure the Manta repository is cloned at the expected location"
-    exit 1
-fi
+# Sync the manta dependency (go_wrapper/manta) to the version locked in .manta-version
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$SCRIPT_DIR/tools/prepare_manta.sh"
 
 echo "✅ Prerequisites check passed"
 
