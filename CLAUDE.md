@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Python Manta** is a Python wrapper/bindings for the [dotabuff/manta](https://github.com/dotabuff/manta) Go library that parses Dota 2 replay files (`.dem`). It uses CGO to create Python bindings for the Go parser, implementing all 272 Manta callbacks for comprehensive replay data extraction.
+**Python Manta** is a Python wrapper/bindings for the [dotabuff/manta](https://github.com/dotabuff/manta) Go library that parses Dota 2 replay files (`.dem`). It uses CGO to create Python bindings for the Go parser, implementing all 282 Manta callbacks for comprehensive replay data extraction.
 
 **Important**: This is a wrapper library. The actual parsing is done by [dotabuff/manta](https://github.com/dotabuff/manta) - we just provide Python bindings.
 
@@ -69,7 +69,7 @@ class Item(str, Enum):
 ├─────────────────────────────────────────────────────────────┤
 │  libmanta_wrapper.so (go_wrapper/)                          │
 │  ├── CGO exports (Parse, BuildIndex, GetSnapshot, etc.)     │
-│  ├── 272 callback implementations (callbacks_*.go)          │
+│  ├── 282 callback implementations (callbacks_*.go)          │
 │  └── JSON serialization                                      │
 ├─────────────────────────────────────────────────────────────┤
 │  dotabuff/manta (external Go library at ../manta)           │
@@ -89,7 +89,7 @@ class Item(str, Enum):
 | `go_wrapper/universal_parser.go` | Universal parsing with callback filtering |
 | `go_wrapper/data_parser.go` | Game events, modifiers, entities, combat log, string tables |
 | `go_wrapper/entity_parser.go` | Entity state snapshot tracking |
-| `go_wrapper/callbacks_*.go` | All 272 callback implementations |
+| `go_wrapper/callbacks_*.go` | All 282 callback implementations |
 | `build.sh` | Build script for CGO shared library |
 | `pyproject.toml` | Python package configuration |
 
@@ -321,7 +321,7 @@ result = parser.parse_range(start_tick=25000, end_tick=35000, combat_log=True)
 | Build keyframe index | `parser.build_index(interval_ticks=1800)` |
 | Events in tick range | `parser.parse_range(start_tick=..., end_tick=..., combat_log=True)` |
 
-See README.md for complete list of all 272 callbacks.
+See README.md for complete list of all 282 callbacks.
 
 ## Testing Strategy
 
@@ -345,7 +345,7 @@ The `parse_universal` filter uses substring matching:
 All Go→Python data exchange uses JSON to avoid complex struct marshaling.
 
 ### Callback Registration
-All 272 callbacks are registered on every parse, but filtering happens in `addFilteredMessage()` which skips non-matching types.
+All 282 callbacks are registered on every parse, but filtering happens in `addFilteredMessage()` which skips non-matching types.
 
 ### Time Formatting in Documentation
 **NEVER** display time as decimal minutes (e.g., "77.9 minutes"). Always use proper human-readable formats:

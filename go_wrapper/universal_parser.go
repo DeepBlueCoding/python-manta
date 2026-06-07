@@ -92,7 +92,7 @@ func RunUniversal(filePath string, filter string, maxMessages int) (*UniversalPa
 	return result, nil
 }
 
-// setupAllCallbacks sets up ALL 272+ Manta callbacks using modular functions
+// setupAllCallbacks sets up ALL 282+ Manta callbacks using modular functions
 func setupAllCallbacks(parser *manta.Parser, messages *[]MessageEvent, filter string, maxMsgs int) {
 	// Use modular callback setup functions
 	setupDemoCallbacks(parser, messages, filter, maxMsgs)

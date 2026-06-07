@@ -2041,8 +2041,13 @@ class HeaderInfo(BaseModel):
     server_name: str
     client_name: str
     game_directory: str
-    network_protocol: int
+    patch_version: int
     demo_file_stamp: str
+
+    @property
+    def network_protocol(self) -> int:
+        """Deprecated alias: upstream manta renamed network_protocol to patch_version (same field)."""
+        return self.patch_version
     build_num: int
     game_build: int = 0  # Extracted from game_directory (e.g., 6559 from /dota_v6559/)
     game: str
@@ -3640,7 +3645,7 @@ def _run_cli(argv=None):
         print(f"  Server: {header.server_name}")
         print(f"  Client: {header.client_name}")
         print(f"  Game Directory: {header.game_directory}")
-        print(f"  Network Protocol: {header.network_protocol}")
+        print(f"  Patch Version: {header.patch_version}")
         print(f"  Demo File Stamp: {header.demo_file_stamp}")
         print(f"  Build Num: {header.build_num}")
         print(f"  Game: {header.game}")

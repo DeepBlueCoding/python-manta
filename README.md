@@ -55,7 +55,7 @@ Users should build analysis logic on top of the raw data we provide.
 - [String Tables](#string-tables)
 - [Combat Log](#combat-log)
 - [Parser Info](#parser-info)
-- [Supported Callbacks (272 Total)](#supported-callbacks-272-total)
+- [Supported Callbacks (282 Total)](#supported-callbacks-282-total)
 - [Data Models](#data-models)
 - [Common Use Cases](#common-use-cases)
 - [Development Setup](#development-setup)
@@ -136,7 +136,7 @@ result = parser.parse(header=True)
 print(f"Map: {result.header.map_name}")
 print(f"Server: {result.header.server_name}")
 print(f"Build: {result.header.build_num}")
-print(f"Network Protocol: {result.header.network_protocol}")
+print(f"Patch Version: {result.header.patch_version}")
 ```
 
 ### Parse Specific Messages
@@ -425,9 +425,9 @@ print(f"String tables: {info.string_tables}")
 
 ---
 
-## Supported Callbacks (272 Total)
+## Supported Callbacks (282 Total)
 
-Python Manta implements **all 272 Manta callbacks**. Use these exact names with `parse_universal()`.
+Python Manta implements **all 282 Manta callbacks**. Use these exact names with `parse_universal()`.
 
 ### Communication & Chat
 
@@ -570,6 +570,7 @@ Python Manta implements **all 272 Manta callbacks**. Use these exact names with 
 - `CSVCMsg_GetCvarValue`
 - `CSVCMsg_HLTVStatus`
 - `CSVCMsg_HltvFixupOperatorStatus`
+- `CSVCMsg_NextMsgPredicted`
 - `CSVCMsg_Menu`
 - `CSVCMsg_PacketEntities`
 - `CSVCMsg_PacketReliable`
@@ -661,6 +662,13 @@ Python Manta implements **all 272 Manta callbacks**. Use these exact names with 
 - `CDOTAUserMsg_CompendiumState`
 - `CDOTAUserMsg_ContextualTip`
 - `CDOTAUserMsg_CourierKilledAlert`
+- `CDOTAUserMsg_CourierLeftFountainAlert`
+- `CDOTAUserMsg_GiveItem`
+- `CDOTAUserMsg_KillEffect`
+- `CDOTAUserMsg_MonsterHunter_HuntAlert`
+- `CDOTAUserMsg_MonsterHunter_InvestigationGameState`
+- `CDOTAUserMsg_MonsterHunter_InvestigationsAvailable`
+- `CDOTAUserMsg_TormentorTimer`
 - `CDOTAUserMsg_CreateLinearProjectile`
 - `CDOTAUserMsg_CustomHeaderMessage`
 - `CDOTAUserMsg_CustomHudElement_Create`
@@ -808,7 +816,9 @@ Python Manta implements **all 272 Manta callbacks**. Use these exact names with 
 <details>
 <summary><strong>Miscellaneous Messages (15 callbacks)</strong></summary>
 
-- `CMsgClearDecalsForSkeletonInstanceEvent`
+- `CMsgClearDecalsForEntityEvent`
+- `CMsgClothStiffenAnimEvent`
+- `CMsgClothEffectAnimEvent`
 - `CMsgClearEntityDecalsEvent`
 - `CMsgClearWorldDecalsEvent`
 - `CMsgDOTACombatLogEntry`
@@ -841,7 +851,7 @@ class HeaderInfo(BaseModel):
     server_name: str           # Server identifier
     client_name: str           # Client type
     game_directory: str        # Game directory path
-    network_protocol: int      # Network protocol version
+    patch_version: int         # Patch version (formerly network_protocol)
     demo_file_stamp: str       # Demo file signature
     build_num: int             # Game build number
     game: str                  # Game identifier
@@ -1172,7 +1182,7 @@ python run_tests.py --all --coverage
 ├─────────────────────────────────────────────────────────────┤
 │  libmanta_wrapper.so (CGO Shared Library)                   │
 │  ├── CGO exports (Parse, BuildIndex, GetSnapshot, etc.)     │
-│  ├── 272 callback implementations                           │
+│  ├── 282 callback implementations                           │
 │  └── JSON serialization                                      │
 ├─────────────────────────────────────────────────────────────┤
 │  dotabuff/manta (Go Library)                                │

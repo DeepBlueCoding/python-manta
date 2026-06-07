@@ -8,8 +8,14 @@ import (
 // All remaining callback setups in one file for simplicity
 
 func setupMiscCallbacks(parser *manta.Parser, messages *[]MessageEvent, filter string, maxMsgs int) {
-	parser.Callbacks.OnCMsgClearDecalsForSkeletonInstanceEvent(func(m *dota.CMsgClearDecalsForSkeletonInstanceEvent) error {
-		return addFilteredMessage(messages, "CMsgClearDecalsForSkeletonInstanceEvent", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	parser.Callbacks.OnCMsgClearDecalsForEntityEvent(func(m *dota.CMsgClearDecalsForEntityEvent) error {
+		return addFilteredMessage(messages, "CMsgClearDecalsForEntityEvent", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	})
+	parser.Callbacks.OnCMsgClothStiffenAnimEvent(func(m *dota.CMsgClothStiffenAnimEvent) error {
+		return addFilteredMessage(messages, "CMsgClothStiffenAnimEvent", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	})
+	parser.Callbacks.OnCMsgClothEffectAnimEvent(func(m *dota.CMsgClothEffectAnimEvent) error {
+		return addFilteredMessage(messages, "CMsgClothEffectAnimEvent", parser.Tick, parser.NetTick, m, filter, maxMsgs)
 	})
 	parser.Callbacks.OnCMsgClearEntityDecalsEvent(func(m *dota.CMsgClearEntityDecalsEvent) error {
 		return addFilteredMessage(messages, "CMsgClearEntityDecalsEvent", parser.Tick, parser.NetTick, m, filter, maxMsgs)
@@ -70,6 +76,9 @@ func setupSVCCallbacks(parser *manta.Parser, messages *[]MessageEvent, filter st
 	})
 	parser.Callbacks.OnCSVCMsg_HltvFixupOperatorStatus(func(m *dota.CSVCMsg_HltvFixupOperatorStatus) error {
 		return addFilteredMessage(messages, "CSVCMsg_HltvFixupOperatorStatus", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	})
+	parser.Callbacks.OnCSVCMsg_NextMsgPredicted(func(m *dota.CSVCMsg_NextMsgPredicted) error {
+		return addFilteredMessage(messages, "CSVCMsg_NextMsgPredicted", parser.Tick, parser.NetTick, m, filter, maxMsgs)
 	})
 	parser.Callbacks.OnCSVCMsg_PeerList(func(m *dota.CSVCMsg_PeerList) error {
 		return addFilteredMessage(messages, "CSVCMsg_PeerList", parser.Tick, parser.NetTick, m, filter, maxMsgs)

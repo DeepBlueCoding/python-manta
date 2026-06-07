@@ -25,6 +25,27 @@ func setupMissingCallbacks(parser *manta.Parser, messages *[]MessageEvent, filte
 	parser.Callbacks.OnCDOTAUserMsg_CourierKilledAlert(func(m *dota.CDOTAUserMsg_CourierKilledAlert) error {
 		return addFilteredMessage(messages, "CDOTAUserMsg_CourierKilledAlert", parser.Tick, parser.NetTick, m, filter, maxMsgs)
 	})
+	parser.Callbacks.OnCDOTAUserMsg_CourierLeftFountainAlert(func(m *dota.CDOTAUserMsg_CourierLeftFountainAlert) error {
+		return addFilteredMessage(messages, "CDOTAUserMsg_CourierLeftFountainAlert", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	})
+	parser.Callbacks.OnCDOTAUserMsg_GiveItem(func(m *dota.CDOTAUserMsg_GiveItem) error {
+		return addFilteredMessage(messages, "CDOTAUserMsg_GiveItem", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	})
+	parser.Callbacks.OnCDOTAUserMsg_KillEffect(func(m *dota.CDOTAUserMsg_KillEffect) error {
+		return addFilteredMessage(messages, "CDOTAUserMsg_KillEffect", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	})
+	parser.Callbacks.OnCDOTAUserMsg_MonsterHunter_HuntAlert(func(m *dota.CDOTAUserMsg_MonsterHunter_HuntAlert) error {
+		return addFilteredMessage(messages, "CDOTAUserMsg_MonsterHunter_HuntAlert", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	})
+	parser.Callbacks.OnCDOTAUserMsg_MonsterHunter_InvestigationGameState(func(m *dota.CDOTAUserMsg_MonsterHunter_InvestigationGameState) error {
+		return addFilteredMessage(messages, "CDOTAUserMsg_MonsterHunter_InvestigationGameState", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	})
+	parser.Callbacks.OnCDOTAUserMsg_MonsterHunter_InvestigationsAvailable(func(m *dota.CDOTAUserMsg_MonsterHunter_InvestigationsAvailable) error {
+		return addFilteredMessage(messages, "CDOTAUserMsg_MonsterHunter_InvestigationsAvailable", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	})
+	parser.Callbacks.OnCDOTAUserMsg_TormentorTimer(func(m *dota.CDOTAUserMsg_TormentorTimer) error {
+		return addFilteredMessage(messages, "CDOTAUserMsg_TormentorTimer", parser.Tick, parser.NetTick, m, filter, maxMsgs)
+	})
 	parser.Callbacks.OnCDOTAUserMsg_DodgeTrackingProjectiles(func(m *dota.CDOTAUserMsg_DodgeTrackingProjectiles) error {
 		return addFilteredMessage(messages, "CDOTAUserMsg_DodgeTrackingProjectiles", parser.Tick, parser.NetTick, m, filter, maxMsgs)
 	})

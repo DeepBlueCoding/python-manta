@@ -102,7 +102,7 @@ func RunParse(filePath string, config ParseConfig) (*ParseResult, error) {
 			headerInfo.ServerName = m.GetServerName()
 			headerInfo.ClientName = m.GetClientName()
 			headerInfo.GameDirectory = m.GetGameDirectory()
-			headerInfo.NetworkProtocol = m.GetNetworkProtocol()
+			headerInfo.PatchVersion = m.GetPatchVersion()
 			headerInfo.DemoFileStamp = m.GetDemoFileStamp()
 			headerInfo.BuildNum = m.GetBuildNum()
 			headerInfo.GameBuild = extractGameBuild(m.GetGameDirectory())

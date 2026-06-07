@@ -36,7 +36,7 @@ type HeaderInfo struct {
 	ServerName      string `json:"server_name"`
 	ClientName      string `json:"client_name"`
 	GameDirectory   string `json:"game_directory"`
-	NetworkProtocol int32  `json:"network_protocol"`
+	PatchVersion    int32  `json:"patch_version"` // upstream renamed network_protocol -> patch_version (same wire field)
 	DemoFileStamp   string `json:"demo_file_stamp"`
 	BuildNum        int32  `json:"build_num"`
 	GameBuild       int32  `json:"game_build"` // Extracted from game_directory (e.g., 6559 from /dota_v6559/)
@@ -132,7 +132,7 @@ func ParseHeader(filePath *C.char) (result *C.char) {
 		header.ServerName = m.GetServerName()
 		header.ClientName = m.GetClientName()
 		header.GameDirectory = m.GetGameDirectory()
-		header.NetworkProtocol = m.GetNetworkProtocol()
+		header.PatchVersion = m.GetPatchVersion()
 		header.DemoFileStamp = m.GetDemoFileStamp()
 		header.BuildNum = m.GetBuildNum()
 		header.GameBuild = extractGameBuild(m.GetGameDirectory())
